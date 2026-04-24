@@ -74,14 +74,23 @@ const Invoicing = ({ addToast, currency }) => {
 
   return (
     <div className="invoicing-module">
+  const costCenters = [
+    { name: 'Gyártósor-01', amount: 4520000, color: 'var(--primary-color)' },
+    { name: 'Logisztika & Raktár', amount: 1240000, color: '#f1c40f' },
+    { name: 'K+F / Mérnökség', amount: 2850000, color: '#9b59b6' },
+    { name: 'Adminisztráció', amount: 850000, color: '#34495e' },
+  ];
+
+  return (
+    <div className="invoicing-module">
       <div className="invoicing-header" style={{ marginBottom: '25px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <div className="module-icon-container" style={{ background: 'rgba(46, 204, 113, 0.1)', color: '#2ecc71', padding: '12px', borderRadius: '12px' }}>
             <Receipt size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Pénzügyi Kontrolling</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Cash-flow monitorozás és követeléskezelés</p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Pénzügy & Globális Kontrolling</h2>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Multinacionális adókezelés és költséghely-elemzés</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -92,6 +101,9 @@ const Invoicing = ({ addToast, currency }) => {
             <button className={`view-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')} style={{ padding: '6px 12px', borderRadius: '8px' }}>
               <TrendingUp size={16} />
             </button>
+            <button className={`view-btn ${activeTab === 'costcenters' ? 'active' : ''}`} onClick={() => setActiveTab('costcenters')} style={{ padding: '6px 12px', borderRadius: '8px' }}>
+              <PieChart size={16} />
+            </button>
           </div>
           <button className="create-btn" onClick={() => addToast('Új bizonylat generálása', 'info')}>
             <Plus size={20} /> Új Számla
@@ -99,7 +111,7 @@ const Invoicing = ({ addToast, currency }) => {
         </div>
       </div>
 
-      {activeTab === 'list' ? (
+      {activeTab === 'list' && (
         <>
           <div className="finance-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
             <div className="stat-card glass">
@@ -157,7 +169,9 @@ const Invoicing = ({ addToast, currency }) => {
             </table>
           </div>
         </>
-      ) : (
+      )}
+
+      {activeTab === 'analytics' && (
         <div className="finance-analytics">
           <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '25px' }}>
             <div className="glass" style={{ padding: '25px', borderRadius: '20px' }}>
@@ -173,19 +187,58 @@ const Invoicing = ({ addToast, currency }) => {
               </div>
             </div>
             <div className="glass" style={{ padding: '25px', borderRadius: '20px' }}>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '20px', textTransform: 'uppercase' }}>Cash-Flow Forecast</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <div style={{ padding: '15px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '12px' }}>
-                  <p className="text-muted" style={{ fontSize: '0.7rem' }}>Várható bevétel (Következő 30 nap)</p>
-                  <p style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-color)' }}>{formatCurrency(8420000)}</p>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '20px', textTransform: 'uppercase' }}>Tax & VAT Engine</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span className="text-muted" style={{ fontSize: '0.75rem' }}>EU-belüli mentes:</span>
+                  <span style={{ fontWeight: 700 }}>{formatCurrency(12500000)}</span>
                 </div>
-                <div style={{ padding: '15px', background: 'rgba(231, 76, 60, 0.05)', borderRadius: '12px' }}>
-                  <p className="text-muted" style={{ fontSize: '0.7rem' }}>Tervezett kiadás (Beszerzés/Bér)</p>
-                  <p style={{ fontSize: '1.2rem', fontWeight: 800, color: '#e74c3c' }}>{formatCurrency(5150000)}</p>
+                <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span className="text-muted" style={{ fontSize: '0.75rem' }}>27% ÁFA alap:</span>
+                  <span style={{ fontWeight: 700 }}>{formatCurrency(45800000)}</span>
+                </div>
+                <div style={{ padding: '12px', background: 'rgba(46, 204, 113, 0.1)', borderRadius: '10px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2ecc71' }}>Visszaigényelhető:</span>
+                  <span style={{ fontWeight: 800, color: '#2ecc71' }}>{formatCurrency(2150000)}</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'costcenters' && (
+        <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+           <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '25px' }}>Költséghely Alapú Elemzés</h3>
+           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                 {costCenters.map((cc, i) => (
+                   <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                         <span style={{ fontWeight: 700 }}>{cc.name}</span>
+                         <span className="text-muted">{formatCurrency(cc.amount)}</span>
+                      </div>
+                      <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                         <div style={{ width: `${(cc.amount / 9460000) * 100}%`, height: '100%', background: cc.color }}></div>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+              <div className="glass" style={{ padding: '20px', borderRadius: '20px', background: 'rgba(52, 152, 219, 0.05)', textAlign: 'center' }}>
+                 <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '10px' }}>Összesített Működési Költség</p>
+                 <div style={{ fontSize: '2rem', fontWeight: 900 }}>{formatCurrency(9460000)}</div>
+                 <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
+                    <div style={{ padding: '10px 20px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)' }}>
+                       <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Munkabér</div>
+                       <div style={{ fontWeight: 700 }}>45%</div>
+                    </div>
+                    <div style={{ padding: '10px 20px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)' }}>
+                       <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Anyag</div>
+                       <div style={{ fontWeight: 700 }}>38%</div>
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
       )}
 
