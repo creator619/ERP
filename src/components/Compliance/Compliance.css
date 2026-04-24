@@ -87,6 +87,36 @@
 .step-dot.done { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
 .step-dot.active { background: var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
 
+/* Risk Matrix Styles */
+.risk-matrix {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.risk-cell {
+    height: 40px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.risk-cell:hover {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+.risk-cell.low { background: #2ecc71; opacity: 0.6; }
+.risk-cell.medium { background: #f1c40f; opacity: 0.6; }
+.risk-cell.high { background: #e67e22; opacity: 0.7; }
+.risk-cell.critical { background: #e74c3c; opacity: 0.8; }
+
 .security-badge {
     display: flex;
     align-items: center;

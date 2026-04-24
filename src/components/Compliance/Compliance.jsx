@@ -76,6 +76,9 @@ const Compliance = ({ addToast }) => {
         <div className={`comp-tab ${activeTab === 'documents' ? 'active' : ''}`} onClick={() => setActiveTab('documents')}>
            <FileText size={16} /> Dokumentum Tár
         </div>
+        <div className={`comp-tab ${activeTab === 'risks' ? 'active' : ''}`} onClick={() => setActiveTab('risks')}>
+           <ShieldAlert size={16} /> Kockázati Jegyzék
+        </div>
         <div className={`comp-tab ${activeTab === 'suppliers' ? 'active' : ''}`} onClick={() => setActiveTab('suppliers')}>
            <FileCheck size={16} /> Beszállítói Minősítés
         </div>
@@ -203,6 +206,54 @@ const Compliance = ({ addToast }) => {
               <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '12px', display: 'flex', gap: '15px', alignItems: 'center' }}>
                  <div className="pulse-info"></div>
                  <p style={{ fontSize: '0.75rem', fontWeight: 600 }}>Várakozás a minőségügyi ellenőrzésre...</p>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {activeTab === 'risks' && (
+        <div className="compliance-grid">
+           <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '10px' }}>Kockázati Hőtérkép (ISO 31000)</h3>
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '20px' }}>Valószínűség vs. Hatás mátrix</p>
+              
+              <div className="risk-matrix">
+                 {Array.from({ length: 25 }).map((_, i) => {
+                    const row = Math.floor(i / 5);
+                    const col = i % 5;
+                    const level = row + col;
+                    let cls = 'low';
+                    if (level >= 6) cls = 'critical';
+                    else if (level >= 4) cls = 'high';
+                    else if (level >= 2) cls = 'medium';
+                    
+                    return (
+                      <div key={i} className={`risk-cell ${cls}`}>
+                         {i === 2 ? 'R1' : i === 7 ? 'R4' : i === 22 ? 'R8' : ''}
+                      </div>
+                    );
+                 })}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
+                 <span>ALACSONY HATÁS</span>
+                 <span>KRITIKUS HATÁS</span>
+              </div>
+           </div>
+
+           <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Aktív Kockázatok és Enyhítés</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                 {[
+                   { id: 'R1', title: 'Alapanyag áremelkedés', impact: 'High', mitigation: 'Hosszú távú fix áras szerződések' },
+                   { id: 'R4', title: 'Szakember hiány', impact: 'Medium', mitigation: 'Belső képzési rendszer (Skill Matrix)' },
+                   { id: 'R8', title: 'Szoftverleállás', impact: 'Critical', mitigation: 'Redundáns szerverek és napi mentés' }
+                 ].map(risk => (
+                   <div key={risk.id} className="ncr-card" style={{ borderLeft: `5px solid ${risk.impact === 'Critical' ? '#e74c3c' : risk.impact === 'High' ? '#e67e22' : '#f1c40f'}` }}>
+                      <p style={{ fontWeight: 800, fontSize: '0.85rem' }}>{risk.id}: {risk.title}</p>
+                      <p style={{ fontSize: '0.75rem', margin: '5px 0' }}><span className="text-muted">Enyhítési terv:</span> {risk.mitigation}</p>
+                      <span className="status-badge" style={{ fontSize: '0.6rem' }}>Besorolás: {risk.impact}</span>
+                   </div>
+                 ))}
               </div>
            </div>
         </div>
