@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import './Layout.css';
 
-const Layout = ({ children, activeModule, setActiveModule, onLogout }) => {
+const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, setCurrency, language, setLanguage }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -21,6 +21,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout }) => {
       sales: 'Értékesítés',
       invoicing: 'Számlázás',
       hr: 'HR - Emberi Erőforrások',
+      dms: 'DMS - Dokumentumkezelés',
       messenger: 'Belső Kommunikáció',
       settings: 'Beállítások'
     };
@@ -37,7 +38,13 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout }) => {
         onLogout={onLogout}
       />
       <main className={`main-content ${isSidebarOpen ? '' : 'sidebar-closed'}`}>
-        <Navbar activeModuleLabel={getModuleLabel(activeModule)} />
+        <Navbar 
+          activeModuleLabel={getModuleLabel(activeModule)} 
+          currency={currency}
+          setCurrency={setCurrency}
+          language={language}
+          setLanguage={setLanguage}
+        />
         <div className="content-inner">
           {children}
         </div>

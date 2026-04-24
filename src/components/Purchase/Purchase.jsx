@@ -22,9 +22,10 @@ import {
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
+import currencyService from '../../services/CurrencyService';
 import './Purchase.css';
 
-const Purchase = ({ addToast }) => {
+const Purchase = ({ addToast, currency }) => {
   const [selectedPO, setSelectedPO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('items');
@@ -97,7 +98,7 @@ const Purchase = ({ addToast }) => {
     }));
   };
 
-  const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+  const formatCurrency = (val) => currencyService.format(val, currency);
 
   return (
     <div className="purchase-module">
@@ -119,7 +120,7 @@ const Purchase = ({ addToast }) => {
       <div className="purchase-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
         <div className="stat-card glass">
           <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Függő igények</p>
-          <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{formatHUF(18500000)}</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{formatCurrency(18500000)}</div>
         </div>
         <div className="stat-card glass">
           <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Késési arány</p>
@@ -159,7 +160,7 @@ const Purchase = ({ addToast }) => {
                     <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{po.rating}</span>
                   </div>
                 </td>
-                <td style={{ textAlign: 'right', fontWeight: 800 }}>{formatHUF(po.total)}</td>
+                <td style={{ textAlign: 'right', fontWeight: 800 }}>{formatCurrency(po.total)}</td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{ display: 'flex', gap: '2px' }}>
@@ -228,8 +229,8 @@ const Purchase = ({ addToast }) => {
                              <div style={{ fontWeight: 700 }}>{item.name}</div>
                              <div className="text-muted" style={{ fontSize: '0.75rem' }}>Qty: {item.qty} db</div>
                           </td>
-                          <td style={{ padding: '15px 10px', textAlign: 'right' }}>{formatHUF(item.price)}</td>
-                          <td style={{ padding: '15px 10px', textAlign: 'right', fontWeight: 800 }}>{formatHUF(item.qty * item.price)}</td>
+                          <td style={{ padding: '15px 10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
+                          <td style={{ padding: '15px 10px', textAlign: 'right', fontWeight: 800 }}>{formatCurrency(item.qty * item.price)}</td>
                         </tr>
                       ))}
                     </tbody>

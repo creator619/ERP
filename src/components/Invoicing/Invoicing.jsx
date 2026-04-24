@@ -24,9 +24,10 @@ import {
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
+import currencyService from '../../services/CurrencyService';
 import './Invoicing.css';
 
-const Invoicing = ({ addToast }) => {
+const Invoicing = ({ addToast, currency }) => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
@@ -51,7 +52,7 @@ const Invoicing = ({ addToast }) => {
           user: 'Pénzügyi Vezető',
           action: 'Kifizetés rögzítve',
           module: 'Invoicing',
-          details: `${inv.id} - Összeg: ${formatHUF(inv.amount)}`,
+          details: `${inv.id} - Összeg: ${formatCurrency(inv.amount)}`,
           severity: 'success'
         });
         return { ...inv, status: 'Paid', aging: 0 };
@@ -62,7 +63,7 @@ const Invoicing = ({ addToast }) => {
     setIsPreviewOpen(false);
   };
 
-  const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+  const formatCurrency = (val) => currencyService.format(val, currency);
 
   const stats = {
     totalPaid: invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + i.amount, 0),
@@ -103,11 +104,11 @@ const Invoicing = ({ addToast }) => {
           <div className="finance-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
             <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Fizetett (Havi)</p>
-              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#2ecc71' }}>{formatHUF(stats.totalPaid)}</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#2ecc71' }}>{formatCurrency(stats.totalPaid)}</div>
             </div>
             <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Kintlévőség</p>
-              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#e74c3c' }}>{formatHUF(stats.totalOverdue)}</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#e74c3c' }}>{formatCurrency(stats.totalOverdue)}</div>
             </div>
             <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Átlagos fizetési nap</p>
@@ -115,7 +116,7 @@ const Invoicing = ({ addToast }) => {
             </div>
             <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Adóegyenleg (ÁFA)</p>
-              <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{formatHUF(stats.taxLiability)}</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{formatCurrency(stats.taxLiability)}</div>
             </div>
           </div>
 
@@ -143,7 +144,7 @@ const Invoicing = ({ addToast }) => {
                         {inv.aging > 0 ? `+${inv.aging} nap` : '-'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 800 }}>{formatHUF(inv.amount)}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 800 }}>{formatCurrency(inv.amount)}</td>
                     <td>
                       <span className={`status-badge ${inv.status === 'Paid' ? 'active' : inv.status === 'Overdue' ? 'danger' : 'warning'}`}>
                         {inv.status === 'Paid' ? 'Fizetve' : inv.status === 'Overdue' ? 'Késedelmes' : 'Várakozik'}
@@ -176,11 +177,11 @@ const Invoicing = ({ addToast }) => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div style={{ padding: '15px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '12px' }}>
                   <p className="text-muted" style={{ fontSize: '0.7rem' }}>Várható bevétel (Következő 30 nap)</p>
-                  <p style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-color)' }}>{formatHUF(8420000)}</p>
+                  <p style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-color)' }}>{formatCurrency(8420000)}</p>
                 </div>
                 <div style={{ padding: '15px', background: 'rgba(231, 76, 60, 0.05)', borderRadius: '12px' }}>
                   <p className="text-muted" style={{ fontSize: '0.7rem' }}>Tervezett kiadás (Beszerzés/Bér)</p>
-                  <p style={{ fontSize: '1.2rem', fontWeight: 800, color: '#e74c3c' }}>{formatHUF(5150000)}</p>
+                  <p style={{ fontSize: '1.2rem', fontWeight: 800, color: '#e74c3c' }}>{formatCurrency(5150000)}</p>
                 </div>
               </div>
             </div>
@@ -220,7 +221,7 @@ const Invoicing = ({ addToast }) => {
                    <p style={{ fontWeight: 700 }}>{selectedInvoice.customer}</p>
                 </div>
                 <div style={{ borderTop: '2px solid #eee', paddingTop: '20px', textAlign: 'right' }}>
-                   <p style={{ fontSize: '1.5rem', fontWeight: 800 }}>Bruttó: {formatHUF(selectedInvoice.amount)}</p>
+                   <p style={{ fontSize: '1.5rem', fontWeight: 800 }}>Bruttó: {formatCurrency(selectedInvoice.amount)}</p>
                    <p className="text-muted" style={{ fontSize: '0.8rem' }}>Esedékesség: {selectedInvoice.due}</p>
                 </div>
              </div>

@@ -22,6 +22,8 @@ function App() {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [toasts, setToasts] = useState([]);
   const [theme, setTheme] = useState('light');
+  const [currency, setCurrency] = useState('HUF');
+  const [language, setLanguage] = useState('HU');
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -78,9 +80,9 @@ function App() {
       case 'dms':
         return <DMS {...props} />;
       case 'settings':
-        return <Settings {...props} theme={theme} toggleTheme={toggleTheme} />;
+        return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} language={language} setLanguage={setLanguage} />;
       default:
-        return <Dashboard {...props} />;
+        return <Dashboard {...props} currency={currency} />;
     }
   };
 
@@ -94,6 +96,10 @@ function App() {
         activeModule={activeModule} 
         setActiveModule={setActiveModule}
         onLogout={handleLogout}
+        currency={currency}
+        setCurrency={setCurrency}
+        language={language}
+        setLanguage={setLanguage}
       >
         {renderModule()}
       </Layout>
