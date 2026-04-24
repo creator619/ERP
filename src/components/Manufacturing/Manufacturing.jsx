@@ -191,7 +191,7 @@ const Manufacturing = ({ addToast }) => {
           <>
             <button className="view-btn" onClick={() => setIsModalOpen(false)}>Bezárás</button>
             {selectedWO?.status !== 'Completed' && (
-              <button className="create-btn" onClick={() => handleNextStage(selectedWO.id)}>
+              <button className="create-btn" onClick={() => selectedWO && handleNextStage(selectedWO.id)}>
                 Következő fázis <ArrowRight size={18} />
               </button>
             )}

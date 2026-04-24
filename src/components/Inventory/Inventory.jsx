@@ -229,8 +229,8 @@ const Inventory = ({ addToast }) => {
         footer={
           <>
             <button className="view-btn" onClick={() => setIsModalOpen(false)}>Bezárás</button>
-            <button className="view-btn" onClick={() => handleAdjustStock(selectedProduct.id, -1)}>Kiadás (-1)</button>
-            <button className="create-btn" onClick={() => handleAdjustStock(selectedProduct.id, 10)}>Bevételezés (+10)</button>
+            <button className="view-btn" onClick={() => selectedProduct && handleAdjustStock(selectedProduct.id, -1)}>Kiadás (-1)</button>
+            <button className="create-btn" onClick={() => selectedProduct && handleAdjustStock(selectedProduct.id, 10)}>Bevételezés (+10)</button>
           </>
         }
       >
