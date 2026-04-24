@@ -173,8 +173,67 @@ ul {
   transition: all 0.2s;
 }
 
-.view-btn-small:hover {
+/* Manufacturing Stages */
+.stage-item-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.stage-item-new:last-child {
+  padding-bottom: 0;
+}
+
+.stage-item-new::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 15px;
+  width: 2px;
+  height: calc(100% - 15px);
   background: var(--border-color);
+  z-index: 1;
+}
+
+.stage-item-new:last-child::before {
+  display: none;
+}
+
+.stage-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg-main);
+  border: 2px solid var(--border-color);
+  z-index: 2;
+  transition: all 0.3s;
+}
+
+.stage-item-new.active .stage-dot {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 8px var(--primary-color);
+}
+
+.stage-item-new.done .stage-dot {
+  background: #28a745;
+  border-color: #28a745;
+}
+
+.stage-item-new.done span {
+  color: #28a745;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.low-stock-border {
+  border: 1px solid rgba(255, 193, 7, 0.4) !important;
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.05);
+}
+
+.low-stock-border h4 {
+  color: #ffc107;
 }
 
 /* Scrollbar */
