@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { 
-  ShieldCheck, 
-  Lock, 
+  Shield, 
   History, 
-  AlertOctagon, 
   FileCheck, 
-  UserCheck, 
-  Eye, 
-  Download, 
-  Search,
-  Filter,
-  CheckCircle2,
-  XCircle,
-  FileText,
-  ShieldAlert,
-  Server
+  AlertOctagon, 
+  Search, 
+  Filter, 
+  Plus, 
+  CheckCircle2, 
+  FileText, 
+  Clock, 
+  ShieldAlert, 
+  Lock,
+  ChevronRight,
+  TrendingUp,
+  Scale
 } from 'lucide-react';
 import auditLogService from '../../services/AuditLogService';
 import './Compliance.css';
@@ -78,6 +78,9 @@ const Compliance = ({ addToast }) => {
         </div>
         <div className={`comp-tab ${activeTab === 'risks' ? 'active' : ''}`} onClick={() => setActiveTab('risks')}>
            <ShieldAlert size={16} /> Kockázati Jegyzék
+        </div>
+        <div className={`comp-tab ${activeTab === 'calibration' ? 'active' : ''}`} onClick={() => setActiveTab('calibration')}>
+           <Scale size={16} /> Kalibrálás
         </div>
         <div className={`comp-tab ${activeTab === 'suppliers' ? 'active' : ''}`} onClick={() => setActiveTab('suppliers')}>
            <FileCheck size={16} /> Beszállítói Minősítés
@@ -256,6 +259,44 @@ const Compliance = ({ addToast }) => {
                  ))}
               </div>
            </div>
+        </div>
+      )}
+
+      {activeTab === 'calibration' && (
+        <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Mérőeszköz Kalibrálás Kezelő</h3>
+              <button className="view-btn-small"><Plus size={14} /> Eszköz Hozzáadása</button>
+           </div>
+           
+           {[
+             { id: 'TOL-001', name: 'Digitális Tolómérő (Mitutoyo)', lastDate: '2023-11-12', nextDate: '2024-05-12', status: 'valid' },
+             { id: 'NYO-042', name: 'Nyomatékkulcs (Stahlwille)', lastDate: '2023-04-01', nextDate: '2024-04-01', status: 'expired' },
+             { id: 'MIV-009', name: 'Mikrométer (Mahr)', lastDate: '2023-10-20', nextDate: '2024-04-20', status: 'warning' }
+           ].map((tool, i) => (
+             <div key={i} className={`calib-card ${tool.status === 'expired' ? 'pulse-expired' : ''}`}>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                   <div className={`calib-status-icon ${tool.status}`}>
+                      <Scale size={20} />
+                   </div>
+                   <div>
+                      <p style={{ fontWeight: 800, fontSize: '0.85rem' }}>{tool.name}</p>
+                      <p className="text-muted" style={{ fontSize: '0.65rem' }}>Eszköz ID: {tool.id}</p>
+                   </div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                   <p className="text-muted" style={{ fontSize: '0.6rem' }}>Utolsó hitelesítés</p>
+                   <p style={{ fontWeight: 700, fontSize: '0.75rem' }}>{tool.lastDate}</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                   <p className="text-muted" style={{ fontSize: '0.6rem' }}>Következő hitelesítés</p>
+                   <p style={{ fontWeight: 800, fontSize: '0.75rem', color: tool.status === 'expired' ? '#e74c3c' : 'inherit' }}>{tool.nextDate}</p>
+                </div>
+                <span className={`status-badge ${tool.status === 'valid' ? 'success' : tool.status === 'expired' ? 'danger' : 'warning'}`}>
+                   {tool.status.toUpperCase()}
+                </span>
+             </div>
+           ))}
         </div>
       )}
 
