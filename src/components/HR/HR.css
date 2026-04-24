@@ -1,41 +1,48 @@
-/* HR Module Styles */
-.hr-module {
-  animation: fadeIn 0.4s ease-out;
+.skill-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-.hr-stats .stat-item {
-  text-align: center;
-  padding: 10px;
-  border-right: 1px solid var(--border-color);
+.skill-expert { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+.skill-proficient { background: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); }
+.skill-novice { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.3); }
+
+.shift-grid {
+    display: grid;
+    grid-template-columns: 150px repeat(7, 1fr);
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 15px;
+    border-radius: 15px;
 }
 
-.hr-stats .stat-item:last-child {
-  border-right: none;
+.shift-cell {
+    height: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
 }
 
-.employee-details-view {
-  padding: 10px;
+.shift-cell.morning { background: rgba(52, 152, 219, 0.3); color: white; border: 1px solid rgba(52, 152, 219, 0.5); }
+.shift-cell.afternoon { background: rgba(155, 89, 182, 0.3); color: white; border: 1px solid rgba(155, 89, 182, 0.5); }
+.shift-cell.night { background: rgba(44, 62, 80, 0.8); color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+.matrix-cell {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    margin: 0 auto;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
-.status-badge.active { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
-.status-badge.warning { background: rgba(241, 196, 15, 0.1); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.2); }
-.status-badge.danger { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.2); }
-
-.view-btn-small {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.view-btn-small:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: var(--primary-color);
+.matrix-cell:hover {
+    transform: scale(1.2);
 }

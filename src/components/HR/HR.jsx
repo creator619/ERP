@@ -130,11 +130,11 @@ const HR = ({ addToast }) => {
         <button className={`tab-btn ${activeMainView === 'matrix' ? 'active' : ''}`} onClick={() => setActiveMainView('matrix')}>
           <Target size={16} /> Kompetencia Mátrix
         </button>
-        <button className={`tab-btn ${activeMainView === 'leaves' ? 'active' : ''}`} onClick={() => setActiveMainView('leaves')}>
-          <Calendar size={16} /> Szabadságkezelés
+        <button className={`tab-btn ${activeMainView === 'shifts' ? 'active' : ''}`} onClick={() => setActiveMainView('shifts')}>
+          <Clock size={16} /> Műszakbeosztás
         </button>
-        <button className={`tab-btn ${activeMainView === 'recruitment' ? 'active' : ''}`} onClick={() => setActiveMainView('recruitment')}>
-          <Briefcase size={16} /> Toborzás
+        <button className={`tab-btn ${activeMainView === 'leaves' ? 'active' : ''}`} onClick={() => setActiveMainView('leaves')}>
+          <Calendar size={16} /> Szabadság
         </button>
       </div>
 
@@ -188,49 +188,38 @@ const HR = ({ addToast }) => {
       )}
 
       {activeMainView === 'matrix' && (
-        <div className="matrix-view glass" style={{ padding: '20px', borderRadius: '15px' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px' }}>Kompetencia és Vizsga Mátrix</h3>
+        <div className="matrix-view glass" style={{ padding: '25px', borderRadius: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Szakmai Kompetencia Mátrix (Heatmap)</h3>
+            <div style={{ display: 'flex', gap: '15px', fontSize: '0.7rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><div className="matrix-cell" style={{ background: '#2ecc71' }}></div> Szakértő</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><div className="matrix-cell" style={{ background: '#3498db' }}></div> Haladó</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><div className="matrix-cell" style={{ background: '#f1c40f' }}></div> Kezdő</div>
+            </div>
+          </div>
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Dolgozó</th>
-                  <th>ISO 27001</th>
-                  <th>CCNA Sec</th>
-                  <th>ISO 9606-1</th>
-                  <th>Tűzvédelem</th>
-                  <th>PMP</th>
+                  <th>Munkatárs</th>
+                  <th>Hegesztés</th>
+                  <th>CNC Prog.</th>
+                  <th>Minőségell.</th>
+                  <th>Logisztika</th>
+                  <th>Villanyszer.</th>
+                  <th>CAD/CAM</th>
                 </tr>
               </thead>
               <tbody>
                 {employees.map(emp => (
                   <tr key={emp.id}>
-                    <td><span style={{ fontWeight: 600 }}>{emp.name}</span></td>
-                    {[
-                      'ISO 27001 Auditor', 
-                      'CCNA Security', 
-                      'EN ISO 9606-1', 
-                      'Tűzvédelmi szakvizsga', 
-                      'PMP Certification'
-                    ].map(cert => {
-                      const hasCert = emp.certifications.find(c => c.name === cert);
-                      return (
-                        <td key={cert} style={{ textAlign: 'center' }}>
-                          {hasCert ? (
-                            <div style={{ 
-                              width: '12px', 
-                              height: '12px', 
-                              borderRadius: '50%', 
-                              margin: '0 auto',
-                              background: hasCert.status === 'valid' ? '#2ecc71' : hasCert.status === 'warning' ? '#f1c40f' : '#e74c3c',
-                              boxShadow: `0 0 10px ${hasCert.status === 'valid' ? 'rgba(46, 204, 113, 0.4)' : hasCert.status === 'warning' ? 'rgba(241, 196, 15, 0.4)' : 'rgba(231, 76, 60, 0.4)'}`
-                            }}></div>
-                          ) : (
-                            <span style={{ color: 'rgba(255,255,255,0.1)' }}>-</span>
-                          )}
-                        </td>
-                      );
-                    })}
+                    <td><span style={{ fontWeight: 700 }}>{emp.name}</span></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? '#2ecc71' : '#f1c40f' }}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? '#3498db' : 'rgba(255,255,255,0.05)' }}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? '#3498db' : '#2ecc71' }}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 3 ? '#2ecc71' : 'rgba(255,255,255,0.05)' }}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: '#f1c40f' }}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? '#2ecc71' : '#3498db' }}></div></td>
                   </tr>
                 ))}
               </tbody>
@@ -239,11 +228,33 @@ const HR = ({ addToast }) => {
         </div>
       )}
 
-      {activeMainView === 'leaves' && (
-        <div className="leaves-view glass" style={{ padding: '20px', borderRadius: '15px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Függőben lévő kérések</h3>
+      {activeMainView === 'shifts' && (
+        <div className="shifts-view glass" style={{ padding: '25px', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '25px' }}>Heti Műszakbeosztás</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="shift-grid" style={{ fontWeight: 800, background: 'transparent' }}>
+              <div>Dolgozó</div>
+              <div>Hé</div><div>Ke</div><div>Sze</div><div>Csü</div><div>Pé</div><div style={{ color: '#e74c3c' }}>Szo</div><div style={{ color: '#e74c3c' }}>Va</div>
+            </div>
+            {employees.map(emp => (
+              <div key={emp.id} className="shift-grid">
+                <div style={{ fontWeight: 700 }}>{emp.name}</div>
+                <div className="shift-cell morning">DE</div>
+                <div className="shift-cell morning">DE</div>
+                <div className="shift-cell afternoon">DU</div>
+                <div className="shift-cell afternoon">DU</div>
+                <div className="shift-cell night">ÉJS</div>
+                <div className="shift-cell">-</div>
+                <div className="shift-cell">-</div>
+              </div>
+            ))}
           </div>
+        </div>
+      )}
+
+      {activeMainView === 'leaves' && (
+        <div className="leaves-view glass" style={{ padding: '25px', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Függőben lévő szabadságigények</h3>
           <table className="data-table">
             <thead>
               <tr>
@@ -257,7 +268,7 @@ const HR = ({ addToast }) => {
             <tbody>
               {leaveRequests.map(req => (
                 <tr key={req.id}>
-                  <td><span style={{ fontWeight: 600 }}>{req.name}</span></td>
+                  <td><span style={{ fontWeight: 700 }}>{req.name}</span></td>
                   <td>{req.type}</td>
                   <td><span className="text-muted">{req.start} - {req.end}</span></td>
                   <td>
@@ -267,11 +278,10 @@ const HR = ({ addToast }) => {
                   </td>
                   <td>
                     {req.status === 'Pending' && (
-                      <div style={{ display: 'flex', gap: '5px' }}>
+                      <div style={{ display: 'flex', gap: '10px' }}>
                         <button className="view-btn-small" style={{ color: '#2ecc71' }} onClick={() => {
                           setLeaveRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'Approved' } : r));
                           addToast('Szabadság jóváhagyva', 'success');
-                          auditLogService.log({ user: 'HR Manager', action: 'Szabadság jóváhagyva', module: 'HR', details: req.name, severity: 'success' });
                         }}><CheckCircle2 size={16} /></button>
                         <button className="view-btn-small" style={{ color: '#e74c3c' }}><Ban size={16} /></button>
                       </div>
@@ -281,25 +291,6 @@ const HR = ({ addToast }) => {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {activeMainView === 'recruitment' && (
-        <div className="recruitment-view glass" style={{ padding: '25px', borderRadius: '15px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Aktív Toborzások</h3>
-            <button className="view-btn-small">Összes állás megnyitása</button>
-          </div>
-          <div className="recruitment-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <div className="glass" style={{ padding: '15px', borderRadius: '12px', borderLeft: '4px solid var(--primary-color)' }}>
-              <div style={{ fontWeight: 700 }}>Senior Hegesztő Mérnök</div>
-              <div className="text-muted" style={{ fontSize: '0.8rem' }}>Jelentkezők: 12 fő | Státusz: Interjúk folyamatban</div>
-            </div>
-            <div className="glass" style={{ padding: '15px', borderRadius: '12px', borderLeft: '4px solid #2ecc71' }}>
-              <div style={{ fontWeight: 700 }}>Minőségügyi Ellenőr</div>
-              <div className="text-muted" style={{ fontSize: '0.8rem' }}>Jelentkezők: 8 fő | Státusz: Kiválasztva</div>
-            </div>
-          </div>
         </div>
       )}
 
