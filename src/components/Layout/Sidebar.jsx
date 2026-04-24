@@ -25,6 +25,7 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
     { id: 'purchase', label: 'Beszerzés', icon: <ShoppingCart size={20} /> },
     { id: 'crm', label: 'CRM', icon: <Users size={20} /> },
     { id: 'inventory', label: 'Készlet', icon: <Package size={20} /> },
+    { id: 'logistics', label: 'Logisztika', icon: <Truck size={20} /> },
     { id: 'sales', label: 'Értékesítés', icon: <ShoppingCart size={20} /> },
     { id: 'invoicing', label: 'Számlázás', icon: <FileText size={20} /> },
     { id: 'hr', label: 'HR', icon: <Users size={20} /> },

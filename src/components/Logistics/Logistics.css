@@ -1,0 +1,86 @@
+.logistics-wrapper {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.shipment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 25px;
+}
+
+.shipment-card {
+    padding: 25px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.shipment-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+}
+
+.route-visualization {
+    margin: 20px 0;
+    position: relative;
+    padding: 0 10px;
+}
+
+.route-line {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    position: relative;
+}
+
+.route-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #2ecc71);
+    border-radius: 2px;
+}
+
+.route-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--primary-color);
+    z-index: 2;
+}
+
+.route-marker.start { left: 0; }
+.route-marker.end { left: 100%; }
+.route-marker.current { 
+    width: 16px;
+    height: 16px;
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.port-monitor {
+    margin-top: 30px;
+    padding: 25px;
+    border-radius: 20px;
+}
+
+.port-status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.port-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

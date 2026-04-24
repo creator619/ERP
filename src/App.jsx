@@ -15,6 +15,7 @@ import Messenger from './components/Messenger/Messenger';
 import Quality from './components/Quality/Quality';
 import Maintenance from './components/Maintenance/Maintenance';
 import DMS from './components/DMS/DMS';
+import Logistics from './components/Logistics/Logistics';
 import { ToastContainer } from './components/UI/Toast';
 
 function App() {
@@ -79,6 +80,8 @@ function App() {
         return <Messenger {...props} />;
       case 'dms':
         return <DMS {...props} />;
+      case 'logistics':
+        return <Logistics {...props} />;
       case 'settings':
         return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} language={language} setLanguage={setLanguage} />;
       default:

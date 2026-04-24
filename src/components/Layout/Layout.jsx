@@ -18,6 +18,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
       purchase: 'Beszerzés és Ellátási lánc',
       crm: 'CRM - Ügyfélkapcsolatok',
       inventory: 'Készletkezelés',
+      logistics: 'Globális Logisztika és SCM',
       sales: 'Értékesítés',
       invoicing: 'Számlázás',
       hr: 'HR - Emberi Erőforrások',
