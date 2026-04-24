@@ -117,96 +117,112 @@ const Inventory = ({ addToast }) => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div className="view-controls" style={{ background: 'var(--bg-card)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <button className={`view-btn ${viewType === 'kanban' ? 'active' : ''}`} onClick={() => setViewType('kanban')} style={{ padding: '6px 12px', borderRadius: '8px' }}>
-              <LayoutGrid size={16} />
-            </button>
-            <button className={`view-btn ${viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('list')} style={{ padding: '6px 12px', borderRadius: '8px' }}>
-              <List size={16} />
-            </button>
-          </div>
-          <button className="create-btn" onClick={() => addToast('Új tétel felvétele', 'info')}>
-            <Plus size={20} /> Új Termék
-          </button>
-        </div>
+      <div className="module-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <button className={`tab-btn ${viewType === 'kanban' || viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('kanban')}>
+          <Package size={16} /> Készletlista
+        </button>
+        <button className={`tab-btn ${viewType === 'scan' ? 'active' : ''}`} onClick={() => setViewType('scan')}>
+          <Tag size={16} /> QR Beolvasás
+        </button>
+        <button className={`tab-btn ${viewType === 'map' ? 'active' : ''}`} onClick={() => setViewType('map')}>
+          <MapPin size={16} /> Raktártérkép
+        </button>
       </div>
 
-      <div className="inventory-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Összes Tétel</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>1,248 db</div>
+      {viewType === 'scan' && (
+        <div className="glass" style={{ padding: '40px', borderRadius: '24px', textAlign: 'center' }}>
+           <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '10px' }}>Mobil QR Beolvasó Szimuláció</h3>
+           <p className="text-muted" style={{ marginBottom: '20px' }}>Irányítsa a kamerát az alkatrész kódjára az azonnali készletfrissítéshez.</p>
+           <div className="qr-scanner-mock">
+              <div className="scan-line"></div>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0.1 }}>
+                 <Package size={120} />
+              </div>
+           </div>
+           <button className="create-btn" onClick={() => {
+              addToast('Kód beolvasva: RW-WIN-042', 'success');
+              openProductDetails(products[1]);
+           }}>Minta Beolvasás (RW-WIN-042)</button>
         </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Kritikus Szint</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e74c3c' }}>12 tétel</div>
-        </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Havi Forgalom</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>+42%</div>
-        </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Raktár Érték</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-color)' }}>145M Ft</div>
-        </div>
-      </div>
+      )}
 
-      {viewType === 'kanban' ? (
-        <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {products.map(product => (
-            <div key={product.id} className={`kanban-card glass ${product.stock <= product.minStock ? 'warning-border' : ''}`} onClick={() => openProductDetails(product)} style={{ padding: '20px', borderRadius: '15px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-color)' }}>{product.sku}</span>
-                {product.stock <= product.minStock && (
-                  <span className="status-badge danger" style={{ fontSize: '0.65rem' }}>Utánrendelés!</span>
-                )}
-              </div>
-              <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px' }}>{product.name}</h4>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MapPin size={14} className="text-muted" />
-                  <span style={{ fontSize: '0.8rem' }}>{product.location.split(',')[0]}</span>
+      {viewType === 'map' && (
+        <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+           <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Raktár Alaprajz (Élő Telítettség)</h3>
+           <div className="warehouse-map">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <div key={i} className={`map-zone ${i === 3 || i === 8 ? 'active' : i === 12 ? 'warning' : ''}`}>
+                   ZÓNA {String.fromCharCode(65 + (i % 5))}{Math.floor(i / 5) + 1}
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{product.stock} db</div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>MIN: {product.minStock}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>SKU</th>
-                <th>Terméknév</th>
-                <th>Helyszín</th>
-                <th>Készlet</th>
-                <th>Min. Szint</th>
-                <th>Státusz</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(product => (
-                <tr key={product.id} onClick={() => openProductDetails(product)} style={{ cursor: 'pointer' }}>
-                  <td><strong>{product.sku}</strong></td>
-                  <td>{product.name}</td>
-                  <td>{product.location}</td>
-                  <td style={{ fontWeight: 700 }}>{product.stock} db</td>
-                  <td className="text-muted">{product.minStock} db</td>
-                  <td>
-                    <span className={`status-badge ${product.stock > product.minStock ? 'active' : product.stock === 0 ? 'danger' : 'warning'}`}>
-                      {product.stock > product.minStock ? 'Optimális' : product.stock === 0 ? 'Kimerült' : 'Kritikus'}
-                    </span>
-                  </td>
-                  <td><button className="view-btn-small"><MoreVertical size={16} /></button></td>
-                </tr>
               ))}
-            </tbody>
-          </table>
+           </div>
+           <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: '0.8rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--primary-color)' }}></div> Kijelölt tétel</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#e74c3c' }}></div> Alacsony készlet</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(255,255,255,0.05)' }}></div> Szabad hely</div>
+           </div>
         </div>
+      )}
+
+      {(viewType === 'kanban' || viewType === 'list') && (
+        viewType === 'kanban' ? (
+          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+            {products.map(product => (
+              <div key={product.id} className={`kanban-card glass ${product.stock <= product.minStock ? 'warning-border' : ''}`} onClick={() => openProductDetails(product)} style={{ padding: '20px', borderRadius: '15px', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-color)' }}>{product.sku}</span>
+                  {product.stock <= product.minStock && (
+                    <span className="status-badge danger" style={{ fontSize: '0.65rem' }}>Utánrendelés!</span>
+                  )}
+                </div>
+                <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px' }}>{product.name}</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <MapPin size={14} className="text-muted" />
+                    <span style={{ fontSize: '0.8rem' }}>{product.location.split(',')[0]}</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{product.stock} db</div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>MIN: {product.minStock}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Terméknév</th>
+                  <th>Helyszín</th>
+                  <th>Készlet</th>
+                  <th>Min. Szint</th>
+                  <th>Státusz</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(product => (
+                  <tr key={product.id} onClick={() => openProductDetails(product)} style={{ cursor: 'pointer' }}>
+                    <td><strong>{product.sku}</strong></td>
+                    <td>{product.name}</td>
+                    <td>{product.location}</td>
+                    <td style={{ fontWeight: 700 }}>{product.stock} db</td>
+                    <td className="text-muted">{product.minStock} db</td>
+                    <td>
+                      <span className={`status-badge ${product.stock > product.minStock ? 'active' : product.stock === 0 ? 'danger' : 'warning'}`}>
+                        {product.stock > product.minStock ? 'Optimális' : product.stock === 0 ? 'Kimerült' : 'Kritikus'}
+                      </span>
+                    </td>
+                    <td><button className="view-btn-small"><MoreVertical size={16} /></button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
 
       <Modal 
