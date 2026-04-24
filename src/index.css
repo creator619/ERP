@@ -73,6 +73,110 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Maintenance & Telemetry Styles */
+.warning-border {
+  border-left: 4px solid #ffc107 !important;
+}
+
+.pulse-success, .pulse-warning, .pulse-danger {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.pulse-success { background: #28a745; }
+.pulse-warning { background: #ffc107; }
+.pulse-danger { background: #dc3545; }
+
+@keyframes pulse-animation {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.pulse-success {
+  animation: pulse-animation 2s infinite;
+}
+
+.history-item-compact {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  align-items: center;
+}
+
+.history-icon-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.history-icon-small.success { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+.history-icon-small.warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+
+.badge-stock {
+  padding: 2px 8px;
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-stock.warning {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.mini-chart svg {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Quality Module Styles */
+.check-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.check-status {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-status.success { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+.check-status.danger { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+
+.view-btn-small {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-btn-small:hover {
+  background: var(--border-color);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

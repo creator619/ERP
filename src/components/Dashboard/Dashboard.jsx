@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   ShoppingCart, 
@@ -10,11 +10,23 @@ import {
   CheckCircle2,
   AlertCircle,
   BarChart3,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  ShieldAlert,
+  Wrench
 } from 'lucide-react';
 import './Dashboard.css';
+import auditLogService from '../../services/AuditLogService';
 
 const Dashboard = () => {
+  const [logs, setLogs] = useState(auditLogService.getLogs().slice(0, 5));
+
+  useEffect(() => {
+    const unsubscribe = auditLogService.subscribe((updatedLogs) => {
+      setLogs(updatedLogs.slice(0, 5));
+    });
+    return unsubscribe;
+  }, []);
+
   const stats = [
     { label: 'Havi bevétel', value: '18,450,000 Ft', icon: <CreditCard />, trend: '+8.2%', isUp: true },
     { label: 'Gyártási hatékonyság', value: '94.5%', icon: <TrendingUp />, trend: '+2.1%', isUp: true },
@@ -31,6 +43,24 @@ const Dashboard = () => {
     { day: 'Szo', value: 30 },
     { day: 'Vas', value: 20 },
   ];
+
+  const getLogIcon = (module, severity) => {
+    switch (module) {
+      case 'Maintenance': return <Wrench size={16} />;
+      case 'Quality': return <ShieldAlert size={16} />;
+      default: return <CheckCircle2 size={16} />;
+    }
+  };
+
+  const getLogTime = (timestamp) => {
+    const diff = Date.now() - new Date(timestamp).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Pár másodperce';
+    if (minutes < 60) return `${minutes} perce`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} órája`;
+    return new Date(timestamp).toLocaleDateString();
+  };
 
   return (
     <div className="dashboard">
@@ -122,30 +152,26 @@ const Dashboard = () => {
       <div className="recent-activity glass" style={{ marginTop: '25px', padding: '25px' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
           <Clock size={20} color="var(--primary-color)" />
-          Legutóbbi események
+          Legutóbbi események (Audit Log)
         </h3>
         <div className="activity-list">
-          <div className="activity-item">
-            <div className="activity-icon success"><CheckCircle2 size={16} /></div>
-            <div className="activity-content">
-              <p><strong>Ablakgyártás befejezve</strong> - RW/MO/002 munkarendelés kész.</p>
-              <span>15 perce</span>
+          {logs.map((log) => (
+            <div key={log.id} className="activity-item">
+              <div className={`activity-icon ${log.severity === 'danger' ? 'danger' : log.severity === 'warning' ? 'warning' : 'success'}`}>
+                {getLogIcon(log.module, log.severity)}
+              </div>
+              <div className="activity-content">
+                <p><strong>{log.action}</strong> - {log.details}</p>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{getLogTime(log.timestamp)}</span>
+                  <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>{log.user}</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="activity-item">
-            <div className="activity-icon info"><Clock size={16} /></div>
-            <div className="activity-content">
-              <p><strong>Új árajánlat</strong> küldve: MÁV-START Zrt. számára.</p>
-              <span>1 órája</span>
-            </div>
-          </div>
-          <div className="activity-item">
-            <div className="activity-icon warning"><AlertCircle size={16} /></div>
-            <div className="activity-content">
-              <p><strong>Alacsony készlet:</strong> Poggyásztartó váz (5 db maradék).</p>
-              <span>3 órája</span>
-            </div>
-          </div>
+          ))}
+          {logs.length === 0 && (
+            <p className="text-muted" style={{ textAlign: 'center', padding: '20px' }}>Nincsenek legutóbbi események.</p>
+          )}
         </div>
       </div>
     </div>
