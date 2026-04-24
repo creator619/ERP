@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { 
   Zap, 
   Brain, 
@@ -200,13 +201,13 @@ const AIInsights = ({ addToast }) => {
              </div>
              <div className="bi-bar-group">
                 {financialData.map((d, i) => (
-                  <div key={i} className="bi-bar-item" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
-                     <div style={{ display: 'flex', gap: '5px', height: '100%', alignItems: 'flex-end', justifyContent: 'center' }}>
-                        <div className="bi-bar" style={{ height: `${d.revenue * 1.5}%`, background: 'var(--primary-color)', opacity: 0.8 }} title={`Revenue: ${d.revenue}M`}></div>
-                        <div className="bi-bar" style={{ height: `${d.cost * 1.5}%`, background: '#e74c3c', opacity: 0.6 }} title={`Cost: ${d.cost}M`}></div>
-                     </div>
-                     <span className="bi-bar-label">{d.month}</span>
-                  </div>
+                   <div key={i} className="bi-bar-item" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+                      <div style={{ display: 'flex', gap: '5px', height: '100%', alignItems: 'flex-end', justifyContent: 'center' }}>
+                         <div className="bi-bar" style={{ height: `${d.revenue * 1.5}%`, background: 'var(--primary-color)', opacity: 0.8 }} title={`Revenue: ${d.revenue}M`}></div>
+                         <div className="bi-bar" style={{ height: `${d.cost * 1.5}%`, background: '#e74c3c', opacity: 0.6 }} title={`Cost: ${d.cost}M`}></div>
+                      </div>
+                      <span className="bi-bar-label">{d.month}</span>
+                   </div>
                 ))}
              </div>
              <div style={{ marginTop: '50px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
@@ -371,76 +372,6 @@ const AIInsights = ({ addToast }) => {
            </div>
         </div>
       )}
-
-      {activeView === 'simulator' && (
-        <div className="bi-view-wrapper">
-           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-              <div className="simulator-slider-container glass">
-                 <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '15px' }}>Változók Beállítása</h3>
-                 
-                 <div className="sim-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem' }}>Munkabérek szintje</span>
-                       <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{simValues.wages}%</span>
-                    </div>
-                    <input type="range" className="sim-slider" min="80" max="150" value={simValues.wages} onChange={(e) => setSimValues({...simValues, wages: e.target.value})} />
-                 </div>
-
-                 <div className="sim-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem' }}>Alapanyag árak (Acél/Alu)</span>
-                       <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{simValues.materials}%</span>
-                    </div>
-                    <input type="range" className="sim-slider" min="50" max="200" value={simValues.materials} onChange={(e) => setSimValues({...simValues, materials: e.target.value})} />
-                 </div>
-
-                 <div className="sim-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem' }}>Energia költségek</span>
-                       <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{simValues.energy}%</span>
-                    </div>
-                    <input type="range" className="sim-slider" min="50" max="300" value={simValues.energy} onChange={(e) => setSimValues({...simValues, energy: e.target.value})} />
-                 </div>
-
-                 <div className="sim-group" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>Értékesítési Volumen</span>
-                       <span style={{ fontWeight: 800, color: '#2ecc71' }}>{simValues.salesVolume}%</span>
-                    </div>
-                    <input type="range" className="sim-slider" min="50" max="200" value={simValues.salesVolume} onChange={(e) => setSimValues({...simValues, salesVolume: e.target.value})} />
-                 </div>
-              </div>
-
-              <div className="simulator-result-card glass">
-                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '30px' }}>Becsült Üzleti Hatás</h3>
-                 <p className="text-muted" style={{ fontSize: '0.9rem' }}>Várható éves tiszta profit:</p>
-                 <div style={{ fontSize: '4rem', fontWeight: 900, color: estimatedProfit > 0 ? '#2ecc71' : '#e74c3c', margin: '20px 0' }}>
-                    {estimatedProfit.toFixed(1)}M <span style={{ fontSize: '1.5rem' }}>Ft</span>
-                 </div>
-                 
-                 <div className={`impact-badge ${estimatedProfit > baseProfit ? 'positive' : 'negative'}`}>
-                    {estimatedProfit > baseProfit ? '+' : ''}{(estimatedProfit - baseProfit).toFixed(1)}M Ft változás
-                 </div>
-
-                 <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '15px', textAlign: 'left' }}>
-                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                       <AlertTriangle size={16} color="#f1c40f" /> AI Kockázati Jelentés
-                    </h4>
-                    <p style={{ fontSize: '0.75rem', lineHeight: '1.5', opacity: 0.8 }}>
-                       {estimatedProfit < 50 ? 
-                        "FIGYELEM: A profitabilitás kritikus szintre csökkent. Javasolt a fix költségek azonnali optimalizálása." :
-                        "A szimulált forgatókönyv fenntartható növekedést mutat. A likviditási tartalékok elegendőek a változások kezeléséhez."}
-                    </p>
-                 </div>
-              </div>
-           </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default AIInsights;
     </div>
   );
 };
