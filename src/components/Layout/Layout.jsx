@@ -23,6 +23,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
       compliance: 'Megfelelőség, Audit és Biztonság',
       intelligence: 'AI Vezérlőterem és Stratégiai Központ',
       documents: 'Riport- és Dokumentumközpont',
+      traceability: 'Blockchain Eredetigazolás és Ledger',
       projects: 'Projektmenedzsment és Dokumentáció',
       manufacturing: 'Gyártáskezelés',
       quality: 'Minőségellenőrzés és Tanúsítás',
