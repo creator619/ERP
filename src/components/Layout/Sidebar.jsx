@@ -67,9 +67,9 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
 
       <div className="sidebar-footer">
         <div className="user-info">
-          <div className="avatar">JD</div>
+          <div className="avatar">SE</div>
           {isOpen && <div className="user-details">
-            <p className="user-name">John Doe</p>
+            <p className="user-name">Simon Ernő</p>
             <p className="user-role">Administrator</p>
           </div>}
         </div>

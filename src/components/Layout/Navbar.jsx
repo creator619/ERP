@@ -101,16 +101,16 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguag
         
         <div className="nav-action-wrapper">
           <button className="nav-action-btn profile-trigger" onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifications(false); }}>
-            <div className="nav-avatar">JD</div>
+            <div className="nav-avatar">SE</div>
           </button>
 
           {showUserMenu && (
             <div className="dropdown-menu glass user-dropdown">
               <div className="user-dropdown-header">
-                <div className="nav-avatar large">JD</div>
+                <div className="nav-avatar large">SE</div>
                 <div>
-                  <p><strong>John Doe</strong></p>
-                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>admin@railparts.hu</p>
+                  <p><strong>Simon Ernő</strong></p>
+                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>simon.erno@railparts.hu</p>
                 </div>
               </div>
               <div className="dropdown-divider"></div>
