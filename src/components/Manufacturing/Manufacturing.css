@@ -1,0 +1,52 @@
+/* Manufacturing Styles */
+.manufacturing-summary {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+.work-order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.wo-card {
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wo-id {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.wo-progress {
+  height: 8px;
+  background: var(--bg-main);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--secondary-color);
+  transition: width 0.5s ease;
+}
+
+.wo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

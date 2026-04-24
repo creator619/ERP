@@ -1,0 +1,174 @@
+/* Sales Styles */
+.sales-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* Sales Pipeline / Stages */
+.pipeline-stages {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.stage-card {
+  flex: 1;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.stage-card h5 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.stage-card .stage-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* Status Badges for Sales */
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-pill.draft { background: #E9ECEF; color: #495057; }
+.status-pill.sent { background: rgba(0, 160, 157, 0.1); color: var(--secondary-color); }
+.status-pill.sale { background: rgba(113, 75, 103, 0.1); color: var(--primary-color); }
+.status-pill.cancelled { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+
+.amount-cell {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Pipeline Styles */
+.sales-pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pipeline-stats {
+  display: flex;
+  gap: 40px;
+  padding: 20px 30px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-item strong {
+  font-size: 1.4rem;
+  color: var(--primary-color);
+}
+
+.trend-up {
+  font-size: 0.8rem;
+  color: #28a745;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pipeline-kanban {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  min-height: 500px;
+}
+
+.pipeline-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px;
+}
+
+.column-header h5 {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.column-header .count {
+  background: var(--bg-main);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.opportunity-card {
+  padding: 15px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.opportunity-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary-color);
+}
+
+.opp-id {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.prob {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.opportunity-card h4 {
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+
+.opp-footer {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opp-value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.prob-bar {
+  height: 4px;
+  background: var(--bg-main);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.prob-bar .fill {
+  height: 100%;
+  background: var(--primary-color);
+}
