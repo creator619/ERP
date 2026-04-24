@@ -14,7 +14,8 @@ import {
   Lock,
   ChevronRight,
   TrendingUp,
-  Scale
+  Scale,
+  CalendarDays
 } from 'lucide-react';
 import auditLogService from '../../services/AuditLogService';
 import './Compliance.css';
@@ -81,6 +82,9 @@ const Compliance = ({ addToast }) => {
         </div>
         <div className={`comp-tab ${activeTab === 'calibration' ? 'active' : ''}`} onClick={() => setActiveTab('calibration')}>
            <Scale size={16} /> Kalibrálás
+        </div>
+        <div className={`comp-tab ${activeTab === 'auditPlan' ? 'active' : ''}`} onClick={() => setActiveTab('auditPlan')}>
+           <CalendarDays size={16} /> Audit Terv
         </div>
         <div className={`comp-tab ${activeTab === 'suppliers' ? 'active' : ''}`} onClick={() => setActiveTab('suppliers')}>
            <FileCheck size={16} /> Beszállítói Minősítés
@@ -297,6 +301,53 @@ const Compliance = ({ addToast }) => {
                 </span>
              </div>
            ))}
+        </div>
+      )}
+
+      {activeTab === 'auditPlan' && (
+        <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Vállalati Audit Tervező</h3>
+              <button className="create-btn"><Plus size={18} /> Új Audit Ütemezése</button>
+           </div>
+           
+           {[
+             { day: '14', month: 'MÁJ', title: 'ISO 9001:2015 Belső Audit', area: 'Gyártás & Logisztika', auditor: 'Dr. Szabó Péter', status: 'Planned' },
+             { day: '28', month: 'MÁJ', title: 'IRIS Vasúti Tanúsítás', area: 'Mérnökség & Design', auditor: 'TÜV Rheinland', status: 'External' },
+             { day: '12', month: 'JÚN', title: 'Munkavédelmi Ellenőrzés', area: 'Üzemcsarnok B', auditor: 'Varga László', status: 'Planned' }
+           ].map((audit, i) => (
+             <div key={i} className="audit-plan-card">
+                <div className="audit-date-box">
+                   <span className="day">{audit.day}</span>
+                   <span className="month">{audit.month}</span>
+                </div>
+                <div>
+                   <p style={{ fontWeight: 800, fontSize: '0.9rem' }}>{audit.title}</p>
+                   <p className="text-muted" style={{ fontSize: '0.75rem' }}>Terület: {audit.area}</p>
+                </div>
+                <div>
+                   <p className="text-muted" style={{ fontSize: '0.65rem' }}>Auditor</p>
+                   <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{audit.auditor}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                   <span className={`status-badge ${audit.status === 'External' ? 'warning' : 'active'}`}>{audit.status}</span>
+                </div>
+             </div>
+           ))}
+           
+           <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '15px' }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: '10px' }}>Audit Eredményesség (YTD)</h4>
+              <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
+                 <div style={{ width: '85%', height: '100%', background: '#2ecc71' }} title="Lezárva"></div>
+                 <div style={{ width: '10%', height: '100%', background: '#f1c40f' }} title="Folyamatban"></div>
+                 <div style={{ width: '5%', height: '100%', background: '#e74c3c' }} title="Kritikus hiba"></div>
+              </div>
+              <div style={{ display: 'flex', gap: '20px', marginTop: '10px', fontSize: '0.7rem' }}>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#2ecc71' }}></div> 85% Sikeres</div>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#f1c40f' }}></div> 10% Javító intézkedés</div>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#e74c3c' }}></div> 5% Eltérés</div>
+              </div>
+           </div>
         </div>
       )}
 
