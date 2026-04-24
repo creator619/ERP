@@ -29,6 +29,24 @@ const Compliance = ({ addToast }) => {
     { id: 'NCR-2024-045', project: 'ÖBB Railjet', issue: 'Dokumentációs hiány: Certifikáció elmaradt', status: 'Draft', severity: 'Low', date: '2024-04-23' },
   ];
 
+  const supplierScorecards = [
+    { name: 'Steel-Direct Kft.', rating: 'A', quality: 99.2, delivery: 100, status: 'Premium' },
+    { name: 'Alu-Global Inc.', rating: 'B', quality: 94.5, delivery: 92, status: 'Certified' },
+    { name: 'Fastener Solutions', rating: 'A', quality: 100, delivery: 98.5, status: 'Premium' },
+    { name: 'Electronics Pro', rating: 'C', quality: 82.1, delivery: 75, status: 'Under Review' },
+  ];
+
+  const steps8D = [
+    { name: 'D1: Team Formation', status: 'done' },
+    { name: 'D2: Problem Description', status: 'done' },
+    { name: 'D3: Interim Containment', status: 'done' },
+    { name: 'D4: Root Cause Analysis', status: 'active' },
+    { name: 'D5: Corrective Actions', status: 'pending' },
+    { name: 'D6: Verification', status: 'pending' },
+    { name: 'D7: Prevention', status: 'pending' },
+    { name: 'D8: Recognition', status: 'pending' },
+  ];
+
   return (
     <div className="compliance-wrapper">
       <div className="invoicing-header" style={{ marginBottom: '30px' }}>
@@ -50,13 +68,16 @@ const Compliance = ({ addToast }) => {
 
       <div className="compliance-tabs">
         <div className={`comp-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
-           <History size={16} /> Eseménynapló (Audit Trail)
+           <History size={16} /> Audit Trail
         </div>
         <div className={`comp-tab ${activeTab === 'ncr' ? 'active' : ''}`} onClick={() => setActiveTab('ncr')}>
-           <AlertOctagon size={16} /> NCR & Minőség (8D)
+           <AlertOctagon size={16} /> NCR & 8D Riport
+        </div>
+        <div className={`comp-tab ${activeTab === 'suppliers' ? 'active' : ''}`} onClick={() => setActiveTab('suppliers')}>
+           <FileCheck size={16} /> Beszállítói Minősítés
         </div>
         <div className={`comp-tab ${activeTab === 'security' ? 'active' : ''}`} onClick={() => setActiveTab('security')}>
-           <Lock size={16} /> Rendszerbiztonság
+           <Lock size={16} /> Biztonság
         </div>
       </div>
 
@@ -93,47 +114,90 @@ const Compliance = ({ addToast }) => {
 
       {activeTab === 'ncr' && (
         <div className="compliance-grid">
-           <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Aktív Nem-megfelelőségek (NCR)</h3>
-              {ncrList.map(ncr => (
-                <div key={ncr.id} className="ncr-card">
-                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span style={{ fontWeight: 800, color: '#e74c3c' }}>{ncr.id}</span>
-                      <span className={`status-badge ${ncr.status === 'Resolved' ? 'success' : 'warning'}`}>{ncr.status}</span>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+                 <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Aktív Nem-megfelelőségek (NCR)</h3>
+                 {ncrList.map(ncr => (
+                   <div key={ncr.id} className="ncr-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                         <span style={{ fontWeight: 800, color: '#e74c3c' }}>{ncr.id}</span>
+                         <span className={`status-badge ${ncr.status === 'Resolved' ? 'success' : 'warning'}`}>{ncr.status}</span>
+                      </div>
+                      <p style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '5px' }}>{ncr.issue}</p>
+                      <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '15px' }}>Projekt: {ncr.project}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                         <span style={{ fontSize: '0.7rem' }}>Bejelentve: {ncr.date}</span>
+                         <button className="view-btn-small">Részletek</button>
+                      </div>
                    </div>
-                   <p style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '5px' }}>{ncr.issue}</p>
-                   <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '15px' }}>Projekt: {ncr.project}</p>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem' }}>Bejelentve: {ncr.date}</span>
-                      <button className="view-btn-small" onClick={() => addToast('8D jelentés generálása...', 'info')}>8D Letöltés</button>
-                   </div>
-                </div>
-              ))}
+                 ))}
+              </div>
            </div>
 
            <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Minőségügyi Statisztikák</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                 <div className="security-badge">
-                    <CheckCircle2 color="#2ecc71" size={32} />
-                    <div>
-                       <p style={{ fontWeight: 800, fontSize: '1.2rem' }}>98.2%</p>
-                       <p className="text-muted" style={{ fontSize: '0.7rem' }}>Elsőre jó (FTY) arány</p>
-                    </div>
-                 </div>
-                 <div className="security-badge" style={{ background: 'rgba(231, 76, 60, 0.05)', borderColor: 'rgba(231, 76, 60, 0.2)' }}>
-                    <ShieldAlert color="#e74c3c" size={32} />
-                    <div>
-                       <p style={{ fontWeight: 800, fontSize: '1.2rem' }}>1.8%</p>
-                       <p className="text-muted" style={{ fontSize: '0.7rem' }}>NCR hibaarány (YTD)</p>
-                    </div>
-                 </div>
-              </div>
-              <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '15px' }}>
-                 <p style={{ fontWeight: 700, fontSize: '0.85rem', color: '#3498db' }}>ISO 9001:2015 Compliance</p>
-                 <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '5px' }}>A rendszer teljes mértékben megfelel a minőségirányítási előírásoknak.</p>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Élő 8D Folyamat Vizualizáció</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 {steps8D.map((step, i) => (
+                   <div key={i} className="glass" style={{ padding: '10px 15px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '15px', opacity: step.status === 'pending' ? 0.4 : 1, borderLeft: step.status === 'active' ? '4px solid var(--primary-color)' : 'none' }}>
+                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: step.status === 'done' ? '#2ecc71' : step.status === 'active' ? 'var(--primary-color)' : 'var(--bg-main)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem' }}>
+                         {step.status === 'done' ? <CheckCircle2 size={14} /> : i+1}
+                      </div>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{step.name}</span>
+                      {step.status === 'active' && <span className="pulse-success" style={{ marginLeft: 'auto' }}></span>}
+                   </div>
+                 ))}
+                 <button className="create-btn" style={{ marginTop: '15px', width: '100%' }}>
+                    <FileText size={18} /> PDF Riport Generálása
+                 </button>
               </div>
            </div>
+        </div>
+      )}
+
+      {activeTab === 'suppliers' && (
+        <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+           <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '25px' }}>Beszállítói Minősítési Rendszer (Scorecards)</h3>
+           <table className="data-table">
+              <thead>
+                 <tr>
+                    <th>Beszállító</th>
+                    <th style={{ textAlign: 'center' }}>Rating</th>
+                    <th>Minőség (PPM)</th>
+                    <th>Szállítási Pontosság</th>
+                    <th>Státusz</th>
+                 </tr>
+              </thead>
+              <tbody>
+                 {supplierScorecards.map((s, i) => (
+                   <tr key={i}>
+                      <td><span style={{ fontWeight: 800 }}>{s.name}</span></td>
+                      <td style={{ textAlign: 'center' }}>
+                         <span style={{ 
+                           background: s.rating === 'A' ? '#2ecc71' : s.rating === 'B' ? '#3498db' : '#e74c3c',
+                           color: 'white',
+                           padding: '5px 12px',
+                           borderRadius: '8px',
+                           fontWeight: 900
+                         }}>{s.rating}</span>
+                      </td>
+                      <td>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
+                               <div style={{ width: `${s.quality}%`, height: '100%', background: s.quality > 90 ? '#2ecc71' : '#f1c40f' }}></div>
+                            </div>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{s.quality}%</span>
+                         </div>
+                      </td>
+                      <td style={{ fontWeight: 700 }}>{s.delivery}%</td>
+                      <td>
+                         <span className={`status-badge ${s.status === 'Premium' ? 'active' : s.status === 'Certified' ? 'info' : 'danger'}`}>
+                            {s.status}
+                         </span>
+                      </td>
+                   </tr>
+                 ))}
+              </tbody>
+           </table>
         </div>
       )}
 
