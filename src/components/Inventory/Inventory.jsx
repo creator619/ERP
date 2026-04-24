@@ -14,7 +14,8 @@ import {
   Filter,
   TrendingDown,
   History,
-  MapPin
+  MapPin,
+  AlertTriangle
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
@@ -203,7 +204,7 @@ const Inventory = ({ addToast }) => {
                   <td><strong>{product.sku}</strong></td>
                   <td>{product.name}</td>
                   <td>{product.category}</td>
-                  <td><MapPin size={14} inline /> {product.location}</td>
+                  <td><MapPin size={14} /> {product.location}</td>
                   <td style={{ fontWeight: 600 }}>{product.stock} db</td>
                   <td>
                     <span className={`stock-badge ${getStockStatus(product.stock).class}`}>
