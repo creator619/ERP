@@ -134,9 +134,9 @@ const Projects = ({ addToast }) => {
       </div>
 
       {viewMode === 'kanban' ? (
-        <div className="kanban-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
+        <div className="kanban-grid">
           {projects.map(prj => (
-            <div key={prj.id} className={`kanban-card glass ${prj.risk === 'High' ? 'danger-border' : ''}`} onClick={() => openProjectDetails(prj)} style={{ padding: '20px', borderRadius: '15px' }}>
+            <div key={prj.id} className={`kanban-card glass ${prj.risk === 'High' ? 'danger-border' : ''}`} onClick={() => openProjectDetails(prj)}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
                 <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--primary-color)' }}>{prj.id}</span>
                 <div style={{ display: 'flex', gap: '8px' }}>
