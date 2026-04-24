@@ -279,6 +279,10 @@
   width: 350px;
 }
 
+.mini-dropdown {
+  width: 180px;
+}
+
 .dropdown-header {
   padding: 15px 20px;
   border-bottom: 1px solid var(--border-color);

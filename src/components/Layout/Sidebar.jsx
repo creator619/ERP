@@ -11,7 +11,9 @@ import {
   Folder,
   MessageSquare,
   ShieldCheck,
-  Wrench
+  Wrench,
+  BarChart3,
+  Truck
 } from 'lucide-react';
 import './Layout.css';
 
