@@ -15,139 +15,126 @@ import {
   Wrench,
   Activity,
   Globe,
-  Database
+  Database,
+  Target,
+  ShieldCheck,
+  Zap,
+  Bell
 } from 'lucide-react';
 import './Dashboard.css';
 import auditLogService from '../../services/AuditLogService';
 
 const Dashboard = () => {
-  const [logs, setLogs] = useState(auditLogService.getLogs().slice(0, 8));
-  const [systemUptime, setSystemUptime] = useState('99.98%');
+  const [logs, setLogs] = useState(auditLogService.getLogs().slice(0, 10));
+  const [activeAlerts, setActiveAlerts] = useState([
+    { id: 1, type: 'danger', msg: 'Lejárt hegesztő vizsgák (2 fő)', module: 'HR' },
+    { id: 2, type: 'warning', msg: 'Késedelmes beszállítás (SteelWorks)', module: 'Purchase' },
+    { id: 3, type: 'info', msg: 'Projekt mérföldkő esedékes: Stadler', module: 'Projects' }
+  ]);
 
   useEffect(() => {
     const unsubscribe = auditLogService.subscribe((updatedLogs) => {
-      setLogs(updatedLogs.slice(0, 8));
+      setLogs(updatedLogs.slice(0, 10));
     });
     return unsubscribe;
   }, []);
 
   const stats = [
-    { label: 'Havi árbevétel', value: '42.8M Ft', icon: <CreditCard />, trend: '+12.5%', isUp: true, color: '#3498db' },
-    { label: 'OEE (Gépkihasználtság)', value: '88.2%', icon: <Activity />, trend: '+4.1%', isUp: true, color: '#2ecc71' },
-    { label: 'Aktív Projektek', value: '14', icon: <Globe />, trend: '-2', isUp: false, color: '#9b59b6' },
-    { label: 'Selejtarány', value: '1.4%', icon: <ShieldAlert />, trend: '-0.3%', isUp: true, color: '#e74c3c' },
+    { label: 'Pénzügyi Egészség', value: '94/100', icon: <CreditCard />, trend: '+2.5%', isUp: true, color: '#3498db' },
+    { label: 'Gyártási Yield', value: '98.8%', icon: <Activity />, trend: '+0.4%', isUp: true, color: '#2ecc71' },
+    { label: 'Beszállítói Minőség', value: 'A+', icon: <ShieldCheck />, trend: 'Stable', isUp: true, color: '#f1c40f' },
+    { label: 'Dolgozói KPI Avg', value: '86.2%', icon: <Target />, trend: '-1.2%', isUp: false, color: '#9b59b6' },
   ];
 
-  const chartData = [
-    { day: 'H', rev: 45, cost: 30 },
-    { day: 'K', rev: 52, cost: 35 },
-    { day: 'Sze', rev: 48, cost: 32 },
-    { day: 'Cs', rev: 70, cost: 40 },
-    { day: 'P', rev: 65, cost: 38 },
-    { day: 'Szo', rev: 30, cost: 20 },
-    { day: 'V', rev: 20, cost: 15 },
-  ];
-
-  const getLogIcon = (module, severity) => {
+  const getLogIcon = (module) => {
     switch (module) {
       case 'Maintenance': return <Wrench size={16} />;
       case 'Quality': return <ShieldAlert size={16} />;
       case 'Projects': return <Globe size={16} />;
       case 'Invoicing': return <CreditCard size={16} />;
-      default: return <Activity size={16} />;
+      case 'HR': return <Users size={16} />;
+      case 'Purchase': return <ShoppingCart size={16} />;
+      default: return <Zap size={16} />;
     }
-  };
-
-  const getLogTime = (timestamp) => {
-    const diff = Date.now() - new Date(timestamp).getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return 'Most';
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}ó`;
-    return new Date(timestamp).toLocaleDateString();
   };
 
   return (
     <div className="dashboard-enterprise">
-      <div className="dashboard-welcome" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div className="dashboard-welcome">
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '5px' }}>RailParts Vezérlőpult</h1>
-          <p className="text-muted">Vállalati erőforrások valós idejű monitorozása</p>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '5px' }}>Executive Mission Control</h1>
+          <p className="text-muted">RailParts Enterprise ERP • Globális Vállalati Áttekintés</p>
         </div>
-        <div className="system-status glass" style={{ padding: '8px 15px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem' }}>
-          <div className="pulse-success" style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2ecc71' }}></div>
-          <span>Rendszerüzemidő: <strong>{systemUptime}</strong></span>
+        <div style={{ display: 'flex', gap: '15px' }}>
+           <div className="glass" style={{ padding: '8px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="pulse-success"></div>
+              <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>SYSTEM OPERATIONAL</span>
+           </div>
         </div>
       </div>
 
-      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginTop: '25px' }}>
         {stats.map((stat, index) => (
           <div key={index} className="stat-card-premium glass" style={{ borderLeft: `4px solid ${stat.color}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div style={{ color: stat.color }}>{stat.icon}</div>
-              <span className={`trend-pill ${stat.isUp ? 'up' : 'down'}`}>
-                {stat.trend}
-              </span>
+              <span style={{ fontSize: '0.7rem', fontWeight: 800, color: stat.isUp ? '#2ecc71' : '#e74c3c' }}>{stat.trend}</span>
             </div>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '5px' }}>{stat.value}</h3>
-            <p className="text-muted" style={{ fontSize: '0.8rem' }}>{stat.label}</p>
-            <div className="mini-sparkline" style={{ height: '30px', marginTop: '15px', opacity: 0.3 }}>
-              {/* Sparkline simulation */}
-              <svg width="100%" height="100%" viewBox="0 0 100 30">
-                <path d="M0 25 L20 15 L40 20 L60 5 L80 18 L100 10" fill="none" stroke={stat.color} strokeWidth="2" />
-              </svg>
-            </div>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 900 }}>{stat.value}</h3>
+            <p className="text-muted" style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>{stat.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="main-analytics-row" style={{ display: 'grid', gridTemplateColumns: '1.8fr 1.2fr', gap: '25px', marginTop: '25px' }}>
-        <div className="analytics-card glass" style={{ padding: '25px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-            <h3 style={{ fontWeight: 700 }}>Pénzügyi Teljesítmény (M Ft)</h3>
-            <div style={{ display: 'flex', gap: '15px', fontSize: '0.75rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <div style={{ width: '8px', height: '8px', background: 'var(--primary-color)', borderRadius: '50%' }}></div> Bevétel
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <div style={{ width: '8px', height: '8px', background: '#e74c3c', borderRadius: '50%' }}></div> Költség
-              </span>
-            </div>
-          </div>
-          <div className="chart-area" style={{ height: '220px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 10px' }}>
-            {chartData.map((d, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', gap: '4px', alignItems: 'flex-end', height: '100%', position: 'relative' }}>
-                <div className="bar rev" style={{ height: `${d.rev * 2.5}px`, background: 'var(--primary-color)', flex: 1, borderRadius: '3px 3px 0 0' }}></div>
-                <div className="bar cost" style={{ height: `${d.cost * 2.5}px`, background: '#e74c3c', flex: 1, borderRadius: '3px 3px 0 0', opacity: 0.7 }}></div>
-                <span style={{ position: 'absolute', bottom: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem', color: 'var(--text-muted)' }}>{d.day}</span>
+      <div className="dashboard-main-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '25px', marginTop: '25px' }}>
+        <div className="analytics-pane">
+           <div className="glass" style={{ padding: '25px', borderRadius: '20px', marginBottom: '25px' }}>
+              <h3 style={{ fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                 <Bell size={20} color="#e74c3c" /> Kritikus Értesítések
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                 {activeAlerts.map(alert => (
+                    <div key={alert.id} className={`alert-row ${alert.type}`} style={{ padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', borderLeft: `4px solid ${alert.type === 'danger' ? '#e74c3c' : alert.type === 'warning' ? '#f1c40f' : '#3498db'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <div>
+                          <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>{alert.msg}</p>
+                          <p className="text-muted" style={{ fontSize: '0.7rem' }}>Modul: {alert.module}</p>
+                       </div>
+                       <button className="view-btn-small">Intézkedés</button>
+                    </div>
+                 ))}
               </div>
-            ))}
-          </div>
+           </div>
+
+           <div className="glass" style={{ padding: '25px', borderRadius: '20px' }}>
+              <h3 style={{ fontWeight: 800, marginBottom: '20px' }}>Vállalati Trendek</h3>
+              <div style={{ height: '180px', display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                 {[40, 60, 45, 90, 65, 80, 85].map((h, i) => (
+                    <div key={i} style={{ flex: 1, height: `${h}%`, background: 'linear-gradient(to top, var(--primary-color), rgba(52, 152, 219, 0.2))', borderRadius: '5px' }}></div>
+                 ))}
+              </div>
+           </div>
         </div>
 
-        <div className="log-feed-card glass" style={{ padding: '25px' }}>
-          <h3 style={{ fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Database size={18} color="var(--primary-color)" /> Rendszernapló
-          </h3>
-          <div className="activity-feed" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {logs.map(log => (
-              <div key={log.id} className="feed-item" style={{ display: 'flex', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: log.severity === 'danger' ? '#e74c3c' : 'var(--primary-color)' }}>
-                  {getLogIcon(log.module, log.severity)}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0 }}>{log.action}</p>
-                  <p className="text-muted" style={{ fontSize: '0.75rem', margin: '2px 0' }}>{log.details}</p>
-                  <div style={{ display: 'flex', gap: '10px', fontSize: '0.65rem', opacity: 0.6 }}>
-                    <span>{getLogTime(log.timestamp)}</span>
-                    <span>•</span>
-                    <span>{log.user}</span>
-                  </div>
-                </div>
+        <div className="log-pane">
+           <div className="glass" style={{ padding: '25px', borderRadius: '20px', height: '100%', maxHeight: '600px', overflowY: 'auto' }}>
+              <h3 style={{ fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                 <Activity size={20} color="var(--primary-color)" /> Valós idejű Audit Log
+              </h3>
+              <div className="activity-feed">
+                 {logs.map(log => (
+                    <div key={log.id} style={{ display: 'flex', gap: '15px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                       <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--primary-color)' }}>
+                          {getLogIcon(log.module)}
+                       </div>
+                       <div>
+                          <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>{log.action}</p>
+                          <p className="text-muted" style={{ fontSize: '0.75rem' }}>{log.details}</p>
+                          <p style={{ fontSize: '0.65rem', opacity: 0.5, marginTop: '4px' }}>{new Date(log.timestamp).toLocaleTimeString()} • {log.user}</p>
+                       </div>
+                    </div>
+                 ))}
               </div>
-            ))}
-          </div>
+           </div>
         </div>
       </div>
     </div>
