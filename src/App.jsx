@@ -88,8 +88,6 @@ function App() {
         return <Logistics {...props} />;
       case 'bi':
         return <ExecutiveBI {...props} currency={currency} />;
-      case 'intelligence':
-        return <AIInsights {...props} />;
       case 'settings':
         return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} language={language} setLanguage={setLanguage} />;
       default:
