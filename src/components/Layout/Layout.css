@@ -230,6 +230,12 @@
   font-size: 0.9rem;
 }
 
+.content-inner {
+  padding: 30px;
+  flex: 1;
+  overflow-y: auto;
+}
+
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0 !important;

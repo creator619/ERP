@@ -52,13 +52,6 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
         </div>
       </main>
 
-      <style jsx global>{`
-        .content-inner {
-          padding: 30px;
-          flex: 1;
-          overflow-y: auto;
-        }
-      `}</style>
     </div>
   );
 };
