@@ -3,21 +3,133 @@
   animation: fadeIn 0.4s ease-out;
 }
 
-.finance-summary .finance-card {
-  padding: 20px;
-  border-radius: 15px;
-  border-left: 4px solid var(--primary-color);
+.stat-card {
+  transition: all 0.3s ease;
 }
 
-.po-details-view {
-  padding: 5px;
+.stat-card:hover {
+  transform: translateY(-5px);
 }
 
-.items-tab table th {
-  text-transform: uppercase;
-  letter-spacing: 1px;
+/* Donut Chart */
+.donut-svg {
+  transform: rotate(-90deg);
 }
 
-.info-tab .glass {
-  background: rgba(255,255,255,0.02);
+.spend-donut-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.donut-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Approval Stepper */
+.approval-stepper {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0;
+  position: relative;
+}
+
+.step-node {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.node-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.step-node.active .node-circle {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+.node-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.step-node.active .node-text {
+  color: white;
+}
+
+.node-line {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: rgba(255,255,255,0.05);
+  z-index: -1;
+}
+
+.step-node.active .node-line {
+  background: var(--primary-color);
+}
+
+/* Radar Chart */
+.radar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Category Tags */
+.category-tag {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* Approval Bars in List */
+.step-bar {
+  width: 15px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+}
+
+.step-bar.active { background: var(--primary-color); animation: pulse 1.5s infinite; }
+.step-bar.done { background: #2ecc71; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
 }
