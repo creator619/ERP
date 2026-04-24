@@ -15,6 +15,7 @@ import Messenger from './components/Messenger/Messenger';
 import Quality from './components/Quality/Quality';
 import Maintenance from './components/Maintenance/Maintenance';
 import DMS from './components/DMS/DMS';
+import DocumentEngine from './components/DocumentEngine/DocumentEngine';
 import Logistics from './components/Logistics/Logistics';
 import ExecutiveBI from './components/ExecutiveBI/ExecutiveBI';
 import AIInsights from './components/Intelligence/AIInsights';
@@ -61,6 +62,8 @@ function App() {
         return <Dashboard {...props} />;
       case 'intelligence':
         return <AIInsights {...props} />;
+      case 'documents':
+        return <DocumentEngine {...props} />;
       case 'compliance':
         return <Compliance {...props} />;
       case 'projects':

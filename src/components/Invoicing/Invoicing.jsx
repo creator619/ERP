@@ -248,6 +248,9 @@ const Invoicing = ({ addToast, currency }) => {
         footer={
           <>
             <button className="view-btn" onClick={() => setIsPreviewOpen(false)}>Bezárás</button>
+            <button className="create-btn" onClick={() => addToast('PDF generálása folyamatban...', 'info')}>
+              <Printer size={18} /> PDF Generálás
+            </button>
             {selectedInvoice?.status !== 'Paid' && (
               <button className="create-btn" onClick={() => handleMarkAsPaid(selectedInvoice.id)}>
                 <Wallet size={18} /> Befizetés rögzítése

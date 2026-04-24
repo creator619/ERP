@@ -396,6 +396,9 @@ const AIInsights = ({ addToast }) => {
                  <button className="hint-btn" onClick={() => { setChatInput('Melyik projektünk áll a legrosszabbul?'); handleSendMessage(); }}>Veszélyben lévő projektek</button>
                  <button className="hint-btn" onClick={() => { setChatInput('Készlet-optimalizálási javaslatok?'); handleSendMessage(); }}>Készlet javaslatok</button>
               </div>
+              <button className="create-btn" style={{ width: '100%', marginTop: 'auto', gap: '10px' }} onClick={() => addToast('AI Stratégiai Jelentés generálása...', 'info')}>
+                 <Download size={18} /> Riport Exportálása
+              </button>
            </div>
         </div>
       )}

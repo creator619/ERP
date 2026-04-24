@@ -22,6 +22,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
       bi: 'Executive Business Intelligence',
       compliance: 'Megfelelőség, Audit és Biztonság',
       intelligence: 'AI Vezérlőterem és Stratégiai Központ',
+      documents: 'Riport- és Dokumentumközpont',
       projects: 'Projektmenedzsment és Dokumentáció',
       manufacturing: 'Gyártáskezelés',
       quality: 'Minőségellenőrzés és Tanúsítás',
