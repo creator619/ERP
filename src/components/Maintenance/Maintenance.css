@@ -1,0 +1,31 @@
+/* Maintenance Module Styles */
+.maintenance-module {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.maintenance-overview .stat-item:last-child {
+  border-right: none;
+}
+
+.kanban-card.warning-border {
+  border: 1px solid rgba(241, 196, 15, 0.4);
+}
+
+.machine-details-view {
+  padding: 5px;
+}
+
+.telemetry-tab .glass {
+  background: rgba(255,255,255,0.02);
+}
+
+.text-success { color: #2ecc71; }
+.text-danger { color: #e74c3c; }
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.text-success { animation: pulse 2s infinite; }

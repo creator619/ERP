@@ -13,41 +13,47 @@ import {
   History,
   Settings,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Activity,
+  BarChart3,
+  Download
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
+import './Quality.css';
 
 const Quality = ({ addToast }) => {
   const [inspections, setInspections] = useState([
-    { id: 'QC-2024-001', item: 'Kocsiablak (RW-WIN-042)', batch: 'BCH-882', date: '2024-04-20', inspector: 'Kovács János', status: 'Passed', score: '100/100' },
-    { id: 'QC-2024-002', item: 'Poggyásztartó váz', batch: 'BCH-883', date: '2024-04-21', inspector: 'Nagy Péter', status: 'Failed', score: '65/100', issue: 'Felületi karcolások az eloxált rétegen.' },
-    { id: 'QC-2024-003', item: 'Ajtó tömítés', batch: 'BCH-884', date: '2024-04-22', inspector: 'Szabó Anna', status: 'Pending', score: '-' },
-    { id: 'QC-2024-004', item: 'Válaszfal rögzítő', batch: 'BCH-885', date: '2024-04-23', inspector: 'Kovács János', status: 'Passed', score: '98/100' },
+    { id: 'QC-2024-001', item: 'Kocsiablak (RW-WIN-042)', batch: 'BCH-882', date: '2024-04-20', inspector: 'Kovács János', status: 'Passed', score: 100 },
+    { id: 'QC-2024-002', item: 'Poggyásztartó váz', batch: 'BCH-883', date: '2024-04-21', inspector: 'Nagy Péter', status: 'Failed', score: 65, issue: 'Felületi karcolások az eloxált rétegen.' },
+    { id: 'QC-2024-003', item: 'Ajtó tömítés', batch: 'BCH-884', date: '2024-04-22', inspector: 'Szabó Anna', status: 'Pending', score: 0 },
+    { id: 'QC-2024-004', item: 'Válaszfal rögzítő', batch: 'BCH-885', date: '2024-04-23', inspector: 'Kovács János', status: 'Passed', score: 98 },
   ]);
 
   const [selectedInspection, setSelectedInspection] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isNCRModalOpen, setIsNCRModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('checkpoints');
 
   const openInspection = (insp) => {
     setSelectedInspection(insp);
     setIsModalOpen(true);
+    setActiveTab('checkpoints');
   };
 
   const handleCreateNCR = (insp) => {
-    addToast('NCR folyamat elindítva', 'warning', `Jegyzőkönyv készül a ${insp.id} számú tételhez.`);
-    
     auditLogService.log({
       user: 'Minőségellenőr',
       action: 'NCR Létrehozva',
       module: 'Quality',
-      details: `Nem-megfelelőségi jelentés indítva: ${insp.item} (${insp.id})`,
+      details: `Hiba: ${insp.issue} (${insp.id})`,
       severity: 'danger'
     });
-    
+    addToast('NCR folyamat elindítva', 'warning');
     setIsModalOpen(false);
   };
+
+  const yieldRate = 94.2;
+  const dpmo = 1250;
 
   return (
     <div className="quality-module">
@@ -58,78 +64,92 @@ const Quality = ({ addToast }) => {
           </div>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Minőségellenőrzés</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Szabványügyi megfelelőség és NCR kezelés</p>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>SPC statisztikák és szabványügyi megfelelőség</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="view-btn" onClick={() => addToast('NCR jelentés készítése', 'info')}>
-            <ShieldAlert size={18} />
-            NCR Jegyzőkönyv
+          <button className="view-btn" onClick={() => addToast('Havi minőségi riport generálása', 'info')}>
+            <Download size={18} /> Letöltés
           </button>
-          <button className="create-btn" onClick={() => addToast('Új ellenőrzés', 'success')}>
-            <ClipboardCheck size={20} />
-            Új Ellenőrzés
+          <button className="create-btn" onClick={() => addToast('Új ellenőrzési folyamat', 'success')}>
+            <Plus size={20} /> Új Ellenőrzés
           </button>
         </div>
       </div>
 
-      <div className="finance-summary">
-        <div className="finance-card glass" style={{ borderBottom: '3px solid #28a745' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <h5 className="text-muted">Elfogadva (Havi)</h5>
-            <span style={{ color: '#28a745', fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>
-              <ArrowUpRight size={14} /> +2.1%
-            </span>
+      <div className="quality-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
+        <div className="stat-card glass">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>Yield (Kihozatal)</span>
+            <Activity size={16} color="#2ecc71" />
           </div>
-          <div className="value" style={{ color: '#28a745' }}>94.2%</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2ecc71' }}>{yieldRate}%</div>
+          <p style={{ fontSize: '0.7rem', color: '#2ecc71', marginTop: '5px' }}>+0.5% az előző héthez</p>
         </div>
-        <div className="finance-card glass" style={{ borderBottom: '3px solid #dc3545' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <h5 className="text-muted">Selejt / NCR</h5>
-            <span style={{ color: '#dc3545', fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>
-              <ArrowDownRight size={14} /> -0.4%
-            </span>
+        <div className="stat-card glass">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>DPMO</span>
+            <BarChart3 size={16} color="#e74c3c" />
           </div>
-          <div className="value" style={{ color: '#dc3545' }}>5.8%</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{dpmo}</div>
+          <p className="text-muted" style={{ fontSize: '0.7rem', marginTop: '5px' }}>Cél: &lt; 1000</p>
         </div>
-        <div className="finance-card glass" style={{ borderBottom: '3px solid var(--primary-color)' }}>
-          <h5 className="text-muted">Aktív vizsgálatok</h5>
-          <div className="value">12 db</div>
+        <div className="stat-card glass">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>Selejt Érték</span>
+            <AlertTriangle size={16} color="#f1c40f" />
+          </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>840k Ft</div>
+          <div style={{ width: '100%', height: '4px', background: 'rgba(241, 196, 15, 0.2)', borderRadius: '2px', marginTop: '10px' }}>
+            <div style={{ width: '45%', height: '100%', background: '#f1c40f', borderRadius: '2px' }}></div>
+          </div>
+        </div>
+        <div className="stat-card glass">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>Audit Status</span>
+            <ShieldCheck size={16} color="var(--primary-color)" />
+          </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>ISO 9001</div>
+          <p style={{ fontSize: '0.7rem', color: '#2ecc71', marginTop: '5px' }}>Érvényes: 2025/12</p>
         </div>
       </div>
 
-      <div className="list-view">
+      <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
         <table className="data-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Termék / Batch</th>
-              <th>Dátum</th>
+              <th>Vizsgálat ID</th>
+              <th>Termék / Tétel</th>
               <th>Ellenőr</th>
               <th>Eredmény</th>
-              <th>Pontszám</th>
+              <th>Minőség %</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {inspections.map(insp => (
               <tr key={insp.id} onClick={() => openInspection(insp)} style={{ cursor: 'pointer' }}>
-                <td><strong>{insp.id}</strong></td>
+                <td><strong style={{ color: 'var(--primary-color)' }}>{insp.id}</strong></td>
                 <td>
-                  <div>{insp.item}</div>
+                  <div style={{ fontWeight: 600 }}>{insp.item}</div>
                   <div className="text-muted" style={{ fontSize: '0.75rem' }}>Batch: {insp.batch}</div>
                 </td>
-                <td>{insp.date}</td>
                 <td>{insp.inspector}</td>
                 <td>
-                  <span className={`status-pill ${insp.status.toLowerCase()}`}>
-                    {insp.status === 'Passed' ? <CheckCircle2 size={14} inline /> : insp.status === 'Failed' ? <XCircle size={14} inline /> : <History size={14} inline />}
-                    {insp.status === 'Passed' ? 'Megfelelt' : insp.status === 'Failed' ? 'Elutasítva' : 'Folyamatban'}
+                  <span className={`status-badge ${insp.status === 'Passed' ? 'active' : insp.status === 'Failed' ? 'danger' : 'warning'}`}>
+                    {insp.status === 'Passed' ? 'Megfelelt' : insp.status === 'Failed' ? 'Elutasítva' : 'Várakozik'}
                   </span>
                 </td>
-                <td style={{ fontWeight: 600 }}>{insp.score}</td>
                 <td>
-                  <button className="text-muted" onClick={(e) => e.stopPropagation()}><FileText size={18} /></button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ flex: 1, height: '6px', background: 'var(--border-color)', borderRadius: '3px', width: '60px' }}>
+                      <div style={{ width: `${insp.score}%`, height: '100%', background: insp.score > 90 ? '#2ecc71' : insp.score > 70 ? '#f1c40f' : '#e74c3c', borderRadius: '3px' }}></div>
+                    </div>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{insp.score}%</span>
+                  </div>
+                </td>
+                <td>
+                  <button className="view-btn-small"><FileText size={16} /></button>
                 </td>
               </tr>
             ))}
@@ -140,65 +160,68 @@ const Quality = ({ addToast }) => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={`Ellenőrzési Jegyzőkönyv: ${selectedInspection?.id}`}
-        width="700px"
+        title={`Minőségi Jegyzőkönyv: ${selectedInspection?.id}`}
+        width="800px"
         footer={
           <>
             <button className="view-btn" onClick={() => setIsModalOpen(false)}>Bezárás</button>
             {selectedInspection?.status === 'Failed' && (
-              <button className="create-btn" style={{ background: '#dc3545' }} onClick={() => handleCreateNCR(selectedInspection)}>
-                NCR Folyamat Indítása
+              <button className="create-btn" style={{ background: '#e74c3c' }} onClick={() => handleCreateNCR(selectedInspection)}>
+                <ShieldAlert size={18} /> NCR Jegyzőkönyv Megnyitása
               </button>
             )}
-            <button className="create-btn" onClick={() => addToast('Tanúsítvány generálva', 'success')}>Tanúsítvány Letöltése</button>
+            <button className="create-btn" onClick={() => addToast('Tanúsítvány letöltve', 'success')}>Tanúsítvány (PDF)</button>
           </>
         }
       >
         {selectedInspection && (
-          <div className="inspection-details">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', padding: '15px', background: 'var(--bg-main)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-              <div>
-                <p className="text-muted" style={{ fontSize: '0.8rem' }}>Ellenőrzött tétel</p>
-                <h3 style={{ fontSize: '1.2rem', margin: '5px 0' }}>{selectedInspection.item}</h3>
-                <p style={{ fontSize: '0.9rem' }}>Gyártási szám: {selectedInspection.batch}</p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p className="text-muted" style={{ fontSize: '0.8rem' }}>Státusz</p>
-                <div className={`status-pill ${selectedInspection.status.toLowerCase()}`} style={{ fontSize: '1rem', padding: '8px 15px' }}>
-                  {selectedInspection.status === 'Passed' ? 'MEGFELELT' : selectedInspection.status === 'Failed' ? 'ELUTASÍTVA' : 'FOLYAMATBAN'}
-                </div>
-              </div>
+          <div className="inspection-details-view">
+            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', borderBottom: '1px solid var(--border-color)', borderRadius: 0, padding: 0 }}>
+              <div className={`settings-nav-item ${activeTab === 'checkpoints' ? 'active' : ''}`} onClick={() => setActiveTab('checkpoints')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Ellenőrző Pontok</div>
+              <div className={`settings-nav-item ${activeTab === 'specs' ? 'active' : ''}`} onClick={() => setActiveTab('specs')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Műszaki Adatok</div>
             </div>
 
-            <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '15px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Ellenőrzési pontok</h4>
-            <div className="check-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div className="check-item-row">
-                <span>Méretpontosság (Tolerancia: +/- 0.5mm)</span>
-                <div className="check-status success"><CheckCircle2 size={16} /></div>
-              </div>
-              <div className="check-item-row">
-                <span>Felületi minőség (Karcmentesség)</span>
-                {selectedInspection.status === 'Failed' ? (
-                  <div className="check-status danger"><XCircle size={16} /></div>
-                ) : (
-                  <div className="check-status success"><CheckCircle2 size={16} /></div>
+            {activeTab === 'checkpoints' && (
+              <div className="check-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ padding: '15px', background: 'rgba(46, 204, 113, 0.05)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(46, 204, 113, 0.1)' }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <CheckCircle2 size={20} color="#2ecc71" />
+                    <span>Méretpontosság (Tűrés: +/- 0.2mm)</span>
+                  </div>
+                  <span style={{ fontWeight: 700, color: '#2ecc71' }}>OK</span>
+                </div>
+                <div style={{ padding: '15px', background: selectedInspection.status === 'Failed' ? 'rgba(231, 76, 60, 0.05)' : 'rgba(46, 204, 113, 0.05)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: selectedInspection.status === 'Failed' ? '1px solid rgba(231, 76, 60, 0.1)' : '1px solid rgba(46, 204, 113, 0.1)' }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {selectedInspection.status === 'Failed' ? <XCircle size={20} color="#e74c3c" /> : <CheckCircle2 size={20} color="#2ecc71" />}
+                    <span>Felületi minőség (ISO 4287)</span>
+                  </div>
+                  <span style={{ fontWeight: 700, color: selectedInspection.status === 'Failed' ? '#e74c3c' : '#2ecc71' }}>
+                    {selectedInspection.status === 'Failed' ? 'NOK' : 'OK'}
+                  </span>
+                </div>
+                {selectedInspection.status === 'Failed' && (
+                  <div style={{ padding: '20px', background: 'rgba(231, 76, 60, 0.05)', borderRadius: '15px', marginTop: '10px', borderLeft: '4px solid #e74c3c' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#e74c3c', fontWeight: 700, marginBottom: '10px' }}>
+                      <AlertTriangle size={20} /> Észlelt hiba (NCR)
+                    </div>
+                    <p style={{ fontSize: '0.9rem' }}>{selectedInspection.issue}</p>
+                  </div>
                 )}
               </div>
-              <div className="check-item-row">
-                <span>Anyagminőség tanúsítvány megléte</span>
-                <div className="check-status success"><CheckCircle2 size={16} /></div>
-              </div>
-            </div>
-
-            {selectedInspection.status === 'Failed' && (
-              <div style={{ marginTop: '25px', padding: '15px', background: 'rgba(220, 53, 69, 0.05)', borderLeft: '4px solid #dc3545', borderRadius: '8px' }}>
-                <h4 style={{ color: '#dc3545', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <AlertTriangle size={18} /> Hiba leírása (NCR)
-                </h4>
-                <p style={{ fontSize: '0.9rem' }}>{selectedInspection.issue}</p>
-                <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                  <button className="view-btn-small">Kijavítási utasítás</button>
-                  <button className="view-btn-small">Selejtezési engedély</button>
+            )}
+            
+            {activeTab === 'specs' && (
+              <div className="specs-view glass" style={{ padding: '20px', borderRadius: '15px' }}>
+                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '20px' }}>Anyagminőségi Paraméterek</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div style={{ padding: '15px', background: 'var(--bg-main)', borderRadius: '10px' }}>
+                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Ötvözet kód</p>
+                    <p style={{ fontWeight: 600 }}>AlMgSi0.5 (6060)</p>
+                  </div>
+                  <div style={{ padding: '15px', background: 'var(--bg-main)', borderRadius: '10px' }}>
+                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Szakítószilárdság</p>
+                    <p style={{ fontWeight: 600 }}>190 MPa</p>
+                  </div>
                 </div>
               </div>
             )}

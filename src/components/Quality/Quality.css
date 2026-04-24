@@ -1,0 +1,31 @@
+/* Quality Module Styles */
+.quality-module {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.quality-stats-grid .stat-card {
+  padding: 20px;
+  border-radius: 15px;
+  border-bottom: 3px solid transparent;
+  transition: transform 0.3s ease;
+}
+
+.quality-stats-grid .stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.inspection-details-view {
+  padding: 10px;
+}
+
+.check-list .check-status {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-status.success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+.check-status.danger { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
