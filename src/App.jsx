@@ -18,6 +18,7 @@ import DMS from './components/DMS/DMS';
 import Logistics from './components/Logistics/Logistics';
 import ExecutiveBI from './components/ExecutiveBI/ExecutiveBI';
 import AIInsights from './components/Intelligence/AIInsights';
+import Compliance from './components/Compliance/Compliance';
 import { ToastContainer } from './components/UI/Toast';
 
 function App() {
@@ -60,6 +61,8 @@ function App() {
         return <Dashboard {...props} />;
       case 'intelligence':
         return <AIInsights {...props} />;
+      case 'compliance':
+        return <Compliance {...props} />;
       case 'projects':
         return <Projects {...props} />;
       case 'manufacturing':

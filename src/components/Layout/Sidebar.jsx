@@ -22,6 +22,7 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
   const menuItems = [
     { id: 'dashboard', label: 'Műszerfal', icon: <LayoutDashboard size={20} /> },
     { id: 'bi', label: 'Vezetői BI', icon: <BarChart3 size={20} /> },
+    { id: 'compliance', label: 'Megfelelőség', icon: <ShieldCheck size={20} /> },
     { id: 'intelligence', label: 'AI Intelligencia', icon: <Brain size={20} /> },
     { id: 'projects', label: 'Projektek', icon: <Folder size={20} /> },
     { id: 'manufacturing', label: 'Gyártás', icon: <Settings size={20} /> },

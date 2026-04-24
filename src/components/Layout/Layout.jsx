@@ -12,6 +12,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
     const labels = {
       dashboard: 'Műszerfal',
       bi: 'Executive Business Intelligence',
+      compliance: 'Megfelelőség, Audit és Biztonság',
       intelligence: 'AI Prediktív Analitika és Stratégia',
       projects: 'Projektmenedzsment és Dokumentáció',
       manufacturing: 'Gyártáskezelés',
