@@ -15,7 +15,12 @@ import {
   ChevronRight,
   TrendingUp,
   Scale,
-  CalendarDays
+  CalendarDays,
+  ShieldCheck,
+  Download,
+  Server,
+  UserCheck,
+  Eye
 } from 'lucide-react';
 import auditLogService from '../../services/AuditLogService';
 import './Compliance.css';
