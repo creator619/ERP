@@ -175,6 +175,25 @@
 .audit-date-box .day { font-size: 1.2rem; font-weight: 900; display: block; }
 .audit-date-box .month { font-size: 0.6rem; text-transform: uppercase; color: var(--text-muted); }
 
+/* GDPR Styles */
+.gdpr-score-card {
+    text-align: center;
+    padding: 30px;
+    background: radial-gradient(circle at center, rgba(46, 204, 113, 0.1), transparent);
+    border-radius: 24px;
+}
+
+.data-record-item {
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .security-badge {
     display: flex;
     align-items: center;

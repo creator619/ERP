@@ -86,6 +86,9 @@ const Compliance = ({ addToast }) => {
         <div className={`comp-tab ${activeTab === 'auditPlan' ? 'active' : ''}`} onClick={() => setActiveTab('auditPlan')}>
            <CalendarDays size={16} /> Audit Terv
         </div>
+        <div className={`comp-tab ${activeTab === 'gdpr' ? 'active' : ''}`} onClick={() => setActiveTab('gdpr')}>
+           <Shield size={16} /> GDPR
+        </div>
         <div className={`comp-tab ${activeTab === 'suppliers' ? 'active' : ''}`} onClick={() => setActiveTab('suppliers')}>
            <FileCheck size={16} /> Beszállítói Minősítés
         </div>
@@ -346,6 +349,39 @@ const Compliance = ({ addToast }) => {
                  <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#2ecc71' }}></div> 85% Sikeres</div>
                  <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#f1c40f' }}></div> 10% Javító intézkedés</div>
                  <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#e74c3c' }}></div> 5% Eltérés</div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {activeTab === 'gdpr' && (
+        <div className="compliance-grid">
+           <div className="gdpr-score-card glass">
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '10px' }}>Adatvédelmi Mutató</h3>
+              <div style={{ fontSize: '3rem', fontWeight: 900, color: '#2ecc71', margin: '20px 0' }}>98%</div>
+              <p className="text-muted" style={{ fontSize: '0.8rem' }}>A vállalati adatkezelés megfelel a 2016/679 EU rendeletnek.</p>
+              <div className="status-badge success" style={{ marginTop: '20px' }}>ALACSONY KOCKÁZAT</div>
+           </div>
+
+           <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Adatkezelési Tevékenységek (ROPA)</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 {[
+                   { name: 'Dolgozói bérszámfejtés', type: 'Személyes', legal: 'Szerződéses', period: '7 év' },
+                   { name: 'Ügyfél kapcsolattartás', type: 'Business', legal: 'Jogos érdek', period: '5 év' },
+                   { name: 'Beléptető rendszer (Kamera)', type: 'Biometrikus', legal: 'Biztonság', period: '3 nap' }
+                 ].map((rec, i) => (
+                   <div key={i} className="data-record-item">
+                      <div>
+                         <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{rec.name}</p>
+                         <p className="text-muted" style={{ fontSize: '0.6rem' }}>Jogalap: {rec.legal}</p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                         <span className="status-badge" style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.05)' }}>{rec.period}</span>
+                      </div>
+                   </div>
+                 ))}
+                 <button className="view-btn-small" style={{ marginTop: '10px' }}>Teljes ROPA Jegyzék Letöltése</button>
               </div>
            </div>
         </div>
