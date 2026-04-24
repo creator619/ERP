@@ -113,6 +113,38 @@ const Manufacturing = ({ addToast }) => {
     setIsModalOpen(false);
   };
 
+  const [viewMode, setViewMode] = useState('orders'); // 'orders' or 'monitor'
+
+  const machines = [
+    { id: 'CNC-04', name: 'CNC Megmunkáló', status: 'running', oee: 92, availability: 98, performance: 95, quality: 99, load: 85, temp: '42°C' },
+    { id: 'LSR-01', name: 'Lézer Vágó', status: 'idle', oee: 78, availability: 85, performance: 92, quality: 100, load: 0, temp: '24°C' },
+    { id: 'PR-12', name: 'Hidraulikus Prés', status: 'running', oee: 88, availability: 94, performance: 94, quality: 99, load: 70, temp: '38°C' },
+    { id: 'WLD-08', name: 'Hegesztő Robot', status: 'down', oee: 45, availability: 50, performance: 90, quality: 100, load: 0, temp: 'N/A' },
+  ];
+
+  const OEEGauge = ({ value, color }) => {
+    const radius = 50;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (value / 100) * circumference;
+
+    return (
+      <div className="oee-gauge">
+        <svg width="120" height="120">
+          <circle className="oee-circle oee-bg" cx="60" cy="60" r={radius} />
+          <circle 
+            className="oee-circle oee-progress" 
+            cx="60" cy="60" r={radius} 
+            style={{ strokeDasharray: circumference, strokeDashoffset: offset, stroke: color }}
+          />
+        </svg>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+          <div style={{ fontSize: '1.2rem', fontWeight: 900 }}>{value}%</div>
+          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700 }}>OEE</div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="manufacturing-module">
       <div className="invoicing-header" style={{ marginBottom: '25px' }}>
@@ -121,67 +153,147 @@ const Manufacturing = ({ addToast }) => {
             <Activity size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Gyártási Folyamatok (MES)</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Munkalapok és anyagszükséglet-tervezés</p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Gyártásirányítás (MES)</h2>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Industry 4.0 - Valós idejű gépmonitorozás és MES</p>
           </div>
         </div>
-        <button className="create-btn" onClick={() => addToast('Új gyártási terv', 'info')}>
-          <Plus size={20} /> Új Munkalap
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="view-mode-toggle glass" style={{ padding: '4px', borderRadius: '10px', display: 'flex' }}>
+            <button 
+              className={`view-btn-small ${viewMode === 'orders' ? 'active' : ''}`} 
+              onClick={() => setViewMode('orders')}
+              style={{ background: viewMode === 'orders' ? 'var(--primary-color)' : 'transparent', color: 'white' }}
+            >
+              Munkalapok
+            </button>
+            <button 
+              className={`view-btn-small ${viewMode === 'monitor' ? 'active' : ''}`} 
+              onClick={() => setViewMode('monitor')}
+              style={{ background: viewMode === 'monitor' ? 'var(--primary-color)' : 'transparent', color: 'white' }}
+            >
+              Élő Monitor
+            </button>
+          </div>
+          <button className="create-btn" onClick={() => addToast('Új gyártási terv', 'info')}>
+            <Plus size={20} /> Új Munkalap
+          </button>
+        </div>
       </div>
 
-      <div className="manufacturing-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Aktív Gyártás</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{workOrders.filter(w => w.status === 'In Progress').length} db</div>
-        </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Gépkihasználtság</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2ecc71' }}>92.4%</div>
-        </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Alapanyaghiány</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e74c3c' }}>1 tétel</div>
-        </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Heti Teljesítés</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>142 egység</div>
-        </div>
-      </div>
-
-      <div className="work-order-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-        {workOrders.map(wo => (
-          <div key={wo.id} className="wo-card glass" onClick={() => openWODetails(wo)} style={{ padding: '20px', borderRadius: '15px', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-color)' }}>{wo.id}</span>
-              <span className={`status-badge ${wo.status === 'Completed' ? 'active' : 'warning'}`}>
-                {wo.status === 'Completed' ? 'Kész' : 'Gyártás alatt'}
-              </span>
+      {viewMode === 'orders' ? (
+        <>
+          <div className="manufacturing-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
+            <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Aktív Gyártás</p>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{workOrders.filter(w => w.status === 'In Progress').length} db</div>
             </div>
-            <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '5px' }}>{wo.product}</h4>
-            <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '15px' }}>{wo.workCenter}</p>
-            
-            <div className="progress-container" style={{ margin: '20px 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '5px' }}>
-                <span>Haladás</span>
-                <span>{wo.progress}%</span>
-              </div>
-              <div style={{ height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${wo.progress}%`, height: '100%', background: 'var(--primary-color)', transition: 'width 0.5s ease' }}></div>
-              </div>
+            <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Átlagos OEE</p>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2ecc71' }}>86.5%</div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <User size={14} className="text-muted" /> {wo.technician}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Calendar size={14} className="text-muted" /> {wo.deadline}
-              </div>
+            <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Alapanyaghiány</p>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e74c3c' }}>1 tétel</div>
+            </div>
+            <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Heti Teljesítés</p>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>142 egység</div>
             </div>
           </div>
-        ))}
-      </div>
+
+          <div className="work-order-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            {workOrders.map(wo => (
+              <div key={wo.id} className="wo-card glass" onClick={() => openWODetails(wo)} style={{ padding: '20px', borderRadius: '15px', position: 'relative', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-color)' }}>{wo.id}</span>
+                  <span className={`status-badge ${wo.status === 'Completed' ? 'active' : 'warning'}`}>
+                    {wo.status === 'Completed' ? 'Kész' : 'Gyártás alatt'}
+                  </span>
+                </div>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '5px' }}>{wo.product}</h4>
+                <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '15px' }}>{wo.workCenter}</p>
+                
+                <div className="progress-container" style={{ margin: '20px 0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '5px' }}>
+                    <span>Haladás</span>
+                    <span>{wo.progress}%</span>
+                  </div>
+                  <div style={{ height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${wo.progress}%`, height: '100%', background: 'var(--primary-color)', transition: 'width 0.5s ease' }}></div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <User size={14} className="text-muted" /> {wo.technician}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Calendar size={14} className="text-muted" /> {wo.deadline}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="machine-monitor-view">
+          <div className="machine-grid">
+            {machines.map(m => (
+              <div key={m.id} className={`machine-card glass ${m.status}`}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>{m.name}</h4>
+                    <span className="text-muted" style={{ fontSize: '0.7rem' }}>S/N: {m.id}</span>
+                  </div>
+                  <span className={`status-badge ${m.status === 'running' ? 'active' : m.status === 'down' ? 'danger' : 'warning'}`} style={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>
+                    <span className="pulse-indicator"></span>
+                    {m.status === 'running' ? 'Üzemel' : m.status === 'down' ? 'Hiba' : 'Készenlét'}
+                  </span>
+                </div>
+
+                <OEEGauge value={m.oee} color={m.status === 'running' ? '#2ecc71' : m.status === 'down' ? '#e74c3c' : '#f1c40f'} />
+
+                <div className="telemetry-grid" style={{ marginTop: '25px' }}>
+                  <div className="telemetry-item">
+                    <span className="text-muted">Rendelkezésre állás</span>
+                    <span style={{ fontWeight: 700 }}>{m.availability}%</span>
+                  </div>
+                  <div className="telemetry-item">
+                    <span className="text-muted">Teljesítmény</span>
+                    <span style={{ fontWeight: 700 }}>{m.performance}%</span>
+                  </div>
+                  <div className="telemetry-item">
+                    <span className="text-muted">Minőség</span>
+                    <span style={{ fontWeight: 700 }}>{m.quality}%</span>
+                  </div>
+                  <div className="telemetry-item">
+                    <span className="text-muted">Hőmérséklet / Terhelés</span>
+                    <span style={{ fontWeight: 700, color: m.load > 80 ? '#e74c3c' : 'inherit' }}>{m.temp} / {m.load}%</span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <button className="view-btn-small" style={{ width: '100%' }}>Paraméterek</button>
+                  <button className="view-btn-small" style={{ width: '100%', borderColor: '#e74c3c', color: '#e74c3c' }}>Vészleállás</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Aktuális Gyártási Sor</h3>
+            <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px' }}>
+              {['Vágás', 'Hajlítás', 'Hegesztés', 'Festés', 'Összeszerelés', 'Ellenőrzés'].map((step, i) => (
+                <div key={i} className="glass" style={{ padding: '15px 30px', borderRadius: '15px', flexShrink: 0, textAlign: 'center', minWidth: '150px' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '5px' }}>Step 0{i+1}</div>
+                  <div style={{ fontWeight: 800 }}>{step}</div>
+                  <div className="pulse-success" style={{ margin: '10px auto 0' }}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Modal 
         isOpen={isModalOpen} 
