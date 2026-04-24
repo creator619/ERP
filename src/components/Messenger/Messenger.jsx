@@ -7,12 +7,18 @@ import {
   Smile, 
   Phone, 
   Video,
-  Info
+  Info,
+  Hash,
+  MessageSquare,
+  Users,
+  Image as ImageIcon,
+  File as FileIcon
 } from 'lucide-react';
 import './Messenger.css';
 
 const Messenger = ({ addToast }) => {
-  const [activeContact, setActiveContact] = useState(1);
+  const [activeTab, setActiveTab] = useState('direct'); // 'direct' or 'channels'
+  const [activeChatId, setActiveChatId] = useState(1);
   const [message, setMessage] = useState('');
 
   const contacts = [
@@ -22,11 +28,18 @@ const Messenger = ({ addToast }) => {
     { id: 4, name: 'Molnár Emese', role: 'HR', status: 'online', avatar: 'ME' },
   ];
 
-  const messages = [
-    { id: 1, text: 'Szia Anna! Megnézted a Stadler projekt új rajzait?', time: '10:15', sent: true },
-    { id: 2, text: 'Szia! Igen, éppen most töltöttem fel a Dokumentáció fülre.', time: '10:17', sent: false },
-    { id: 3, text: 'Szuper, köszi! Akkor indítom a gyártási előkészítést.', time: '10:18', sent: true },
-    { id: 4, text: 'Rendben, szólj ha kell még valami.', time: '10:20', sent: false },
+  const channels = [
+    { id: 101, name: 'Stadler-Projekt', type: 'project', members: 12 },
+    { id: 102, name: 'Gyártás-Szerelősor', type: 'work', members: 45 },
+    { id: 103, name: 'Minőségellenőrzés', type: 'quality', members: 8 },
+    { id: 104, name: 'Logisztika-Hub', type: 'work', members: 24 },
+  ];
+
+  const initialMessages = [
+    { id: 1, text: 'Szia Anna! Megnézted a Stadler projekt új rajzait?', time: '10:15', sent: true, sender: 'Én' },
+    { id: 2, text: 'Szia! Igen, éppen most töltöttem fel a Dokumentáció fülre.', time: '10:17', sent: false, sender: 'Szabó Anna' },
+    { id: 3, text: 'Szuper, köszi! Akkor indítom a gyártási előkészítést.', time: '10:18', sent: true, sender: 'Én' },
+    { id: 4, text: 'Rendben, szólj ha kell még valami.', time: '10:20', sent: false, sender: 'Szabó Anna' },
   ];
 
   const handleSendMessage = (e) => {
@@ -37,67 +50,93 @@ const Messenger = ({ addToast }) => {
     }
   };
 
-  const activeUser = contacts.find(c => c.id === activeContact);
+  const activeUser = contacts.find(c => c.id === activeChatId) || { name: channels.find(c => c.id === activeChatId)?.name, avatar: '#' };
 
   return (
     <div className="messenger-module">
-      <div className="messenger-container">
-        <div className="contacts-list glass">
-          <div className="contacts-header">
-            <h3>Üzenetek</h3>
-            <div className="search-bar" style={{ width: '100%', padding: '8px 12px' }}>
-              <Search size={16} className="text-muted" />
-              <input type="text" placeholder="Keresés..." style={{ fontSize: '0.85rem' }} />
-            </div>
+      <div className="messenger-container glass">
+        <div className="contacts-list">
+          <div className="messenger-nav-tabs">
+            <button className={activeTab === 'direct' ? 'active' : ''} onClick={() => setActiveTab('direct')}>
+              <MessageSquare size={16} /> Direkt
+            </button>
+            <button className={activeTab === 'channels' ? 'active' : ''} onClick={() => setActiveTab('channels')}>
+              <Hash size={16} /> Csatornák
+            </button>
           </div>
+
           <div className="contacts-body">
-            {contacts.map(c => (
-              <div 
-                key={c.id} 
-                className={`contact-item ${activeContact === c.id ? 'active' : ''}`}
-                onClick={() => setActiveContact(c.id)}
-              >
-                <div className="nav-avatar" style={{ position: 'relative' }}>
-                  {c.avatar}
-                  <div className={`status-indicator ${c.status}`} style={{ position: 'absolute', bottom: 0, right: 0 }}></div>
+            {activeTab === 'direct' ? (
+              contacts.map(c => (
+                <div key={c.id} className={`contact-item ${activeChatId === c.id ? 'active' : ''}`} onClick={() => setActiveChatId(c.id)}>
+                  <div className="nav-avatar" style={{ position: 'relative' }}>
+                    {c.avatar}
+                    <div className={`status-indicator ${c.status}`} style={{ position: 'absolute', bottom: 0, right: 0 }}></div>
+                  </div>
+                  <div className="contact-info">
+                    <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{c.name}</p>
+                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>{c.role}</p>
+                  </div>
                 </div>
-                <div className="contact-info">
-                  <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{c.name}</p>
-                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>{c.role}</p>
+              ))
+            ) : (
+              channels.map(ch => (
+                <div key={ch.id} className={`contact-item ${activeChatId === ch.id ? 'active' : ''}`} onClick={() => setActiveChatId(ch.id)}>
+                  <div className="channel-icon">
+                    <Hash size={18} />
+                  </div>
+                  <div className="contact-info">
+                    <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{ch.name}</p>
+                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>{ch.members} tag</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
-        <div className="chat-window glass">
+        <div className="chat-window">
           <div className="chat-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div className="nav-avatar">{activeUser?.avatar}</div>
+              <div className="nav-avatar" style={{ background: activeTab === 'channels' ? 'var(--primary-color)' : 'var(--bg-card)' }}>
+                {activeTab === 'channels' ? <Hash size={18} /> : activeUser.avatar}
+              </div>
               <div>
-                <p style={{ fontWeight: 600 }}>{activeUser?.name}</p>
-                <p className="text-muted" style={{ fontSize: '0.75rem' }}>{activeUser?.status === 'online' ? 'Elérhető' : 'Nem elérhető'}</p>
+                <p style={{ fontWeight: 600 }}>{activeUser.name}</p>
+                <p className="text-muted" style={{ fontSize: '0.75rem' }}>
+                  {activeTab === 'channels' ? 'Csoportos beszélgetés' : activeUser.status === 'online' ? 'Elérhető' : 'Nem elérhető'}
+                </p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '15px' }} className="text-muted">
-              <Phone size={20} style={{ cursor: 'pointer' }} />
-              <Video size={20} style={{ cursor: 'pointer' }} />
-              <Info size={20} style={{ cursor: 'pointer' }} />
+              {activeTab === 'direct' && (
+                <>
+                  <Phone size={20} style={{ cursor: 'pointer' }} />
+                  <Video size={20} style={{ cursor: 'pointer' }} />
+                </>
+              )}
               <MoreVertical size={20} style={{ cursor: 'pointer' }} />
             </div>
           </div>
 
           <div className="chat-messages">
-            {messages.map(msg => (
-              <div key={msg.id} className={`message-bubble ${msg.sent ? 'sent' : 'received'}`}>
-                {msg.text}
-                <span className="message-time">{msg.time}</span>
+            <div className="date-divider">Ma</div>
+            {initialMessages.map(msg => (
+              <div key={msg.id} className={`message-group ${msg.sent ? 'sent' : 'received'}`}>
+                {!msg.sent && <div className="message-sender">{msg.sender}</div>}
+                <div className="message-bubble">
+                  {msg.text}
+                  <span className="message-time">{msg.time}</span>
+                </div>
               </div>
             ))}
           </div>
 
           <form className="chat-input-area" onSubmit={handleSendMessage}>
-            <button type="button" className="text-muted"><Paperclip size={20} /></button>
+            <div className="input-actions-left">
+              <button type="button" className="text-muted" onClick={() => addToast('Fájlcsatolás...', 'info')}><Paperclip size={20} /></button>
+              <button type="button" className="text-muted" onClick={() => addToast('Képcsatolás...', 'info')}><ImageIcon size={20} /></button>
+            </div>
             <input 
               type="text" 
               className="chat-input" 
@@ -105,10 +144,12 @@ const Messenger = ({ addToast }) => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
-            <button type="button" className="text-muted"><Smile size={20} /></button>
-            <button type="submit" className="send-btn">
-              <Send size={20} />
-            </button>
+            <div className="input-actions-right">
+              <button type="button" className="text-muted"><Smile size={20} /></button>
+              <button type="submit" className="send-btn">
+                <Send size={20} />
+              </button>
+            </div>
           </form>
         </div>
       </div>

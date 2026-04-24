@@ -13,30 +13,52 @@ import {
   Eye,
   Printer,
   Mail,
-  Building
+  Building,
+  CreditCard,
+  TrendingUp,
+  Receipt
 } from 'lucide-react';
 import Modal from '../UI/Modal';
+import auditLogService from '../../services/AuditLogService';
 import './Invoicing.css';
 
 const Invoicing = ({ addToast }) => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  
+  const [invoices, setInvoices] = useState([
+    { id: 'INV/2024/001', customer: 'Kovács és Társa Kft.', date: '2024-04-10', due: '2024-04-24', amount: 154200, status: 'Paid' },
+    { id: 'INV/2024/002', customer: 'MÁV-START Zrt.', date: '2024-04-12', due: '2024-04-26', amount: 1245000, status: 'Paid' },
+    { id: 'INV/2024/003', customer: 'GYSEV Zrt.', date: '2024-04-15', due: '2024-04-29', amount: 450000, status: 'Draft' },
+    { id: 'INV/2024/004', customer: 'Stadler Trains', date: '2024-03-20', due: '2024-04-03', amount: 2450000, status: 'Overdue' },
+    { id: 'INV/2024/005', customer: 'Rail-Cargo Hungaria', date: '2024-04-18', due: '2024-05-02', amount: 320000, status: 'Partial' },
+  ]);
 
   const openPreview = (inv) => {
     setSelectedInvoice(inv);
     setIsPreviewOpen(true);
   };
 
-  const invoices = [
-    { id: 'INV/2024/001', customer: 'Kovács és Társa Kft.', date: '2024-04-10', due: '2024-04-24', amount: '154,200 Ft', status: 'Paid' },
-    { id: 'INV/2024/002', customer: 'MÁV-START Zrt.', date: '2024-04-12', due: '2024-04-26', amount: '1,245,000 Ft', status: 'Paid' },
-    { id: 'INV/2024/003', customer: 'GYSEV Zrt.', date: '2024-04-15', due: '2024-04-29', amount: '450,000 Ft', status: 'Draft' },
-    { id: 'INV/2024/004', customer: 'Stadler Trains', date: '2024-03-20', due: '2024-04-03', amount: '2,450,000 Ft', status: 'Overdue' },
-    { id: 'INV/2024/005', customer: 'Rail-Cargo Hungaria', date: '2024-04-18', due: '2024-05-02', amount: '320,000 Ft', status: 'Partial' },
-  ];
+  const handleMarkAsPaid = (id) => {
+    setInvoices(prev => prev.map(inv => {
+      if (inv.id === id) {
+        auditLogService.log({
+          user: 'Pénzügyi Vezető',
+          action: 'Számla kiegyenlítve',
+          module: 'Invoicing',
+          details: `${inv.id} (${inv.customer}) - Összeg: ${formatHUF(inv.amount)}`,
+          severity: 'success'
+        });
+        return { ...inv, status: 'Paid' };
+      }
+      return inv;
+    }));
+    addToast('Számla kifizetve!', 'success');
+    setIsPreviewOpen(false);
+  };
 
-  const getStatusClass = (status) => status.toLowerCase();
-  
+  const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+
   const getStatusLabel = (status) => {
     switch(status) {
       case 'Paid': return 'Fizetve';
@@ -47,45 +69,65 @@ const Invoicing = ({ addToast }) => {
     }
   };
 
+  const totalPaid = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + i.amount, 0);
+  const totalPending = invoices.filter(i => i.status !== 'Paid' && i.status !== 'Overdue').reduce((sum, i) => sum + i.amount, 0);
+  const totalOverdue = invoices.filter(i => i.status === 'Overdue').reduce((sum, i) => sum + i.amount, 0);
+
   return (
     <div className="invoicing-module">
-      <div className="invoicing-header">
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Számlázás</h2>
+      <div className="invoicing-header" style={{ marginBottom: '25px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="module-icon-container" style={{ background: 'rgba(46, 204, 113, 0.1)', color: '#2ecc71', padding: '12px', borderRadius: '12px' }}>
+            <Receipt size={24} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Számlázás és Pénzügy</h2>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Bizonylatok és kintlévőségek kezelése</p>
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button className="view-btn" onClick={() => addToast('Exportálás indítva', 'info')}>
             <Download size={18} />
-            Exportálás
+            Export
           </button>
-          <button className="create-btn" onClick={() => addToast('Új számla szerkesztő', 'success')}>
+          <button className="create-btn" onClick={() => addToast('Új számla', 'success')}>
             <Plus size={20} />
             Új Számla
           </button>
         </div>
       </div>
 
-      <div className="finance-summary">
-        <div className="finance-card paid glass">
-          <h5>Befolyt összeg</h5>
-          <div className="value" style={{ color: '#28a745' }}>1,399,200 Ft</div>
+      <div className="finance-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '25px' }}>
+        <div className="finance-card glass" style={{ borderLeft: '4px solid #2ecc71' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>Befolyt összeg</span>
+            <TrendingUp size={16} color="#2ecc71" />
+          </div>
+          <div className="value" style={{ fontSize: '1.4rem', fontWeight: 700, marginTop: '8px' }}>{formatHUF(totalPaid)}</div>
         </div>
-        <div className="finance-card pending glass">
-          <h5>Várható bevétel</h5>
-          <div className="value" style={{ color: '#ffc107' }}>770,000 Ft</div>
+        <div className="finance-card glass" style={{ borderLeft: '4px solid #f1c40f' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>Várható bevétel</span>
+            <Clock size={16} color="#f1c40f" />
+          </div>
+          <div className="value" style={{ fontSize: '1.4rem', fontWeight: 700, marginTop: '8px' }}>{formatHUF(totalPending)}</div>
         </div>
-        <div className="finance-card overdue glass">
-          <h5>Késedelmes</h5>
-          <div className="value" style={{ color: '#dc3545' }}>2,450,000 Ft</div>
+        <div className="finance-card glass" style={{ borderLeft: '4px solid #e74c3c' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="text-muted" style={{ fontSize: '0.8rem' }}>Késedelmes</span>
+            <AlertCircle size={16} color="#e74c3c" />
+          </div>
+          <div className="value" style={{ fontSize: '1.4rem', fontWeight: 700, marginTop: '8px' }}>{formatHUF(totalOverdue)}</div>
         </div>
       </div>
 
-      <div className="list-view">
+      <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
         <table className="data-table">
           <thead>
             <tr>
               <th>Számlaszám</th>
               <th>Vevő</th>
-              <th>Kelt</th>
-              <th>Esedékesség</th>
+              <th>Dátum</th>
               <th style={{ textAlign: 'right' }}>Összeg</th>
               <th>Állapot</th>
               <th></th>
@@ -94,25 +136,22 @@ const Invoicing = ({ addToast }) => {
           <tbody>
             {invoices.map(inv => (
               <tr key={inv.id} onClick={() => openPreview(inv)} style={{ cursor: 'pointer' }}>
-                <td><strong>{inv.id}</strong></td>
-                <td>{inv.customer}</td>
-                <td>{inv.date}</td>
+                <td><strong style={{ color: 'var(--primary-color)' }}>{inv.id}</strong></td>
                 <td>
-                  <span style={{ color: inv.status === 'Overdue' ? '#dc3545' : 'inherit' }}>
-                    {inv.due}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Building size={14} className="text-muted" />
+                    {inv.customer}
+                  </div>
                 </td>
-                <td style={{ textAlign: 'right', fontWeight: 600 }}>{inv.amount}</td>
+                <td>{inv.date}</td>
+                <td style={{ textAlign: 'right', fontWeight: 700 }}>{formatHUF(inv.amount)}</td>
                 <td>
-                  <span className={`invoice-status ${getStatusClass(inv.status)}`}>
+                  <span className={`invoice-status ${inv.status.toLowerCase()}`}>
                     {getStatusLabel(inv.status)}
                   </span>
                 </td>
                 <td>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="text-muted" onClick={(e) => { e.stopPropagation(); openPreview(inv); }}><Eye size={16} /></button>
-                    <button className="text-muted" onClick={(e) => e.stopPropagation()}><MoreVertical size={18} /></button>
-                  </div>
+                  <button className="view-btn-small" onClick={(e) => { e.stopPropagation(); openPreview(inv); }}><Eye size={16} /></button>
                 </td>
               </tr>
             ))}
@@ -120,103 +159,86 @@ const Invoicing = ({ addToast }) => {
         </table>
       </div>
 
-      {/* Invoice Preview Modal (Simulated PDF) */}
       <Modal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        title="Számlakép megtekintése"
+        title={`Számla megtekintése: ${selectedInvoice?.id}`}
+        width="850px"
         footer={
           <>
             <button className="view-btn" onClick={() => setIsPreviewOpen(false)}>Bezárás</button>
-            <button className="view-btn" onClick={() => addToast('E-mail elküldve a vevőnek', 'success')}>
-              <Mail size={18} inline /> Küldés E-mailben
+            <button className="view-btn" onClick={() => addToast('E-mail elküldve', 'info')}>
+              <Mail size={18} /> Küldés
             </button>
-            <button className="create-btn" onClick={() => window.print()}>
-              <Printer size={18} inline /> Nyomtatás
-            </button>
+            {selectedInvoice?.status !== 'Paid' && (
+              <button className="create-btn" onClick={() => handleMarkAsPaid(selectedInvoice.id)}>
+                <CreditCard size={18} /> Fizetés rögzítése
+              </button>
+            )}
           </>
         }
       >
         {selectedInvoice && (
-          <div className="invoice-preview-container" style={{ background: 'white', color: '#333', padding: '40px', borderRadius: '4px', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.1)', minHeight: '600px', fontFamily: 'Arial, sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #333', paddingBottom: '20px', marginBottom: '20px' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <div style={{ background: '#714B67', color: 'white', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold' }}>RP</div>
-                  <h2 style={{ margin: 0, fontSize: '1.2rem', color: '#714B67' }}>RailParts Manufacturing Ltd.</h2>
+          <div className="invoice-preview-wrap" style={{ background: '#f8f9fa', padding: '30px', borderRadius: '12px' }}>
+            <div className="invoice-paper glass" style={{ background: 'white', color: '#333', padding: '40px', borderRadius: '4px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', minHeight: '500px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                    <div style={{ background: '#3498db', color: 'white', padding: '8px', borderRadius: '8px', fontWeight: 'bold' }}>RP</div>
+                    <h2 style={{ margin: 0, fontSize: '1.2rem', color: '#2c3e50' }}>RailParts ERP System</h2>
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: '#7f8c8d' }}>1117 Budapest, Vasút utca 12.</p>
                 </div>
-                <p style={{ fontSize: '0.8rem', margin: '2px 0' }}>1117 Budapest, Vasút utca 12.</p>
-                <p style={{ fontSize: '0.8rem', margin: '2px 0' }}>Adószám: 12345678-2-42</p>
-                <p style={{ fontSize: '0.8rem', margin: '2px 0' }}>Bankszámla: 11773000-12345678-00000000</p>
+                <div style={{ textAlign: 'right' }}>
+                  <h1 style={{ fontSize: '1.8rem', margin: '0 0 5px 0', color: '#3498db', fontWeight: 800 }}>SZÁMLA</h1>
+                  <p style={{ fontWeight: 'bold' }}>{selectedInvoice.id}</p>
+                </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <h1 style={{ fontSize: '1.5rem', margin: '0 0 10px 0', color: '#714B67' }}>SZÁMLA</h1>
-                <p style={{ fontSize: '1rem', fontWeight: 'bold', margin: 0 }}>{selectedInvoice.id}</p>
-              </div>
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '30px' }}>
-              <div>
-                <h4 style={{ fontSize: '0.8rem', color: '#666', textTransform: 'uppercase', marginBottom: '10px', borderBottom: '1px solid #eee' }}>Vevő adatai</h4>
-                <p style={{ fontWeight: 'bold', margin: '0 0 5px 0' }}>{selectedInvoice.customer}</p>
-                <p style={{ fontSize: '0.85rem', margin: '2px 0' }}>H-1054 Budapest, Szabadság tér 1.</p>
-                <p style={{ fontSize: '0.85rem', margin: '2px 0' }}>Adószám: 98765432-1-11</p>
-              </div>
-              <div>
-                <h4 style={{ fontSize: '0.8rem', color: '#666', textTransform: 'uppercase', marginBottom: '10px', borderBottom: '1px solid #eee' }}>Számla adatai</h4>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '5px' }}>
-                  <span>Kelt:</span> <strong>{selectedInvoice.date}</strong>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '40px' }}>
+                <div>
+                  <h4 style={{ fontSize: '0.75rem', color: '#bdc3c7', textTransform: 'uppercase', marginBottom: '10px' }}>Vevő</h4>
+                  <p style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '5px' }}>{selectedInvoice.customer}</p>
+                  <p style={{ fontSize: '0.85rem' }}>H-1054 Budapest, Szabadság tér 1.</p>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '5px' }}>
-                  <span>Esedékesség:</span> <strong>{selectedInvoice.due}</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '5px' }}>
-                  <span>Teljesítés:</span> <strong>{selectedInvoice.date}</strong>
+                <div style={{ textAlign: 'right' }}>
+                  <h4 style={{ fontSize: '0.75rem', color: '#bdc3c7', textTransform: 'uppercase', marginBottom: '10px' }}>Dátumok</h4>
+                  <p style={{ fontSize: '0.85rem' }}>Kelt: <strong>{selectedInvoice.date}</strong></p>
+                  <p style={{ fontSize: '0.85rem' }}>Esedékesség: <strong style={{ color: selectedInvoice.status === 'Overdue' ? '#e74c3c' : 'inherit' }}>{selectedInvoice.due}</strong></p>
                 </div>
               </div>
-            </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px' }}>
-              <thead>
-                <tr style={{ background: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ textAlign: 'left', padding: '10px', fontSize: '0.85rem' }}>Megnevezés</th>
-                  <th style={{ textAlign: 'center', padding: '10px', fontSize: '0.85rem' }}>Mennyiség</th>
-                  <th style={{ textAlign: 'right', padding: '10px', fontSize: '0.85rem' }}>Egységár</th>
-                  <th style={{ textAlign: 'right', padding: '10px', fontSize: '0.85rem' }}>Nettó érték</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '10px', fontSize: '0.85rem' }}>Vasúti kocsi ablak (Hőszigetelt, edzett üveg)</td>
-                  <td style={{ textAlign: 'center', padding: '10px', fontSize: '0.85rem' }}>5 db</td>
-                  <td style={{ textAlign: 'right', padding: '10px', fontSize: '0.85rem' }}>40,000 Ft</td>
-                  <td style={{ textAlign: 'right', padding: '10px', fontSize: '0.85rem' }}>200,000 Ft</td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '10px', fontSize: '0.85rem' }}>Poggyásztartó rögzítő készlet (Alumínium)</td>
-                  <td style={{ textAlign: 'center', padding: '10px', fontSize: '0.85rem' }}>10 db</td>
-                  <td style={{ textAlign: 'right', padding: '10px', fontSize: '0.85rem' }}>5,200 Ft</td>
-                  <td style={{ textAlign: 'right', padding: '10px', fontSize: '0.85rem' }}>52,000 Ft</td>
-                </tr>
-              </tbody>
-            </table>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}>
+                <thead>
+                  <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #eee' }}>
+                    <th style={{ textAlign: 'left', padding: '12px', fontSize: '0.8rem', color: '#7f8c8d' }}>Megnevezés</th>
+                    <th style={{ textAlign: 'right', padding: '12px', fontSize: '0.8rem', color: '#7f8c8d' }}>Összeg</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '12px', fontSize: '0.9rem' }}>Vasúti alkatrész szállítás és projektmenedzsment</td>
+                    <td style={{ textAlign: 'right', padding: '12px', fontSize: '0.9rem', fontWeight: 600 }}>{formatHUF(selectedInvoice.amount / 1.27)}</td>
+                  </tr>
+                </tbody>
+              </table>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ width: '250px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: '0.9rem' }}>
-                  <span>Összes nettó:</span> <span>252,000 Ft</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: '0.9rem' }}>
-                  <span>ÁFA (27%):</span> <span>68,040 Ft</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '1.1rem', fontWeight: 'bold', borderTop: '2px solid #333' }}>
-                  <span>FIZETENDŐ:</span> <span>320,040 Ft</span>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ width: '250px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                    <span style={{ color: '#7f8c8d' }}>Nettó:</span>
+                    <span>{formatHUF(selectedInvoice.amount / 1.27)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                    <span style={{ color: '#7f8c8d' }}>ÁFA (27%):</span>
+                    <span>{formatHUF(selectedInvoice.amount - (selectedInvoice.amount / 1.27))}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 0', borderTop: '2px solid #333', marginTop: '10px', fontSize: '1.2rem', fontWeight: 800 }}>
+                    <span>ÖSSZESEN:</span>
+                    <span style={{ color: '#3498db' }}>{formatHUF(selectedInvoice.amount)}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div style={{ marginTop: '50px', borderTop: '1px dashed #ccc', paddingTop: '20px', fontSize: '0.75rem', color: '#888', textAlign: 'center' }}>
-              Köszönjük a megrendelést! Ez a bizonylat elektronikusan készült és aláírás nélkül is hiteles.
             </div>
           </div>
         )}
