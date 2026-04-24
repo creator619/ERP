@@ -17,6 +17,7 @@ import Maintenance from './components/Maintenance/Maintenance';
 import DMS from './components/DMS/DMS';
 import Logistics from './components/Logistics/Logistics';
 import ExecutiveBI from './components/ExecutiveBI/ExecutiveBI';
+import AIInsights from './components/Intelligence/AIInsights';
 import { ToastContainer } from './components/UI/Toast';
 
 function App() {
@@ -57,6 +58,8 @@ function App() {
     switch (activeModule) {
       case 'dashboard':
         return <Dashboard {...props} />;
+      case 'intelligence':
+        return <AIInsights {...props} />;
       case 'projects':
         return <Projects {...props} />;
       case 'manufacturing':
@@ -85,6 +88,8 @@ function App() {
         return <Logistics {...props} />;
       case 'bi':
         return <ExecutiveBI {...props} currency={currency} />;
+      case 'intelligence':
+        return <AIInsights {...props} />;
       case 'settings':
         return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} language={language} setLanguage={setLanguage} />;
       default:

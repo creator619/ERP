@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import './Dashboard.css';
 import auditLogService from '../../services/AuditLogService';
+import aiService from '../../services/AIService';
+import { Brain, Sparkles } from 'lucide-react';
 
 const Dashboard = () => {
   const [logs, setLogs] = useState(auditLogService.getLogs().slice(0, 10));
@@ -113,6 +115,25 @@ const Dashboard = () => {
                  ))}
               </div>
            </div>
+
+            <div className="glass" style={{ padding: '25px', borderRadius: '20px', background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1))', border: '1px solid rgba(255, 255, 255, 0.1)', marginTop: '25px' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h3 style={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                     <Brain size={20} color="var(--primary-color)" /> AI Predikció
+                  </h3>
+                  <span className="status-badge active" style={{ fontSize: '0.6rem' }}>LIVE ANALYSIS</span>
+               </div>
+               <div style={{ padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
+                  <p style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '5px' }}>{aiService.getInsights()[0].title}</p>
+                  <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '10px' }}>{aiService.getInsights()[0].description}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.7rem', color: 'var(--primary-color)', fontWeight: 700 }}>
+                        <Sparkles size={12} /> Confidence: 94%
+                     </div>
+                     <button className="view-btn-small" style={{ fontSize: '0.7rem' }}>Elemzés megnyitása</button>
+                  </div>
+               </div>
+            </div>
         </div>
 
         <div className="log-pane">
