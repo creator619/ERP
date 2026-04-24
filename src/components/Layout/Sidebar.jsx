@@ -13,7 +13,8 @@ import {
   Wrench,
   BarChart3,
   Truck,
-  Brain
+  Brain,
+  ShieldCheck
 } from 'lucide-react';
 import './Layout.css';
 
