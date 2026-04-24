@@ -1,0 +1,121 @@
+.dms-wrapper {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.dms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.category-card {
+    padding: 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--primary-color);
+}
+
+.category-card.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.category-card.active .text-muted {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.file-list-container {
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.file-row {
+    display: grid;
+    grid-template-columns: 40px 2fr 1fr 1fr 100px 50px;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.file-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.file-row:last-child {
+    border-bottom: none;
+}
+
+.file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.version-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.dms-search-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.search-input-wrapper svg {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 12px 12px 45px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    margin-bottom: 10px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

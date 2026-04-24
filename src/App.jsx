@@ -14,6 +14,7 @@ import Projects from './components/Projects/Projects';
 import Messenger from './components/Messenger/Messenger';
 import Quality from './components/Quality/Quality';
 import Maintenance from './components/Maintenance/Maintenance';
+import DMS from './components/DMS/DMS';
 import { ToastContainer } from './components/UI/Toast';
 
 function App() {
@@ -74,6 +75,8 @@ function App() {
         return <Purchase {...props} />;
       case 'messenger':
         return <Messenger {...props} />;
+      case 'dms':
+        return <DMS {...props} />;
       case 'settings':
         return <Settings {...props} theme={theme} toggleTheme={toggleTheme} />;
       default:
