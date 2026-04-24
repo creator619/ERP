@@ -160,7 +160,7 @@ const DocumentEngine = ({ addToast }) => {
                      <div className="doc-party">
                         <p className="party-label">KIBOCSÁTÓ</p>
                         <p><strong>RailParts Ltd.</strong></p>
-                        <p>Simon Ernő - Ügyvezető</p>
+                        <p>Simon Ernő - Ügyvezető Igazgató</p>
                         <p>1055 Budapest, Falk Miksa u. 12.</p>
                         <p>Adószám: 12345678-2-41</p>
                      </div>
