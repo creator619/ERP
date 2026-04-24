@@ -160,7 +160,7 @@ const DocumentEngine = ({ addToast }) => {
                      <div className="doc-party">
                         <p className="party-label">KIBOCSÁTÓ</p>
                         <p><strong>RailParts Ltd.</strong></p>
-                        <p>Simon Ernő - Ügyvezető Igazgató</p>
+                        <p>Ügyvezető Igazgató</p>
                         <p>1055 Budapest, Falk Miksa u. 12.</p>
                         <p>Adószám: 12345678-2-41</p>
                      </div>
@@ -219,10 +219,10 @@ const DocumentEngine = ({ addToast }) => {
                </div>
 
                <div className="doc-signature">
-                  <div className="sig-line">
-                     <p className="sig-name">Simon Ernő</p>
-                     <p className="sig-title">Ügyvezető Igazgató</p>
-                  </div>
+                <div className="sig-line">
+                   <p className="sig-name">..................................</p>
+                   <p className="sig-title">Ügyvezető Igazgató</p>
+                </div>
                   <div className="sig-stamp">
                      <div className="stamp-inner">RP</div>
                   </div>
