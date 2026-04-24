@@ -1,0 +1,41 @@
+/* HR Module Styles */
+.hr-module {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.hr-stats .stat-item {
+  text-align: center;
+  padding: 10px;
+  border-right: 1px solid var(--border-color);
+}
+
+.hr-stats .stat-item:last-child {
+  border-right: none;
+}
+
+.employee-details-view {
+  padding: 10px;
+}
+
+.status-badge.active { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
+.status-badge.warning { background: rgba(241, 196, 15, 0.1); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.2); }
+.status-badge.danger { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.2); }
+
+.view-btn-small {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-btn-small:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--primary-color);
+}

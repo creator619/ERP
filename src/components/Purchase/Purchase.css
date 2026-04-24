@@ -1,0 +1,23 @@
+/* Purchase Module Styles */
+.purchase-module {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.finance-summary .finance-card {
+  padding: 20px;
+  border-radius: 15px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.po-details-view {
+  padding: 5px;
+}
+
+.items-tab table th {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.info-tab .glass {
+  background: rgba(255,255,255,0.02);
+}
