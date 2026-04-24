@@ -18,7 +18,12 @@ import {
   AlertTriangle,
   ArrowUpRight,
   ArrowDownRight,
-  Truck
+  Truck,
+  TrendingUp,
+  Zap,
+  Box,
+  ChevronRight,
+  ClipboardList
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
@@ -39,7 +44,13 @@ const Inventory = ({ addToast }) => {
       stock: 15, 
       minStock: 10,
       sku: 'RW-INT-001',
+      abc: 'B',
       location: 'A-szektor, 04-B polc',
+      trend: [10, 12, 11, 15, 14, 18, 15],
+      batches: [
+        { id: 'B-8821', qty: 10, expiry: '2025-12-01', status: 'Passed' },
+        { id: 'B-8822', qty: 5, expiry: '2026-01-15', status: 'Passed' }
+      ],
       history: [
         { date: '2024-04-22', type: 'IN', qty: 20, reason: 'Beszerzés #PO-102' },
         { date: '2024-04-23', type: 'OUT', qty: 5, reason: 'Gyártás RW/MO/003' }
@@ -53,7 +64,12 @@ const Inventory = ({ addToast }) => {
       stock: 42, 
       minStock: 20,
       sku: 'RW-WIN-042',
+      abc: 'A',
       location: 'W-szektor, 10-C polc',
+      trend: [30, 35, 42, 40, 45, 42, 42],
+      batches: [
+        { id: 'B-9901', qty: 42, expiry: '2027-06-10', status: 'Passed' }
+      ],
       history: [{ date: '2024-04-20', type: 'IN', qty: 50, reason: 'Beszállítás' }]
     },
     { 
@@ -64,7 +80,12 @@ const Inventory = ({ addToast }) => {
       stock: 5, 
       minStock: 8,
       sku: 'RW-DOR-015',
+      abc: 'A',
       location: 'W-szektor, 02-A polc',
+      trend: [12, 10, 8, 7, 6, 5, 5],
+      batches: [
+        { id: 'B-7712', qty: 5, expiry: '2026-03-20', status: 'Passed' }
+      ],
       history: [{ date: '2024-04-21', type: 'OUT', qty: 2, reason: 'Javítási munkalap' }]
     },
     { 
@@ -75,10 +96,29 @@ const Inventory = ({ addToast }) => {
       stock: 0, 
       minStock: 5,
       sku: 'RW-PAR-012',
+      abc: 'C',
       location: 'P-szektor, 01-D polc',
+      trend: [15, 12, 10, 8, 5, 2, 0],
+      batches: [],
       history: [{ date: '2024-04-15', type: 'OUT', qty: 10, reason: 'Készlet kimerült' }]
     },
   ]);
+
+  const StockSparkline = ({ data, color = 'var(--primary-color)' }) => {
+    const width = 100;
+    const height = 30;
+    const points = data.map((d, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - (d / Math.max(...data, 10)) * height;
+      return `${x},${y}`;
+    }).join(' ');
+
+    return (
+      <svg width={width} height={height} className="sparkline">
+        <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={points} />
+      </svg>
+    );
+  };
 
   const openProductDetails = (product) => {
     setSelectedProduct(product);
@@ -112,95 +152,112 @@ const Inventory = ({ addToast }) => {
             <Package size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Raktárkészlet & Logisztika</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Valós idejű készletfigyelés és utánrendelés menedzsment</p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Készletkezelés & Intelligens Raktár</h2>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>AI Készlet-optimalizálás és ABC/XYZ analitika</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div className="module-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <button className={`tab-btn ${viewType === 'kanban' || viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('kanban')}>
-              <Package size={16} /> Készletlista
-            </button>
-            <button className={`tab-btn ${viewType === 'scan' ? 'active' : ''}`} onClick={() => setViewType('scan')}>
-              <Tag size={16} /> QR Beolvasás
-            </button>
-            <button className={`tab-btn ${viewType === 'map' ? 'active' : ''}`} onClick={() => setViewType('map')}>
-              <MapPin size={16} /> Raktártérkép
-            </button>
+          <div className="view-controls glass" style={{ padding: '4px', borderRadius: '10px' }}>
+            <button className={`view-btn ${viewType === 'kanban' || viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('kanban')}>Dashboard</button>
+            <button className={`view-btn ${viewType === 'scan' ? 'active' : ''}`} onClick={() => setViewType('scan')}>QR Szkenner</button>
+            <button className={`view-btn ${viewType === 'map' ? 'active' : ''}`} onClick={() => setViewType('map')}>Raktártérkép</button>
           </div>
+          <button className="create-btn" onClick={() => addToast('Új termék felvétele', 'info')}>
+            <Plus size={20} /> Új Termék
+          </button>
         </div>
       </div>
 
+      {(viewType === 'kanban' || viewType === 'list') && (
+        <div className="inventory-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
+           <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '5px' }}>KÉSZLET ÉRTÉK</p>
+              <div style={{ fontSize: '1.3rem', fontWeight: 900 }}>142.5 M Ft</div>
+           </div>
+           <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '5px' }}>KRITIKUS TÉTELEK</p>
+              <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#e74c3c' }}>{products.filter(p => p.stock <= p.minStock).length} db</div>
+           </div>
+           <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '5px' }}>FORGÁSI SEBESSÉG</p>
+              <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#2ecc71' }}>8.2x / év</div>
+           </div>
+           <div className="stat-card glass">
+              <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '5px' }}>ABC 'A' TÉTELEK</p>
+              <div style={{ fontSize: '1.3rem', fontWeight: 900 }}>{products.filter(p => p.abc === 'A').length} db</div>
+           </div>
+        </div>
+      )}
+
       {viewType === 'scan' && (
-        <div className="glass" style={{ padding: '40px', borderRadius: '24px', textAlign: 'center' }}>
-           <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '10px' }}>Mobil QR Beolvasó Szimuláció</h3>
-           <p className="text-muted" style={{ marginBottom: '20px' }}>Irányítsa a kamerát az alkatrész kódjára az azonnali készletfrissítéshez.</p>
+        <div className="glass" style={{ padding: '60px', borderRadius: '30px', textAlign: 'center' }}>
+           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '15px' }}>Intelligens QR Beolvasó</h3>
            <div className="qr-scanner-mock">
               <div className="scan-line"></div>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0.1 }}>
-                 <Package size={120} />
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0.15 }}>
+                 <Box size={140} />
               </div>
            </div>
-           <button className="create-btn" onClick={() => {
-              addToast('Kód beolvasva: RW-WIN-042', 'success');
+           <button className="create-btn" style={{ marginTop: '30px' }} onClick={() => {
+              addToast('RW-WIN-042 beolvasva', 'success');
               openProductDetails(products[1]);
            }}>Minta Beolvasás (RW-WIN-042)</button>
         </div>
       )}
 
       {viewType === 'map' && (
-        <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
-           <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Raktár Alaprajz (Élő Telítettség)</h3>
+        <div className="glass" style={{ padding: '30px', borderRadius: '24px' }}>
+           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Raktár Alaprajz (Hőtérkép)</h3>
+              <div className="status-badge active">TELÍRETTÉG: 72%</div>
+           </div>
            <div className="warehouse-map">
               {Array.from({ length: 20 }).map((_, i) => (
-                <div key={i} className={`map-zone ${i === 3 || i === 8 ? 'active' : i === 12 ? 'warning' : ''}`}>
+                <div key={i} className={`map-zone ${i === 3 || i === 8 ? 'active' : i === 12 || i === 18 ? 'warning' : ''}`}>
                    ZÓNA {String.fromCharCode(65 + (i % 5))}{Math.floor(i / 5) + 1}
                 </div>
               ))}
-           </div>
-           <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: '0.8rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--primary-color)' }}></div> Kijelölt tétel</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#e74c3c' }}></div> Alacsony készlet</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(255,255,255,0.05)' }}></div> Szabad hely</div>
            </div>
         </div>
       )}
 
       {(viewType === 'kanban' || viewType === 'list') && (
         viewType === 'kanban' ? (
-          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
             {products.map(product => (
-              <div key={product.id} className={`kanban-card glass ${product.stock <= product.minStock ? 'warning-border' : ''}`} onClick={() => openProductDetails(product)} style={{ padding: '20px', borderRadius: '15px', cursor: 'pointer' }}>
+              <div key={product.id} className={`kanban-card glass ${product.stock <= product.minStock ? 'warning-border' : ''}`} onClick={() => openProductDetails(product)} style={{ padding: '25px', borderRadius: '20px', cursor: 'pointer', position: 'relative' }}>
+                <div className={`abc-badge ${product.abc.toLowerCase()}`}>{product.abc}</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-color)' }}>{product.sku}</span>
-                  {product.stock <= product.minStock && (
-                    <span className="status-badge danger" style={{ fontSize: '0.65rem' }}>Utánrendelés!</span>
-                  )}
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary-color)' }}>{product.sku}</span>
+                  <StockSparkline data={product.trend} color={product.stock <= product.minStock ? '#e74c3c' : '#2ecc71'} />
                 </div>
-                <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '10px' }}>{product.name}</h4>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '8px' }}>{product.name}</h4>
+                <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '15px' }}>{product.category}</p>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <MapPin size={14} className="text-muted" />
-                    <span style={{ fontSize: '0.8rem' }}>{product.location.split(',')[0]}</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{product.location.split(',')[0]}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{product.stock} db</div>
-                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>MIN: {product.minStock}</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 900, color: product.stock <= product.minStock ? '#e74c3c' : 'inherit' }}>{product.stock} db</div>
+                    <div style={{ fontSize: '0.65rem', opacity: 0.6 }}>MIN: {product.minStock}</div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+          <div className="list-view glass" style={{ borderRadius: '20px', overflow: 'hidden' }}>
             <table className="data-table">
               <thead>
                 <tr>
+                  <th>ABC</th>
                   <th>SKU</th>
                   <th>Terméknév</th>
+                  <th>Trend</th>
                   <th>Helyszín</th>
                   <th>Készlet</th>
-                  <th>Min. Szint</th>
                   <th>Státusz</th>
                   <th></th>
                 </tr>
@@ -208,11 +265,12 @@ const Inventory = ({ addToast }) => {
               <tbody>
                 {products.map(product => (
                   <tr key={product.id} onClick={() => openProductDetails(product)} style={{ cursor: 'pointer' }}>
+                    <td><div className={`abc-badge-small ${product.abc.toLowerCase()}`}>{product.abc}</div></td>
                     <td><strong>{product.sku}</strong></td>
                     <td>{product.name}</td>
-                    <td>{product.location}</td>
-                    <td style={{ fontWeight: 700 }}>{product.stock} db</td>
-                    <td className="text-muted">{product.minStock} db</td>
+                    <td><StockSparkline data={product.trend} color={product.stock <= product.minStock ? '#e74c3c' : '#2ecc71'} /></td>
+                    <td style={{ fontSize: '0.8rem' }}>{product.location}</td>
+                    <td style={{ fontWeight: 900 }}>{product.stock} db</td>
                     <td>
                       <span className={`status-badge ${product.stock > product.minStock ? 'active' : product.stock === 0 ? 'danger' : 'warning'}`}>
                         {product.stock > product.minStock ? 'Optimális' : product.stock === 0 ? 'Kimerült' : 'Kritikus'}
@@ -230,13 +288,13 @@ const Inventory = ({ addToast }) => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
-        title={`Készlet Adatlap: ${selectedProduct?.name}`}
-        width="850px"
+        title={`Termék Adatlap: ${selectedProduct?.name}`}
+        width="950px"
         footer={
           <>
             <button className="view-btn" onClick={() => setIsModalOpen(false)}>Bezárás</button>
-            <button className="view-btn" onClick={() => handleAdjustStock(selectedProduct.id, -1, 'Selejtezés')}>Selejtezés (-1)</button>
-            <button className="create-btn" onClick={() => handleAdjustStock(selectedProduct.id, 5, 'Raktári bevételezés')}>Bevételezés (+5)</button>
+            <button className="view-btn" onClick={() => handleAdjustStock(selectedProduct.id, -1, 'Selejtezés')}>Leltárhiány (-1)</button>
+            <button className="create-btn" onClick={() => handleAdjustStock(selectedProduct.id, 10, 'Gyártási beérkezés')}>Bevételezés (+10)</button>
           </>
         }
       >
@@ -244,54 +302,91 @@ const Inventory = ({ addToast }) => {
           <div className="inventory-details-view">
             <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', borderBottom: '1px solid var(--border-color)', borderRadius: 0, padding: 0 }}>
               <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Áttekintés</div>
+              <div className={`settings-nav-item ${activeTab === 'traceability' ? 'active' : ''}`} onClick={() => setActiveTab('traceability')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Traceability</div>
               <div className={`settings-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Mozgásnapló</div>
             </div>
 
             {activeTab === 'overview' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
-                <div className="glass" style={{ padding: '20px', borderRadius: '15px' }}>
-                  <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '15px', textTransform: 'uppercase' }}>Logisztikai adatok</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span className="text-muted">Pontos hely:</span>
-                      <span style={{ fontWeight: 600 }}>{selectedProduct.location}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span className="text-muted">Kategória:</span>
-                      <span style={{ fontWeight: 600 }}>{selectedProduct.category}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span className="text-muted">Érték:</span>
-                      <span style={{ fontWeight: 600, color: 'var(--primary-color)' }}>{selectedProduct.price} / db</span>
-                    </div>
-                  </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '25px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                   <div className="glass" style={{ padding: '25px', borderRadius: '20px' }}>
+                      <h4 style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '20px', textTransform: 'uppercase' }}>Készlet Stratégia</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                         <div className="stat-card glass" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                            <p className="text-muted" style={{ fontSize: '0.7rem' }}>ABC Besorolás</p>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{selectedProduct.abc} kategória</div>
+                         </div>
+                         <div className="stat-card glass" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                            <p className="text-muted" style={{ fontSize: '0.7rem' }}>Átlagos Fogyás</p>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>2.4 db / nap</div>
+                         </div>
+                      </div>
+                   </div>
+                   <div className="glass" style={{ padding: '25px', borderRadius: '20px', borderLeft: '4px solid #f1c40f' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                         <Zap size={20} color="#f1c40f" />
+                         <h4 style={{ fontWeight: 800 }}>Smart Reorder Asszisztens</h4>
+                      </div>
+                      <p style={{ fontSize: '0.85rem', lineHeight: '1.6' }}>
+                         A jelenlegi gyártási terv és a beszállítói lead-time (8 nap) alapján az optimális utánrendelési mennyiség 
+                         <strong> {selectedProduct.minStock * 3} db</strong>. Javasolt rendelési dátum: Holnap.
+                      </p>
+                   </div>
                 </div>
-                <div className="glass" style={{ padding: '20px', borderRadius: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '10px' }}>Készlet szint</p>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 800, color: selectedProduct.stock <= selectedProduct.minStock ? '#e74c3c' : '#2ecc71' }}>{selectedProduct.stock}</div>
-                  <p style={{ fontSize: '0.75rem', marginTop: '5px' }}>Biztonsági készlet: {selectedProduct.minStock} db</p>
+                <div className="glass" style={{ padding: '25px', borderRadius: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                   <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '15px' }}>AKTUÁLIS KÉSZLET</p>
+                   <div style={{ fontSize: '4rem', fontWeight: 900, color: selectedProduct.stock <= selectedProduct.minStock ? '#e74c3c' : '#2ecc71', lineHeight: 1 }}>{selectedProduct.stock}</div>
+                   <p style={{ fontSize: '1.2rem', fontWeight: 700, marginTop: '5px' }}>darab</p>
+                   <div style={{ marginTop: '20px', padding: '10px 20px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                      Biztonsági szint: {selectedProduct.minStock} db
+                   </div>
                 </div>
               </div>
             )}
 
+            {activeTab === 'traceability' && (
+               <div className="traceability-tab">
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '20px' }}>Aktív Sarzsok (Batches)</h4>
+                  <div className="batch-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+                     {selectedProduct.batches.map((b, i) => (
+                        <div key={i} className="glass" style={{ padding: '15px', borderRadius: '15px', borderLeft: '4px solid #3498db' }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                              <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>{b.id}</span>
+                              <span className="status-badge active" style={{ fontSize: '0.6rem' }}>{b.status}</span>
+                           </div>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              <span>Mennyiség: {b.qty} db</span>
+                              <span>Lejárat: {b.expiry}</span>
+                           </div>
+                        </div>
+                     ))}
+                     {selectedProduct.batches.length === 0 && (
+                        <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '40px', opacity: 0.5 }}>
+                           <AlertTriangle size={48} style={{ marginBottom: '10px' }} />
+                           <p>Nincs aktív sarzs ehhez a tételhez.</p>
+                        </div>
+                     )}
+                  </div>
+               </div>
+            )}
+
             {activeTab === 'history' && (
               <div className="history-tab">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {selectedProduct.history.map((h, i) => (
-                    <div key={i} className="glass" style={{ padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        {h.type === 'IN' ? <ArrowUpRight color="#2ecc71" /> : <ArrowDownRight color="#e74c3c" />}
+                    <div key={i} className="glass" style={{ padding: '15px', borderRadius: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: h.type === 'IN' ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                           {h.type === 'IN' ? <ArrowUpRight size={18} color="#2ecc71" /> : <ArrowDownRight size={18} color="#e74c3c" />}
+                        </div>
                         <div>
-                          <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{h.reason}</p>
+                          <p style={{ fontWeight: 800, fontSize: '0.9rem' }}>{h.reason}</p>
                           <p className="text-muted" style={{ fontSize: '0.75rem' }}>{h.date}</p>
                         </div>
                       </div>
-                      <span style={{ fontWeight: 800, color: h.type === 'IN' ? '#2ecc71' : '#e74c3c' }}>{h.type === 'IN' ? '+' : '-'}{h.qty} db</span>
+                      <span style={{ fontWeight: 900, fontSize: '1.1rem', color: h.type === 'IN' ? '#2ecc71' : '#e74c3c' }}>{h.type === 'IN' ? '+' : '-'}{h.qty}</span>
                     </div>
                   ))}
-                  <button className="view-btn" style={{ width: '100%', marginTop: '10px' }}>
-                    <History size={16} /> Teljes mozgásnapló megnyitása
-                  </button>
                 </div>
               </div>
             )}
