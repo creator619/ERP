@@ -17,17 +17,70 @@ import {
   User,
   Star,
   ExternalLink,
-  Users
+  Users,
+  FileSearch,
+  Clock,
+  AlertCircle,
+  FileCheck,
+  Briefcase
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
 import './CRM.css';
 
 const CRM = ({ addToast }) => {
-  const [viewType, setViewType] = useState('kanban'); // 'kanban' or 'list'
+  const [viewType, setViewType] = useState('kanban'); // 'kanban', 'list', or 'tenders'
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+
+  const [partners, setPartners] = useState([
+    { id: 1, name: 'MÁV-START Zrt.', email: 'beszerzes@mav-start.hu', phone: '+36 1 511 1111', city: 'Budapest', tags: ['Vevő', 'Kiemelt'], status: 'Aktív', manager: 'Szabó Anna',
+      interactions: [
+        { date: '2024-04-18', type: 'Call', desc: 'Szerződéskötés előkészítése' },
+        { date: '2024-04-15', type: 'Meeting', desc: 'Technikai specifikáció egyeztetés' }
+      ],
+      opportunities: [
+        { name: 'Kocsi felújítás', value: 15000000, stage: 'Negotiation' }
+      ]
+    },
+    { id: 2, name: 'GYSEV Zrt.', email: 'info@gysev.hu', phone: '+36 99 517 111', city: 'Sopron', tags: ['Vevő'], status: 'Aktív', manager: 'Szabó Anna', interactions: [], opportunities: [] },
+    { id: 3, name: 'Rail Cargo Hungaria Zrt.', email: 'office@railcargo.hu', phone: '+36 1 512 7000', city: 'Budapest', tags: ['Vevő', 'Logisztika'], status: 'Aktív', manager: 'Kovács János', interactions: [], opportunities: [] },
+    { id: 4, name: 'Stadler Trains Kft.', email: 'hungary@stadlerrail.com', phone: '+36 1 327 4060', city: 'Dunakeszi', tags: ['Partner', 'Gyártó'], status: 'Aktív', manager: 'Szabó Anna', interactions: [], opportunities: [] },
+  ]);
+
+  const [tenders, setTenders] = useState([
+    { 
+      id: 'TEN-2024-042', 
+      title: 'Vagon alváz hegesztési tender', 
+      issuer: 'MÁV-START Zrt.', 
+      deadline: '2024-05-15', 
+      value: 125000000, 
+      status: 'In Progress',
+      compliance: 85,
+      tasks: ['Műszaki rajz', 'Költségbecslés', 'Referenciák']
+    },
+    { 
+      id: 'TEN-2024-045', 
+      title: 'Személykocsi belső világítás', 
+      issuer: 'GYSEV Zrt.', 
+      deadline: '2024-05-01', 
+      value: 42000000, 
+      status: 'Review',
+      compliance: 100,
+      tasks: ['Árajánlat kész', 'Mintadarab leadva']
+    },
+    { 
+      id: 'TEN-2024-048', 
+      title: 'Hajtóműalkatrész beszállítás', 
+      issuer: 'Stadler Rail', 
+      deadline: '2024-04-30', 
+      value: 85000000, 
+      status: 'Draft',
+      compliance: 40,
+      tasks: ['Specifikáció elemzés']
+    }
+  ]);
 
   const openPartnerDetails = (partner) => {
     setSelectedPartner(partner);
@@ -46,22 +99,7 @@ const CRM = ({ addToast }) => {
     addToast('Partner adatok mentve', 'success');
   };
 
-  const partners = [
-    { id: 1, name: 'MÁV-START Zrt.', email: 'beszerzes@mav-start.hu', phone: '+36 1 511 1111', city: 'Budapest', tags: ['Vevő', 'Kiemelt'], status: 'Aktív', manager: 'Szabó Anna',
-      interactions: [
-        { date: '2024-04-18', type: 'Call', desc: 'Szerződéskötés előkészítése' },
-        { date: '2024-04-15', type: 'Meeting', desc: 'Technikai specifikáció egyeztetés' }
-      ],
-      opportunities: [
-        { name: 'Kocsi felújítás', value: 15000000, stage: 'Negotiation' }
-      ]
-    },
-    { id: 2, name: 'GYSEV Zrt.', email: 'info@gysev.hu', phone: '+36 99 517 111', city: 'Sopron', tags: ['Vevő'], status: 'Aktív', manager: 'Szabó Anna', interactions: [], opportunities: [] },
-    { id: 3, name: 'Rail Cargo Hungaria Zrt.', email: 'office@railcargo.hu', phone: '+36 1 512 7000', city: 'Budapest', tags: ['Vevő', 'Logisztika'], status: 'Aktív', manager: 'Kovács János', interactions: [], opportunities: [] },
-    { id: 4, name: 'Stadler Trains Kft.', email: 'hungary@stadlerrail.com', phone: '+36 1 327 4060', city: 'Dunakeszi', tags: ['Partner', 'Gyártó'], status: 'Aktív', manager: 'Szabó Anna', interactions: [], opportunities: [] },
-    { id: 5, name: 'Knorr-Bremse Vasúti Kft.', email: 'info.budapest@knorr-bremse.com', phone: '+36 1 289 4000', city: 'Budapest', tags: ['Beszállító'], status: 'Aktív', manager: 'Kovács János', interactions: [], opportunities: [] },
-    { id: 6, name: 'Dunakeszi Járműjavító Kft.', email: 'iroda@djj.hu', phone: '+36 27 542 100', city: 'Dunakeszi', tags: ['Partner'], status: 'Aktív', manager: 'Szabó Anna', interactions: [], opportunities: [] },
-  ];
+  const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
 
   return (
     <div className="crm-module">
@@ -72,17 +110,17 @@ const CRM = ({ addToast }) => {
           </div>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Partnerkapcsolatok (CRM)</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Ügyfelek, beszállítók és lehetőségek kezelése</p>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Ügyfelek és Pályázatok (Tender Monitor) kezelése</p>
           </div>
         </div>
         
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div className="view-controls" style={{ background: 'var(--bg-card)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <button className={`view-btn ${viewType === 'kanban' ? 'active' : ''}`} onClick={() => setViewType('kanban')} style={{ padding: '6px 12px', borderRadius: '8px' }}>
-              <LayoutGrid size={16} />
+          <div className="view-controls glass" style={{ padding: '4px', borderRadius: '10px' }}>
+            <button className={`view-btn ${viewType === 'kanban' ? 'active' : ''}`} onClick={() => setViewType('kanban')}>
+              Dashboard
             </button>
-            <button className={`view-btn ${viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('list')} style={{ padding: '6px 12px', borderRadius: '8px' }}>
-              <List size={16} />
+            <button className={`view-btn ${viewType === 'tenders' ? 'active' : ''}`} onClick={() => setViewType('tenders')}>
+              Tender Monitor
             </button>
           </div>
           <button className="create-btn" onClick={() => addToast('Új partner felvétele', 'info')}>
@@ -92,61 +130,90 @@ const CRM = ({ addToast }) => {
       </div>
 
       {viewType === 'kanban' ? (
-        <div className="kanban-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+        <div className="kanban-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
           {partners.map(partner => (
-            <div key={partner.id} className="kanban-card glass" onClick={() => openPartnerDetails(partner)} style={{ padding: '20px', borderRadius: '15px', position: 'relative' }}>
-              <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
-                <div className="kanban-avatar" style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+            <div key={partner.id} className="kanban-card glass" onClick={() => openPartnerDetails(partner)} style={{ padding: '25px', borderRadius: '20px', position: 'relative', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                <div className="kanban-avatar" style={{ width: '50px', height: '50px', borderRadius: '14px', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem' }}>
                   {partner.name.charAt(0)}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700 }}>{partner.name}</h4>
-                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>{partner.city}</p>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{partner.name}</h4>
+                  <p className="text-muted" style={{ fontSize: '0.8rem' }}>{partner.city}</p>
                 </div>
-                <Star size={16} color="#f1c40f" style={{ cursor: 'pointer' }} />
               </div>
               
-              <div className="tag-list" style={{ marginBottom: '15px' }}>
+              <div className="tag-list" style={{ marginBottom: '20px' }}>
                 {partner.tags.map(tag => (
-                  <span key={tag} className="tag" style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', marginRight: '5px' }}>{tag}</span>
+                  <span key={tag} className="tag">{tag}</span>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
                 <div className="text-muted" style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <User size={12} /> {partner.manager}
+                  <User size={14} /> {partner.manager}
                 </div>
-                <div className="status-pill active" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>Aktív</div>
+                <span className="status-badge active" style={{ fontSize: '0.65rem' }}>AKTÍV</span>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Partner Neve</th>
-                <th>E-mail</th>
-                <th>Város</th>
-                <th>Manager</th>
-                <th>Státusz</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {partners.map(partner => (
-                <tr key={partner.id} onClick={() => openPartnerDetails(partner)} style={{ cursor: 'pointer' }}>
-                  <td><strong style={{ color: 'var(--primary-color)' }}>{partner.name}</strong></td>
-                  <td>{partner.email}</td>
-                  <td>{partner.city}</td>
-                  <td>{partner.manager}</td>
-                  <td><span className="status-badge active">{partner.status}</span></td>
-                  <td><button className="view-btn-small"><MoreVertical size={16} /></button></td>
-                </tr>
+        <div className="tender-monitor-view">
+           <div className="tender-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
+              <div className="stat-card glass">
+                 <p className="text-muted" style={{ fontSize: '0.75rem' }}>Összes Tender</p>
+                 <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{tenders.length} db</div>
+              </div>
+              <div className="stat-card glass">
+                 <p className="text-muted" style={{ fontSize: '0.75rem' }}>Várható Bevétel</p>
+                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--primary-color)' }}>{formatHUF(252000000)}</div>
+              </div>
+              <div className="stat-card glass">
+                 <p className="text-muted" style={{ fontSize: '0.75rem' }}>Kritikus Határidő</p>
+                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#e74c3c' }}>4 nap</div>
+              </div>
+              <div className="stat-card glass">
+                 <p className="text-muted" style={{ fontSize: '0.75rem' }}>Sikerarány</p>
+                 <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#2ecc71' }}>64%</div>
+              </div>
+           </div>
+
+           <div className="tender-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '25px' }}>
+              {tenders.map(tender => (
+                <div key={tender.id} className="tender-card glass" style={{ padding: '25px', borderRadius: '20px' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--primary-color)' }}>{tender.id}</span>
+                      <span className={`status-badge ${tender.status === 'Review' ? 'active' : tender.status === 'In Progress' ? 'warning' : 'info'}`}>
+                         {tender.status === 'Review' ? 'Leadva' : tender.status === 'In Progress' ? 'Folyamatban' : 'Piszkozat'}
+                      </span>
+                   </div>
+                   <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '10px' }}>{tender.title}</h4>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                      <Building size={14} className="text-muted" />
+                      <span className="text-muted" style={{ fontSize: '0.85rem' }}>{tender.issuer}</span>
+                   </div>
+
+                   <div className="tender-compliance" style={{ marginBottom: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '5px' }}>
+                         <span>Megfelelőség</span>
+                         <span style={{ fontWeight: 800 }}>{tender.compliance}%</span>
+                      </div>
+                      <div style={{ height: '6px', background: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                         <div style={{ width: `${tender.compliance}%`, height: '100%', background: tender.compliance > 80 ? '#2ecc71' : tender.compliance > 50 ? '#f1c40f' : '#3498db' }}></div>
+                      </div>
+                   </div>
+
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px', borderTop: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e74c3c' }}>
+                         <Clock size={16} />
+                         <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{tender.deadline}</span>
+                      </div>
+                      <div style={{ fontWeight: 900, fontSize: '0.95rem' }}>{formatHUF(tender.value)}</div>
+                   </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+           </div>
         </div>
       )}
 
