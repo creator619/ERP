@@ -117,16 +117,18 @@ const Inventory = ({ addToast }) => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-      <div className="module-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button className={`tab-btn ${viewType === 'kanban' || viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('kanban')}>
-          <Package size={16} /> Készletlista
-        </button>
-        <button className={`tab-btn ${viewType === 'scan' ? 'active' : ''}`} onClick={() => setViewType('scan')}>
-          <Tag size={16} /> QR Beolvasás
-        </button>
-        <button className={`tab-btn ${viewType === 'map' ? 'active' : ''}`} onClick={() => setViewType('map')}>
-          <MapPin size={16} /> Raktártérkép
-        </button>
+          <div className="module-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <button className={`tab-btn ${viewType === 'kanban' || viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('kanban')}>
+              <Package size={16} /> Készletlista
+            </button>
+            <button className={`tab-btn ${viewType === 'scan' ? 'active' : ''}`} onClick={() => setViewType('scan')}>
+              <Tag size={16} /> QR Beolvasás
+            </button>
+            <button className={`tab-btn ${viewType === 'map' ? 'active' : ''}`} onClick={() => setViewType('map')}>
+              <MapPin size={16} /> Raktártérkép
+            </button>
+          </div>
+        </div>
       </div>
 
       {viewType === 'scan' && (

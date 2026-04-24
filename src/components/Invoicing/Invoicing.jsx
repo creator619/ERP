@@ -72,8 +72,6 @@ const Invoicing = ({ addToast, currency }) => {
     taxLiability: 4205000
   };
 
-  return (
-    <div className="invoicing-module">
   const costCenters = [
     { name: 'Gyártósor-01', amount: 4520000, color: 'var(--primary-color)' },
     { name: 'Logisztika & Raktár', amount: 1240000, color: '#f1c40f' },
