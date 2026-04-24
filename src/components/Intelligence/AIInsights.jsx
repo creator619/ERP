@@ -19,7 +19,11 @@ import {
   ArrowDownRight,
   Globe,
   Navigation,
-  ArrowRightCircle
+  ArrowRightCircle,
+  MessageSquare,
+  Send,
+  Lock,
+  Eye
 } from 'lucide-react';
 import aiService from '../../services/AIService';
 import './AIInsights.css';
@@ -27,21 +31,48 @@ import './AIInsights.css';
 const AIInsights = ({ addToast }) => {
   const [activeView, setActiveView] = useState('ai'); // 'ai', 'bi', 'simulator', or 'strategy'
   const [simValues, setSimValues] = useState({
-    wages: 100, // percentage
-    materials: 100,
-    energy: 100,
-    salesVolume: 100
+    salesVolume: 100,
+    inflation: 0,
+    supplyRisk: 0
   });
+  
+  const [chatInput, setChatInput] = useState('');
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'ai', text: 'Üdvözlöm Simon Ernő! Én vagyok a RailParts Oracle. Miben segíthetek ma?' }
+  ]);
+  const [isThinking, setIsThinking] = useState(false);
 
   const insights = aiService.getInsights();
+
+  const handleSendMessage = (e) => {
+    if (e) e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMsg = { role: 'user', text: chatInput };
+    setChatHistory(prev => [...prev, userMsg]);
+    setChatInput('');
+    setIsThinking(true);
+
+    // Simulated AI response
+    setTimeout(() => {
+      const responses = [
+        "A készletszintek jelenleg stabilak, de a Stadler projekt miatt javaslom a kötőelemek korai utánrendelését.",
+        "A múlt havi OEE csökkenés oka a 3-as számú présgép váratlan karbantartása volt. A prediktív modellem szerint a következő 30 napban nem várható hasonló leállás.",
+        "A Simon Ernő által kért profit-szimuláció alapján 12%-os növekedés várható, ha az alapanyagárak nem emelkednek tovább.",
+        "Igen, az audit naplóban látom a tegnapi biztonsági incidens kísérletet. Az IP-alapú korlátozás sikeresen blokkolta a hozzáférést."
+      ];
+      const aiMsg = { role: 'ai', text: responses[Math.floor(Math.random() * responses.length)] };
+      setChatHistory(prev => [...prev, aiMsg]);
+      setIsThinking(false);
+    }, 1500);
+  };
 
   // Logic for simulator
   const baseProfit = 142; // M Ft
   const profitImpact = 
     ((simValues.salesVolume - 100) * 2.5) - 
-    ((simValues.wages - 100) * 1.2) - 
-    ((simValues.materials - 100) * 1.8) - 
-    ((simValues.energy - 100) * 0.5);
+    (simValues.inflation * 1.5) - 
+    (simValues.supplyRisk * 3.2);
   
   const estimatedProfit = baseProfit + profitImpact;
 
@@ -77,6 +108,7 @@ const AIInsights = ({ addToast }) => {
         <div style={{ display: 'flex', gap: '12px' }}>
           <div className="bi-tabs">
             <div className={`bi-tab ${activeView === 'ai' ? 'active' : ''}`} onClick={() => setActiveView('ai')}>AI Insights</div>
+            <div className={`bi-tab ${activeView === 'oracle' ? 'active' : ''}`} onClick={() => setActiveView('oracle')}>Oracle Asszisztens</div>
             <div className={`bi-tab ${activeView === 'bi' ? 'active' : ''}`} onClick={() => setActiveView('bi')}>Executive BI</div>
             <div className={`bi-tab ${activeView === 'simulator' ? 'active' : ''}`} onClick={() => setActiveView('simulator')}>Simulator</div>
             <div className={`bi-tab ${activeView === 'strategy' ? 'active' : ''}`} onClick={() => setActiveView('strategy')}>Strategy Map</div>
@@ -248,38 +280,30 @@ const AIInsights = ({ addToast }) => {
         <div className="bi-view-wrapper">
            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
               <div className="simulator-slider-container glass">
-                 <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '15px' }}>Változók Beállítása</h3>
+                 <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '15px' }}>Üzleti Szimulátor</h3>
                  
                  <div className="sim-group">
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem' }}>Munkabérek szintje</span>
-                       <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{simValues.wages}%</span>
+                       <span style={{ fontSize: '0.85rem' }}>Globális Infláció</span>
+                       <span style={{ fontWeight: 700, color: '#e74c3c' }}>+{simValues.inflation}%</span>
                     </div>
-                    <input type="range" className="sim-slider" min="80" max="150" value={simValues.wages} onChange={(e) => setSimValues({...simValues, wages: e.target.value})} />
+                    <input type="range" className="sim-slider danger" min="0" max="30" value={simValues.inflation} onChange={(e) => setSimValues({...simValues, inflation: parseInt(e.target.value)})} />
                  </div>
-
+ 
                  <div className="sim-group">
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem' }}>Alapanyag árak (Acél/Alu)</span>
-                       <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{simValues.materials}%</span>
+                       <span style={{ fontSize: '0.85rem' }}>Ellátási Lánc Kockázat</span>
+                       <span style={{ fontWeight: 700, color: '#f1c40f' }}>{simValues.supplyRisk}%</span>
                     </div>
-                    <input type="range" className="sim-slider" min="50" max="200" value={simValues.materials} onChange={(e) => setSimValues({...simValues, materials: e.target.value})} />
+                    <input type="range" className="sim-slider warning" min="0" max="100" value={simValues.supplyRisk} onChange={(e) => setSimValues({...simValues, supplyRisk: parseInt(e.target.value)})} />
                  </div>
-
-                 <div className="sim-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem' }}>Energia költségek</span>
-                       <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{simValues.energy}%</span>
-                    </div>
-                    <input type="range" className="sim-slider" min="50" max="300" value={simValues.energy} onChange={(e) => setSimValues({...simValues, energy: e.target.value})} />
-                 </div>
-
+ 
                  <div className="sim-group" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                       <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>Értékesítési Volumen</span>
+                       <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>Várható Értékesítési Volumen</span>
                        <span style={{ fontWeight: 800, color: '#2ecc71' }}>{simValues.salesVolume}%</span>
                     </div>
-                    <input type="range" className="sim-slider" min="50" max="200" value={simValues.salesVolume} onChange={(e) => setSimValues({...simValues, salesVolume: e.target.value})} />
+                    <input type="range" className="sim-slider success" min="50" max="200" value={simValues.salesVolume} onChange={(e) => setSimValues({...simValues, salesVolume: parseInt(e.target.value)})} />
                  </div>
               </div>
 
@@ -304,6 +328,73 @@ const AIInsights = ({ addToast }) => {
                         "A szimulált forgatókönyv fenntartható növekedést mutat. A likviditási tartalékok elegendőek a változások kezeléséhez."}
                     </p>
                  </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {activeView === 'oracle' && (
+        <div className="oracle-view glass">
+           <div className="neural-bg">
+              <div className="neural-node" style={{ top: '20%', left: '10%' }}></div>
+              <div className="neural-node" style={{ top: '60%', left: '30%' }}></div>
+              <div className="neural-node" style={{ top: '40%', left: '70%' }}></div>
+              <div className="neural-node" style={{ top: '80%', left: '90%' }}></div>
+           </div>
+           
+           <div className="oracle-chat-container">
+              <div className="oracle-messages">
+                 {chatHistory.map((msg, i) => (
+                    <div key={i} className={`chat-bubble ${msg.role}`}>
+                       <div className="bubble-content">
+                          {msg.role === 'ai' && <div className="ai-avatar"><Brain size={16} /></div>}
+                          <p>{msg.text}</p>
+                       </div>
+                    </div>
+                 ))}
+                 {isThinking && (
+                    <div className="chat-bubble ai thinking">
+                       <div className="bubble-content">
+                          <div className="ai-avatar"><Brain size={16} className="pulse-ai" /></div>
+                          <div className="typing-indicator"><span></span><span></span><span></span></div>
+                       </div>
+                    </div>
+                 )}
+              </div>
+              
+              <form className="oracle-input-area" onSubmit={handleSendMessage}>
+                 <input 
+                    type="text" 
+                    placeholder="Kérdezzen Simon Ernő nevében..." 
+                    value={chatInput} 
+                    onChange={(e) => setChatInput(e.target.value)}
+                 />
+                 <button type="submit" className="send-btn">
+                    <Send size={20} />
+                 </button>
+              </form>
+           </div>
+
+           <div className="oracle-sidebar">
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                 <Cpu size={18} color="var(--primary-color)" /> Rendszer Kontextus
+              </h3>
+              <div className="context-card glass">
+                 <p className="text-muted" style={{ fontSize: '0.7rem' }}>AKTÍV ELEMZÉS</p>
+                 <p style={{ fontWeight: 700, fontSize: '0.85rem' }}>Globális ERP Adathalmaz v4.2</p>
+              </div>
+              <div className="context-card glass">
+                 <p className="text-muted" style={{ fontSize: '0.7rem' }}>ADATFORRÁSOK</p>
+                 <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                    <div className="mini-tag">Inventory</div>
+                    <div className="mini-tag">Finance</div>
+                    <div className="mini-tag">MES</div>
+                 </div>
+              </div>
+              <div className="oracle-hints">
+                 <p style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '10px' }}>Próbálja ezeket:</p>
+                 <button className="hint-btn" onClick={() => { setChatInput('Melyik projektünk áll a legrosszabbul?'); handleSendMessage(); }}>Veszélyben lévő projektek</button>
+                 <button className="hint-btn" onClick={() => { setChatInput('Készlet-optimalizálási javaslatok?'); handleSendMessage(); }}>Készlet javaslatok</button>
               </div>
            </div>
         </div>
