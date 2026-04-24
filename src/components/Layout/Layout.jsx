@@ -11,6 +11,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
   const getModuleLabel = (id) => {
     const labels = {
       dashboard: 'Műszerfal',
+      bi: 'Executive Business Intelligence',
       projects: 'Projektmenedzsment és Dokumentáció',
       manufacturing: 'Gyártáskezelés',
       quality: 'Minőségellenőrzés és Tanúsítás',

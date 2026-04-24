@@ -16,6 +16,7 @@ import Quality from './components/Quality/Quality';
 import Maintenance from './components/Maintenance/Maintenance';
 import DMS from './components/DMS/DMS';
 import Logistics from './components/Logistics/Logistics';
+import ExecutiveBI from './components/ExecutiveBI/ExecutiveBI';
 import { ToastContainer } from './components/UI/Toast';
 
 function App() {
@@ -82,6 +83,8 @@ function App() {
         return <DMS {...props} />;
       case 'logistics':
         return <Logistics {...props} />;
+      case 'bi':
+        return <ExecutiveBI {...props} currency={currency} />;
       case 'settings':
         return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} language={language} setLanguage={setLanguage} />;
       default:

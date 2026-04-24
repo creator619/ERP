@@ -18,6 +18,7 @@ import './Layout.css';
 const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogout }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Műszerfal', icon: <LayoutDashboard size={20} /> },
+    { id: 'bi', label: 'Vezetői BI', icon: <BarChart3 size={20} /> },
     { id: 'projects', label: 'Projektek', icon: <Folder size={20} /> },
     { id: 'manufacturing', label: 'Gyártás', icon: <Settings size={20} /> },
     { id: 'quality', label: 'Minőségügy', icon: <ShieldCheck size={20} /> },
