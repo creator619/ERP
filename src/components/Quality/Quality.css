@@ -6,12 +6,69 @@
 .quality-stats-grid .stat-card {
   padding: 20px;
   border-radius: 15px;
-  border-bottom: 3px solid transparent;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .quality-stats-grid .stat-card:hover {
   transform: translateY(-5px);
+  border-color: var(--primary-color);
+}
+
+/* SPC Chart Styles */
+.spc-chart-container {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.spc-svg {
+  overflow: visible;
+  filter: drop-shadow(0 0 5px rgba(52, 152, 219, 0.2));
+}
+
+/* 8D Process Styles */
+.eight-d-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.eight-d-step {
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  position: relative;
+  transition: all 0.3s;
+  opacity: 0.5;
+}
+
+.eight-d-step.active {
+  opacity: 1;
+  background: rgba(52, 152, 219, 0.05);
+  border-color: rgba(52, 152, 219, 0.3);
+}
+
+.eight-d-step.current {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+}
+
+.step-number {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  margin-bottom: 5px;
+}
+
+.step-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .inspection-details-view {
@@ -27,5 +84,7 @@
   justify-content: center;
 }
 
-.check-status.success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
-.check-status.danger { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
