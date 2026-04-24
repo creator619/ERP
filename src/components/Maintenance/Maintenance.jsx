@@ -14,7 +14,6 @@ import {
   FileText,
   Thermometer,
   Gauge,
-  Tool,
   LifeBuoy
 } from 'lucide-react';
 import Modal from '../UI/Modal';

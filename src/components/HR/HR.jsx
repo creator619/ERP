@@ -239,9 +239,6 @@ const HR = ({ addToast }) => {
         </div>
       )}
 
-        </div>
-      )}
-
       {activeMainView === 'leaves' && (
         <div className="leaves-view glass" style={{ padding: '20px', borderRadius: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
