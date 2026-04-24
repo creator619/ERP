@@ -212,7 +212,7 @@ const Projects = ({ addToast }) => {
       </div>
 
       {viewMode === 'kanban' ? (
-        <div className="kanban-grid">
+        <div className="kanban-grid responsive-grid">
           {projects.map(prj => (
             <div key={prj.id} className={`kanban-card glass ${prj.risk === 'High' ? 'danger-border' : ''}`} onClick={() => openProjectDetails(prj)}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>

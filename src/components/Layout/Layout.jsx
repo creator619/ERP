@@ -4,9 +4,17 @@ import Navbar from './Navbar';
 import './Layout.css';
 
 const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, setCurrency, language, setLanguage }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // Close sidebar on mobile when switching modules
+  const handleModuleChange = (id) => {
+    setActiveModule(id);
+    if (window.innerWidth <= 768) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   const getModuleLabel = (id) => {
     const labels = {
@@ -34,11 +42,16 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
 
   return (
     <div className="layout-container">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && window.innerWidth <= 768 && (
+        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+      )}
+      
       <Sidebar 
         isOpen={isSidebarOpen} 
         toggleSidebar={toggleSidebar} 
         activeModule={activeModule}
-        setActiveModule={setActiveModule}
+        setActiveModule={handleModuleChange}
         onLogout={onLogout}
       />
       <main className={`main-content ${isSidebarOpen ? '' : 'sidebar-closed'}`}>
@@ -48,12 +61,12 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
           setCurrency={setCurrency}
           language={language}
           setLanguage={setLanguage}
+          toggleSidebar={toggleSidebar}
         />
         <div className="content-inner">
           {children}
         </div>
       </main>
-
     </div>
   );
 };

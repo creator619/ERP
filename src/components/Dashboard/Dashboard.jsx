@@ -62,9 +62,9 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-enterprise">
-      <div className="dashboard-welcome">
+      <div className="dashboard-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '5px' }}>Executive Mission Control</h1>
+          <h1 className="responsive-title" style={{ fontWeight: 800, marginBottom: '5px' }}>Executive Mission Control</h1>
           <p className="text-muted">RailParts Enterprise ERP • Globális Vállalati Áttekintés</p>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
@@ -75,7 +75,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginTop: '25px' }}>
+      <div className="stats-grid responsive-grid" style={{ marginTop: '25px' }}>
         {stats.map((stat, index) => (
           <div key={index} className="stat-card-premium glass" style={{ borderLeft: `4px solid ${stat.color}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
@@ -88,7 +88,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div className="dashboard-main-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '25px', marginTop: '25px' }}>
+      <div className="dashboard-main-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '25px', marginTop: '25px' }}>
         <div className="analytics-pane">
            <div className="glass" style={{ padding: '25px', borderRadius: '20px', marginBottom: '25px' }}>
               <h3 style={{ fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>

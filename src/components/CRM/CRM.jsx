@@ -130,7 +130,7 @@ const CRM = ({ addToast }) => {
       </div>
 
       {viewType === 'kanban' ? (
-        <div className="kanban-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
+        <div className="partner-grid responsive-grid">
           {partners.map(partner => (
             <div key={partner.id} className="kanban-card glass" onClick={() => openPartnerDetails(partner)} style={{ padding: '25px', borderRadius: '20px', position: 'relative', cursor: 'pointer' }}>
               <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
@@ -160,7 +160,7 @@ const CRM = ({ addToast }) => {
         </div>
       ) : (
         <div className="tender-monitor-view">
-           <div className="tender-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
+           <div className="tender-stats-grid responsive-grid" style={{ marginBottom: '25px' }}>
               <div className="stat-card glass">
                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>Összes Tender</p>
                  <div style={{ fontSize: '1.4rem', fontWeight: 900 }}>{tenders.length} db</div>

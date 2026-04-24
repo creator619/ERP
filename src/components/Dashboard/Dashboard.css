@@ -181,3 +181,13 @@
 .pulse-success {
   animation: pulse-success 2s infinite;
 }
+
+.responsive-title {
+  font-size: 1.8rem;
+}
+
+@media (max-width: 768px) {
+  .responsive-title {
+    font-size: 1.4rem;
+  }
+}

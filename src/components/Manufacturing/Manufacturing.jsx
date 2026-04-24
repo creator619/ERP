@@ -182,7 +182,7 @@ const Manufacturing = ({ addToast }) => {
 
       {viewMode === 'orders' ? (
         <>
-          <div className="manufacturing-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
+          <div className="manufacturing-summary-grid responsive-grid" style={{ marginBottom: '25px' }}>
             <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Aktív Gyártás</p>
               <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{workOrders.filter(w => w.status === 'In Progress').length} db</div>
@@ -201,7 +201,7 @@ const Manufacturing = ({ addToast }) => {
             </div>
           </div>
 
-          <div className="work-order-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+          <div className="work-order-grid responsive-grid">
             {workOrders.map(wo => (
               <div key={wo.id} className="wo-card glass" onClick={() => openWODetails(wo)} style={{ padding: '20px', borderRadius: '15px', position: 'relative', cursor: 'pointer' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
@@ -237,7 +237,7 @@ const Manufacturing = ({ addToast }) => {
         </>
       ) : (
         <div className="machine-monitor-view">
-          <div className="machine-grid">
+          <div className="machine-grid responsive-grid">
             {machines.map(m => (
               <div key={m.id} className={`machine-card glass ${m.status}`}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>

@@ -9,11 +9,12 @@ import {
   Globe,
   CheckCircle2,
   AlertCircle,
-  MessageSquare
+  MessageSquare,
+  Menu
 } from 'lucide-react';
 import './Layout.css';
 
-const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguage }) => {
+const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguage, toggleSidebar }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -28,6 +29,9 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguag
   return (
     <header className="navbar">
       <div className="navbar-left">
+        <button className="hamburger-btn" onClick={toggleSidebar}>
+          <Menu size={24} />
+        </button>
         <h1 className="page-title">{activeModuleLabel}</h1>
       </div>
 

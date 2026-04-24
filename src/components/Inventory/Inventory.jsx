@@ -169,7 +169,7 @@ const Inventory = ({ addToast }) => {
       </div>
 
       {(viewType === 'kanban' || viewType === 'list') && (
-        <div className="inventory-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
+        <div className="inventory-stats responsive-grid" style={{ marginBottom: '25px' }}>
            <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '5px' }}>KÉSZLET ÉRTÉK</p>
               <div style={{ fontSize: '1.3rem', fontWeight: 900 }}>142.5 M Ft</div>
@@ -223,7 +223,7 @@ const Inventory = ({ addToast }) => {
 
       {(viewType === 'kanban' || viewType === 'list') && (
         viewType === 'kanban' ? (
-          <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
+          <div className="product-grid responsive-grid">
             {products.map(product => (
               <div key={product.id} className={`kanban-card glass ${product.stock <= product.minStock ? 'warning-border' : ''}`} onClick={() => openProductDetails(product)} style={{ padding: '25px', borderRadius: '20px', cursor: 'pointer', position: 'relative' }}>
                 <div className={`abc-badge ${product.abc.toLowerCase()}`}>{product.abc}</div>
@@ -248,7 +248,7 @@ const Inventory = ({ addToast }) => {
             ))}
           </div>
         ) : (
-          <div className="list-view glass" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+          <div className="table-container-responsive glass">
             <table className="data-table">
               <thead>
                 <tr>
