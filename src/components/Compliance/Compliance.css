@@ -29,16 +29,63 @@
 
 .ncr-card {
     padding: 20px;
-    border-radius: 15px;
-    background: rgba(231, 76, 60, 0.05);
-    border: 1px solid rgba(231, 76, 60, 0.2);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
     margin-bottom: 15px;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
 }
 
-.ncr-card:hover {
-    background: rgba(231, 76, 60, 0.08);
+/* Document Control Styles */
+.doc-list-item {
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s;
 }
+
+.doc-list-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.approval-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.approval-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.timeline-step {
+    position: relative;
+    padding-bottom: 25px;
+}
+
+.step-dot {
+    position: absolute;
+    left: -25px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    border: 2px solid var(--bg-card);
+}
+
+.step-dot.done { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+.step-dot.active { background: var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
 
 .security-badge {
     display: flex;

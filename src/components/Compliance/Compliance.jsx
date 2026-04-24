@@ -73,6 +73,9 @@ const Compliance = ({ addToast }) => {
         <div className={`comp-tab ${activeTab === 'ncr' ? 'active' : ''}`} onClick={() => setActiveTab('ncr')}>
            <AlertOctagon size={16} /> NCR & 8D Riport
         </div>
+        <div className={`comp-tab ${activeTab === 'documents' ? 'active' : ''}`} onClick={() => setActiveTab('documents')}>
+           <FileText size={16} /> Dokumentum Tár
+        </div>
         <div className={`comp-tab ${activeTab === 'suppliers' ? 'active' : ''}`} onClick={() => setActiveTab('suppliers')}>
            <FileCheck size={16} /> Beszállítói Minősítés
         </div>
@@ -149,6 +152,57 @@ const Compliance = ({ addToast }) => {
                  <button className="create-btn" style={{ marginTop: '15px', width: '100%' }}>
                     <FileText size={18} /> PDF Riport Generálása
                  </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {activeTab === 'documents' && (
+        <div className="compliance-grid">
+           <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
+                 <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>ISO Dokumentum Tár</h3>
+                 <button className="view-btn-small"><Plus size={14} /> Új Feltöltése</button>
+              </div>
+              {[
+                { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
+                { name: 'Munkavédelmi Kézikönyv', ref: 'SAFE-HS-001', version: 'v1.1', status: 'Review' },
+                { name: 'Minőségirányítási Kézikönyv', ref: 'QM-ISO-9001', version: 'v4.0', status: 'Approved' }
+              ].map((doc, i) => (
+                <div key={i} className="doc-list-item">
+                   <div style={{ padding: '10px', background: 'rgba(52, 152, 219, 0.1)', color: 'var(--primary-color)', borderRadius: '10px' }}>
+                      <FileText size={20} />
+                   </div>
+                   <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 700, fontSize: '0.85rem' }}>{doc.name}</p>
+                      <p className="text-muted" style={{ fontSize: '0.65rem' }}>Ref: {doc.ref} • Verzió: {doc.version}</p>
+                   </div>
+                   <span className={`status-badge ${doc.status === 'Approved' ? 'success' : 'warning'}`}>{doc.status}</span>
+                </div>
+              ))}
+           </div>
+
+           <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '25px' }}>Jóváhagyási Munkafolyamat</h3>
+              <div className="approval-timeline">
+                 {[
+                   { user: 'Kovács J. (Mérnökség)', action: 'Létrehozva', date: '2024-04-22 10:30', status: 'done' },
+                   { user: 'Nagy T. (Minőségügy)', action: 'Ellenőrzés alatt', date: '2024-04-23 09:15', status: 'active' },
+                   { user: 'Szabó L. (Ügyvezetés)', action: 'Végső jóváhagyás', date: '-', status: 'pending' }
+                 ].map((step, i) => (
+                   <div key={i} className="timeline-step">
+                      <div className={`step-dot ${step.status}`}></div>
+                      <div style={{ opacity: step.status === 'pending' ? 0.4 : 1 }}>
+                         <p style={{ fontWeight: 800, fontSize: '0.8rem' }}>{step.action}</p>
+                         <p style={{ fontSize: '0.75rem' }}>{step.user}</p>
+                         <p className="text-muted" style={{ fontSize: '0.6rem' }}>{step.date}</p>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+              <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '12px', display: 'flex', gap: '15px', alignItems: 'center' }}>
+                 <div className="pulse-info"></div>
+                 <p style={{ fontSize: '0.75rem', fontWeight: 600 }}>Várakozás a minőségügyi ellenőrzésre...</p>
               </div>
            </div>
         </div>
