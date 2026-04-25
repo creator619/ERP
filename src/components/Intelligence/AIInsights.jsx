@@ -23,7 +23,8 @@ import {
   MessageSquare,
   Send,
   Lock,
-  Eye
+  Eye,
+  Download
 } from 'lucide-react';
 import aiService from '../../services/AIService';
 import './AIInsights.css';
