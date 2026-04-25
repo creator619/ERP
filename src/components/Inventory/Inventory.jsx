@@ -33,7 +33,12 @@ const Inventory = ({ addToast }) => {
   const [viewType, setViewType] = useState('kanban');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+
+  const [newProduct, setNewProduct] = useState({
+    name: '', category: '', price: '', stock: 0, minStock: 0, sku: '', abc: 'C', location: ''
+  });
 
   const [products, setProducts] = useState([
     { 
@@ -144,6 +149,61 @@ const Inventory = ({ addToast }) => {
     addToast('Készlet sikeresen frissítve', 'success');
   };
 
+  const handleDeleteProduct = (id) => {
+    const p = products.find(prod => prod.id === id);
+    setProducts(prev => prev.filter(prod => prod.id !== id));
+    setIsModalOpen(false);
+    
+    auditLogService.log({
+      user: 'Raktárkezelő',
+      action: 'Termék törlése',
+      module: 'Inventory',
+      details: `${p.name} (${p.sku}) véglegesen törölve a rendszerből.`,
+      severity: 'danger'
+    });
+    addToast('Termék sikeresen törölve', 'success');
+  };
+
+  const handleCreateProduct = () => {
+    if (!newProduct.name || !newProduct.sku) {
+      addToast('A Terméknév és az SKU megadása kötelező!', 'warning');
+      return;
+    }
+    
+    const productToAdd = {
+      ...newProduct,
+      id: Date.now(),
+      price: newProduct.price.includes('Ft') ? newProduct.price : `${newProduct.price} Ft`,
+      stock: parseInt(newProduct.stock) || 0,
+      minStock: parseInt(newProduct.minStock) || 0,
+      trend: [0, 0, 0, 0, 0, parseInt(newProduct.stock) || 0, parseInt(newProduct.stock) || 0],
+      batches: [{ id: `B-${Math.floor(1000 + Math.random() * 9000)}`, qty: parseInt(newProduct.stock) || 0, expiry: 'N/A', status: 'Passed' }],
+      history: [{ date: new Date().toISOString().split('T')[0], type: 'IN', qty: parseInt(newProduct.stock) || 0, reason: 'Kezdeti készlet felvitele' }]
+    };
+
+    setProducts(prev => [...prev, productToAdd]);
+    setIsCreateModalOpen(false);
+    setNewProduct({ name: '', category: '', price: '', stock: 0, minStock: 0, sku: '', abc: 'C', location: '' });
+    
+    auditLogService.log({
+      user: 'Raktárkezelő',
+      action: 'Új Termék Létrehozva',
+      module: 'Inventory',
+      details: `${productToAdd.name} (${productToAdd.sku}) rögzítve ${productToAdd.stock} db kezdőkészlettel.`,
+      severity: 'success'
+    });
+    addToast('Új termék sikeresen felvéve', 'success');
+  };
+
+  // Dinamikus statisztikák
+  const totalValueNum = products.reduce((sum, p) => {
+     const priceNum = parseInt(p.price.replace(/,/g, '').replace(' Ft', '')) || 0;
+     return sum + (priceNum * p.stock);
+  }, 0);
+  const totalValueStr = totalValueNum > 1000000 
+     ? (totalValueNum / 1000000).toFixed(1) + ' M Ft' 
+     : totalValueNum.toLocaleString('hu-HU') + ' Ft';
+
   return (
     <div className="inventory-module">
       <div className="invoicing-header" style={{ marginBottom: '25px' }}>
@@ -162,7 +222,7 @@ const Inventory = ({ addToast }) => {
             <button className={`view-btn ${viewType === 'scan' ? 'active' : ''}`} onClick={() => setViewType('scan')}>QR Szkenner</button>
             <button className={`view-btn ${viewType === 'map' ? 'active' : ''}`} onClick={() => setViewType('map')}>Raktártérkép</button>
           </div>
-          <button className="create-btn" onClick={() => addToast('Új termék felvétele', 'info')}>
+          <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
             <Plus size={20} /> Új Termék
           </button>
         </div>
@@ -172,7 +232,7 @@ const Inventory = ({ addToast }) => {
         <div className="inventory-stats responsive-grid" style={{ marginBottom: '25px' }}>
            <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '5px' }}>KÉSZLET ÉRTÉK</p>
-              <div style={{ fontSize: '1.3rem', fontWeight: 900 }}>142.5 M Ft</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 900 }}>{totalValueStr}</div>
            </div>
            <div className="stat-card glass">
               <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '5px' }}>KRITIKUS TÉTELEK</p>
@@ -293,6 +353,7 @@ const Inventory = ({ addToast }) => {
         footer={
           <>
             <button className="view-btn" onClick={() => setIsModalOpen(false)}>Bezárás</button>
+            <button className="view-btn" style={{ background: 'transparent', border: '1px solid #e74c3c', color: '#e74c3c' }} onClick={() => handleDeleteProduct(selectedProduct.id)}>Törlés</button>
             <button className="view-btn" onClick={() => handleAdjustStock(selectedProduct.id, -1, 'Selejtezés')}>Leltárhiány (-1)</button>
             <button className="create-btn" onClick={() => handleAdjustStock(selectedProduct.id, 10, 'Gyártási beérkezés')}>Bevételezés (+10)</button>
           </>
@@ -392,6 +453,58 @@ const Inventory = ({ addToast }) => {
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Új Termék Felvétele"
+        width="600px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsCreateModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleCreateProduct}>Mentés és Felvétel</button>
+          </>
+        }
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          <div className="settings-group">
+            <label>SKU (Cikkszám) *</label>
+            <input type="text" className="glass-input" value={newProduct.sku} onChange={(e) => setNewProduct({...newProduct, sku: e.target.value})} placeholder="pl. RW-INT-001" />
+          </div>
+          <div className="settings-group">
+            <label>Terméknév *</label>
+            <input type="text" className="glass-input" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} placeholder="pl. Hőszigetelt Ablak" />
+          </div>
+          <div className="settings-group">
+            <label>Kategória</label>
+            <input type="text" className="glass-input" value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} placeholder="pl. Beltér" />
+          </div>
+          <div className="settings-group">
+            <label>Egységár</label>
+            <input type="text" className="glass-input" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} placeholder="pl. 45000 Ft" />
+          </div>
+          <div className="settings-group">
+            <label>Induló készlet</label>
+            <input type="number" className="glass-input" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} />
+          </div>
+          <div className="settings-group">
+            <label>Minimum (Biztonsági) készlet</label>
+            <input type="number" className="glass-input" value={newProduct.minStock} onChange={(e) => setNewProduct({...newProduct, minStock: e.target.value})} />
+          </div>
+          <div className="settings-group">
+            <label>ABC Besorolás</label>
+            <select className="glass-input" value={newProduct.abc} onChange={(e) => setNewProduct({...newProduct, abc: e.target.value})}>
+              <option value="A">A - Magas prioritás</option>
+              <option value="B">B - Közepes prioritás</option>
+              <option value="C">C - Alacsony prioritás</option>
+            </select>
+          </div>
+          <div className="settings-group">
+            <label>Raktári Lokáció</label>
+            <input type="text" className="glass-input" value={newProduct.location} onChange={(e) => setNewProduct({...newProduct, location: e.target.value})} placeholder="pl. A-szektor, 01-B polc" />
+          </div>
+        </div>
       </Modal>
     </div>
   );
