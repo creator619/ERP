@@ -39,6 +39,7 @@ const HR = ({ addToast }) => {
       dept: 'IT', 
       status: 'Aktív', 
       kpi: 92,
+      shifts: ['DE', 'DE', 'DU', 'DU', 'ÉJS', 'PIH', 'PIH'],
       certifications: [
         { name: 'ISO 27001 Auditor', expiry: '2025-10-12', status: 'valid' },
         { name: 'CCNA Security', expiry: '2024-06-01', status: 'warning' }
@@ -51,6 +52,7 @@ const HR = ({ addToast }) => {
       dept: 'Gyártás', 
       status: 'Aktív', 
       kpi: 88,
+      shifts: ['DU', 'DU', 'DE', 'DE', 'ÉJS', 'PIH', 'PIH'],
       certifications: [
         { name: 'EN ISO 9606-1', expiry: '2024-12-15', status: 'valid' },
         { name: 'Tűzvédelmi szakvizsga', expiry: '2024-04-20', status: 'expired' }
@@ -63,6 +65,7 @@ const HR = ({ addToast }) => {
       dept: 'Management', 
       status: 'Aktív', 
       kpi: 95,
+      shifts: ['DE', 'DE', 'DE', 'DE', 'SZAB', 'PIH', 'PIH'],
       certifications: [
         { name: 'PMP Certification', expiry: '2026-01-10', status: 'valid' }
       ]
@@ -87,6 +90,48 @@ const HR = ({ addToast }) => {
     return '#e74c3c';
   };
 
+  const STYLES_MAP = {
+    'DE': 'morning',
+    'DU': 'afternoon',
+    'ÉJS': 'night',
+    'SZAB': 'leave',
+    'PIH': 'rest'
+  };
+
+  const SHIFT_CYCLE = ['DE', 'DU', 'ÉJS', 'SZAB', 'PIH'];
+
+  const handleShiftChange = (empId, dayIdx) => {
+    setEmployees(prev => prev.map(emp => {
+      if (emp.id === empId) {
+        const newShifts = [...emp.shifts];
+        const currentIndex = SHIFT_CYCLE.indexOf(newShifts[dayIdx]);
+        newShifts[dayIdx] = SHIFT_CYCLE[(currentIndex + 1) % SHIFT_CYCLE.length];
+        
+        auditLogService.log({
+          user: 'HR Admin',
+          action: 'Műszak Módosítás',
+          module: 'HR',
+          details: `${emp.name} műszakja frissítve (${dayIdx+1}. nap: ${newShifts[dayIdx]})`,
+          severity: 'info'
+        });
+
+        return { ...emp, shifts: newShifts };
+      }
+      return emp;
+    }));
+  };
+
+  const dailyCheckIn = () => {
+    auditLogService.log({
+      user: 'Jelenlegi Felhasználó',
+      action: 'Napi Blokkolás',
+      module: 'HR',
+      details: 'Sikeres érkeztetés rögzítve.',
+      severity: 'success'
+    });
+    addToast('Sikeres napi érkeztetés (Blokkolás) rögzítve', 'success');
+  };
+
   return (
     <div className="hr-module">
       <div className="invoicing-header" style={{ marginBottom: '25px' }}>
@@ -99,9 +144,14 @@ const HR = ({ addToast }) => {
             <p className="text-muted" style={{ fontSize: '0.85rem' }}>Kompetencia-mátrix és teljesítménymérés</p>
           </div>
         </div>
-        <button className="create-btn" onClick={() => addToast('Új munkatárs felvétele', 'info')}>
-          <UserPlus size={20} /> Új Alkalmazott
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="view-btn" onClick={dailyCheckIn} style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)' }}>
+            <Clock size={20} /> Napi Blokkolás
+          </button>
+          <button className="create-btn" onClick={() => addToast('Új munkatárs felvétele', 'info')}>
+            <UserPlus size={20} /> Új Alkalmazott
+          </button>
+        </div>
       </div>
 
       <div className="hr-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
@@ -239,13 +289,16 @@ const HR = ({ addToast }) => {
             {employees.map(emp => (
               <div key={emp.id} className="shift-grid">
                 <div style={{ fontWeight: 700 }}>{emp.name}</div>
-                <div className="shift-cell morning">DE</div>
-                <div className="shift-cell morning">DE</div>
-                <div className="shift-cell afternoon">DU</div>
-                <div className="shift-cell afternoon">DU</div>
-                <div className="shift-cell night">ÉJS</div>
-                <div className="shift-cell">-</div>
-                <div className="shift-cell">-</div>
+                {emp.shifts.map((shift, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`shift-cell ${STYLES_MAP[shift]}`} 
+                    onClick={() => handleShiftChange(emp.id, idx)}
+                    title="Kattints a műszak váltásához"
+                  >
+                    {shift}
+                  </div>
+                ))}
               </div>
             ))}
           </div>
