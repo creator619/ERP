@@ -27,6 +27,28 @@ const Manufacturing = ({ addToast }) => {
   const [selectedWO, setSelectedWO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('stages');
+  const [activeKpiModal, setActiveKpiModal] = useState(null);
+
+  const getShortages = () => {
+    let missingItems = [];
+    workOrders.filter(w => w.status === 'In Progress').forEach(wo => {
+      const bomStatus = getBomStatus(wo);
+      bomStatus.forEach(b => {
+        if (b.status === 'missing') {
+          missingItems.push({ 
+            woId: wo.id, 
+            product: wo.product, 
+            item: b.item, 
+            required: b.required, 
+            available: b.available, 
+            missingAmount: b.required - b.available 
+          });
+        }
+      });
+    });
+    return missingItems;
+  };
+  const missingItemsList = getShortages();
 
   const stages = [
     { name: 'Anyag előkészítés', icon: <Package size={16} /> },
@@ -130,21 +152,23 @@ const Manufacturing = ({ addToast }) => {
       {viewMode === 'orders' ? (
         <>
           <div className="manufacturing-summary-grid responsive-grid" style={{ marginBottom: '25px' }}>
-            <div className="stat-card glass">
+            <div className="stat-card glass hover-lift" onClick={() => setActiveKpiModal('active_orders')} style={{ cursor: 'pointer', transition: 'all 0.2s' }}>
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Aktív Gyártás</p>
               <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{workOrders.filter(w => w.status === 'In Progress').length} db</div>
             </div>
-            <div className="stat-card glass">
+            <div className="stat-card glass hover-lift" onClick={() => setActiveKpiModal('oee')} style={{ cursor: 'pointer', transition: 'all 0.2s' }}>
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Átlagos OEE</p>
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2ecc71' }}>86.5%</div>
             </div>
-            <div className="stat-card glass">
+            <div className="stat-card glass hover-lift" onClick={() => setActiveKpiModal('shortages')} style={{ cursor: 'pointer', transition: 'all 0.2s' }}>
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Alapanyaghiány</p>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e74c3c' }}>1 tétel</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: missingItemsList.length > 0 ? '#e74c3c' : '#2ecc71' }}>
+                {missingItemsList.length} tétel
+              </div>
             </div>
-            <div className="stat-card glass">
+            <div className="stat-card glass hover-lift" onClick={() => setActiveKpiModal('weekly')} style={{ cursor: 'pointer', transition: 'all 0.2s' }}>
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Heti Teljesítés</p>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>142 egység</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{workOrders.filter(w => w.status === 'Completed').reduce((acc, curr) => acc + curr.quantity, 0)} egység</div>
             </div>
           </div>
 
@@ -328,6 +352,132 @@ const Manufacturing = ({ addToast }) => {
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={!!activeKpiModal}
+        onClose={() => setActiveKpiModal(null)}
+        title={
+          activeKpiModal === 'active_orders' ? 'Aktív Gyártási Listázás' :
+          activeKpiModal === 'oee' ? 'Eszközhatékonyság (OEE) Részletező' :
+          activeKpiModal === 'shortages' ? 'Kritikus Anyaghiányok' :
+          'Heti Teljesítmény Riport'
+        }
+        width="800px"
+        footer={<button className="view-btn" onClick={() => setActiveKpiModal(null)}>Bezárás</button>}
+      >
+        <div className="kpi-detail-view" style={{ padding: '10px 0' }}>
+          {activeKpiModal === 'active_orders' && (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Munkalap</th>
+                  <th>Termék</th>
+                  <th>Fázis</th>
+                  <th>Haladás</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workOrders.filter(w => w.status === 'In Progress').map(wo => (
+                  <tr key={wo.id}>
+                    <td style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{wo.id}</td>
+                    <td>{wo.product}</td>
+                    <td>{stages[wo.currentStage - 1]?.name || 'Folyamatban'}</td>
+                    <td>
+                      <div className="progress-container" style={{ width: '100px' }}>
+                        <div style={{ height: '6px', background: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: `${wo.progress}%`, height: '100%', background: 'var(--primary-color)' }}></div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {activeKpiModal === 'oee' && (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Gép</th>
+                  <th>Státusz</th>
+                  <th>OEE</th>
+                  <th>Minőség</th>
+                </tr>
+              </thead>
+              <tbody>
+                {machines.map(m => (
+                  <tr key={m.id}>
+                    <td style={{ fontWeight: 700 }}>{m.name}</td>
+                    <td>
+                      <span className={`status-badge ${m.status === 'running' ? 'active' : m.status === 'down' ? 'danger' : 'warning'}`}>
+                        {m.status === 'running' ? 'Üzemel' : m.status === 'down' ? 'Leállás' : 'Készenlét'}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: 700, color: m.oee > 80 ? '#2ecc71' : '#e74c3c' }}>{m.oee}%</td>
+                    <td>{m.quality}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {activeKpiModal === 'shortages' && (
+            missingItemsList.length > 0 ? (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Érintett Gyártás</th>
+                    <th>Részegység / Szükséglet</th>
+                    <th>Hiány (Raktár)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {missingItemsList.map((m, i) => (
+                    <tr key={i}>
+                      <td>
+                        <div style={{ fontWeight: 700 }}>{m.woId}</div>
+                        <div className="text-muted" style={{ fontSize: '0.75rem' }}>{m.product}</div>
+                      </td>
+                      <td>{m.item} ({m.required} db)</td>
+                      <td style={{ color: '#e74c3c', fontWeight: 800 }}>- {m.missingAmount} db hiány</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <CheckCircle2 size={48} color="#2ecc71" style={{ marginBottom: '15px' }} />
+                <h3 style={{ fontWeight: 700 }}>Minden anyag rendelkezésre áll!</h3>
+                <p className="text-muted">A jelenlegi aktív gyártásokhoz szükséges összes alapanyag megtalálható a raktárban.</p>
+              </div>
+            )
+          )}
+
+          {activeKpiModal === 'weekly' && (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Munkalap</th>
+                  <th>Termék</th>
+                  <th>Mennyiség</th>
+                  <th>Státusz</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workOrders.filter(w => w.status === 'Completed').map(wo => (
+                  <tr key={wo.id}>
+                    <td style={{ fontWeight: 700 }}>{wo.id}</td>
+                    <td>{wo.product}</td>
+                    <td style={{ fontWeight: 800, color: '#2ecc71' }}>+ {wo.quantity} db</td>
+                    <td><span className="status-badge active">Készletre véve</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </Modal>
     </div>
   );
