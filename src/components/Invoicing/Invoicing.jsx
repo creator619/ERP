@@ -30,7 +30,11 @@ import './Invoicing.css';
 const Invoicing = ({ addToast, currency }) => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
+  const [newInvoice, setNewInvoice] = useState({
+    customer: '', due: '', amount: 0, status: 'Draft'
+  });
   
   const [invoices, setInvoices] = useState([
     { id: 'INV/2024/001', customer: 'Kovács és Társa Kft.', date: '2024-04-10', due: '2024-04-24', amount: 154200, status: 'Paid', aging: 0 },
@@ -60,7 +64,39 @@ const Invoicing = ({ addToast, currency }) => {
       return inv;
     }));
     addToast('Befizetés sikeresen rögzítve', 'success');
-    setIsPreviewOpen(false);
+    addToast('Befizetés sikeresen rögzítve', 'success');
+  };
+
+  const handleCreateInvoice = () => {
+    if (!newInvoice.customer || !newInvoice.due || !newInvoice.amount) {
+      addToast('Minden mező kitöltése kötelező!', 'warning');
+      return;
+    }
+    const newId = `INV/2026/${String(invoices.length + 1).padStart(3, '0')}`;
+    const amountNum = parseInt(newInvoice.amount) || 0;
+    
+    const invoiceToAdd = {
+      id: newId,
+      customer: newInvoice.customer,
+      date: new Date().toISOString().split('T')[0],
+      due: newInvoice.due,
+      amount: amountNum,
+      status: newInvoice.status,
+      aging: 0
+    };
+
+    setInvoices([invoiceToAdd, ...invoices]);
+    setIsCreateModalOpen(false);
+    setNewInvoice({ customer: '', due: '', amount: 0, status: 'Draft' });
+    
+    auditLogService.log({
+      user: 'Pénzügyi Vezető',
+      action: 'Új Számla Létrehozva',
+      module: 'Invoicing',
+      details: `${newId} részére: ${invoiceToAdd.customer} (${formatCurrency(amountNum)})`,
+      severity: 'info'
+    });
+    addToast('Számla sikeresen generálva', 'success');
   };
 
   const formatCurrency = (val) => currencyService.format(val, currency);
@@ -68,8 +104,8 @@ const Invoicing = ({ addToast, currency }) => {
   const stats = {
     totalPaid: invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + i.amount, 0),
     totalOverdue: invoices.filter(i => i.status === 'Overdue').reduce((sum, i) => sum + i.amount, 0),
-    avgAging: 12.5,
-    taxLiability: 4205000
+    avgAging: Math.round(invoices.reduce((sum, i) => sum + i.aging, 0) / (invoices.length || 1)),
+    taxLiability: invoices.filter(i => i.status !== 'Draft').reduce((sum, i) => sum + i.amount, 0) * 0.27
   };
 
   const costCenters = [
@@ -103,7 +139,7 @@ const Invoicing = ({ addToast, currency }) => {
               <PieChart size={16} />
             </button>
           </div>
-          <button className="create-btn" onClick={() => addToast('Új bizonylat generálása', 'info')}>
+          <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
             <Plus size={20} /> Új Számla
           </button>
         </div>
@@ -192,12 +228,12 @@ const Invoicing = ({ addToast, currency }) => {
                   <span style={{ fontWeight: 700 }}>{formatCurrency(12500000)}</span>
                 </div>
                 <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                  <span className="text-muted" style={{ fontSize: '0.75rem' }}>27% ÁFA alap:</span>
-                  <span style={{ fontWeight: 700 }}>{formatCurrency(45800000)}</span>
+                  <span className="text-muted" style={{ fontSize: '0.75rem' }}>Belföldi 27% ÁFA alap:</span>
+                  <span style={{ fontWeight: 700 }}>{formatCurrency(stats.taxLiability / 0.27)}</span>
                 </div>
-                <div style={{ padding: '12px', background: 'rgba(46, 204, 113, 0.1)', borderRadius: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2ecc71' }}>Visszaigényelhető:</span>
-                  <span style={{ fontWeight: 800, color: '#2ecc71' }}>{formatCurrency(2150000)}</span>
+                <div style={{ padding: '12px', background: 'rgba(231, 76, 60, 0.1)', borderRadius: '10px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e74c3c' }}>Fizetendő ÁFA:</span>
+                  <span style={{ fontWeight: 800, color: '#e74c3c' }}>{formatCurrency(stats.taxLiability)}</span>
                 </div>
               </div>
             </div>
@@ -248,7 +284,7 @@ const Invoicing = ({ addToast, currency }) => {
         footer={
           <>
             <button className="view-btn" onClick={() => setIsPreviewOpen(false)}>Bezárás</button>
-            <button className="create-btn" onClick={() => addToast('PDF generálása folyamatban...', 'info')}>
+            <button className="create-btn" onClick={() => window.print()}>
               <Printer size={18} /> PDF Generálás
             </button>
             {selectedInvoice?.status !== 'Paid' && (
@@ -260,7 +296,7 @@ const Invoicing = ({ addToast, currency }) => {
         }
       >
         {selectedInvoice && (
-          <div className="invoice-detail-view">
+          <div className="invoice-detail-view printable-invoice">
              {/* ... Invoice Paper Layout ... */}
              <div style={{ background: 'white', color: '#333', padding: '40px', borderRadius: '4px', border: '1px solid #ddd' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
@@ -281,6 +317,45 @@ const Invoicing = ({ addToast, currency }) => {
              </div>
           </div>
         )}
+      </Modal>
+
+      <Modal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Új Számla Kézi Rögzítése"
+        width="600px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsCreateModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleCreateInvoice}>Számla Mentése</button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="settings-group">
+            <label>Vevő (Partner) Neve *</label>
+            <input type="text" className="glass-input" value={newInvoice.customer} onChange={(e) => setNewInvoice({...newInvoice, customer: e.target.value})} placeholder="pl. MÁV Zrt." />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="settings-group">
+              <label>Fizetési Határidő *</label>
+              <input type="date" className="glass-input" value={newInvoice.due} onChange={(e) => setNewInvoice({...newInvoice, due: e.target.value})} />
+            </div>
+            <div className="settings-group">
+              <label>Bruttó Végösszeg *</label>
+              <input type="number" className="glass-input" value={newInvoice.amount || ''} onChange={(e) => setNewInvoice({...newInvoice, amount: e.target.value})} placeholder="Összeg Ft-ban" />
+            </div>
+          </div>
+          <div className="settings-group">
+            <label>Számla Státusza</label>
+            <select className="glass-input" value={newInvoice.status} onChange={(e) => setNewInvoice({...newInvoice, status: e.target.value})}>
+              <option value="Draft">Piszkozat (Draft)</option>
+              <option value="Paid">Fizetve (Paid)</option>
+              <option value="Overdue">Késedelmes (Overdue)</option>
+              <option value="Partial">Részben fizetett (Partial)</option>
+            </select>
+          </div>
+        </div>
       </Modal>
     </div>
   );
