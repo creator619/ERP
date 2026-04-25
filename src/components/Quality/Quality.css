@@ -1,90 +1,305 @@
-/* Quality Module Styles */
+/* Quality.css - Premium Light Theme Updates */
+
 .quality-module {
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeInQuality 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: 20px;
 }
 
-.quality-stats-grid .stat-card {
+@keyframes fadeInQuality {
+  from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.stat-card {
   padding: 20px;
-  border-radius: 15px;
-  transition: all 0.3s ease;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+  position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-.quality-stats-grid .stat-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--primary-color);
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  border-color: rgba(46, 204, 113, 0.2);
 }
 
-/* SPC Chart Styles */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(46, 204, 113, 0.6), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stat-card:hover::after {
+  opacity: 1;
+}
+
+.list-view {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 18px 20px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.data-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s;
+}
+
+.data-table tbody tr {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.data-table tbody tr:hover td {
+  background: rgba(46, 204, 113, 0.03);
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-badge.active { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
+.status-badge.danger { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.2); }
+.status-badge.warning { background: rgba(241, 196, 15, 0.1); color: #f39c12; border: 1px solid rgba(241, 196, 15, 0.2); }
+
+/* SPC Chart Hover Elements */
 .spc-chart-container {
-  margin-top: 10px;
+  position: relative;
   width: 100%;
 }
 
 .spc-svg {
   overflow: visible;
-  filter: drop-shadow(0 0 5px rgba(52, 152, 219, 0.2));
 }
 
-/* 8D Process Styles */
+.spc-line-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 2s ease-out forwards;
+}
+
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }
+}
+
+.spc-point {
+  transition: r 0.2s, fill 0.2s;
+  cursor: pointer;
+}
+
+.spc-point:hover {
+  r: 6;
+  fill: #fff;
+  stroke: var(--primary-color);
+  stroke-width: 2;
+}
+
+.spc-tooltip {
+  position: absolute;
+  background: var(--bg-sidebar);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  transition: opacity 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* Modal Updates */
+.inspection-details-view {
+  background: var(--bg-main);
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.settings-nav-item {
+  cursor: pointer;
+  padding: 15px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.settings-nav-item:hover {
+  color: var(--text-main);
+  background: rgba(0,0,0,0.02);
+}
+
+.settings-nav-item.active {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.check-list-item {
+  background: var(--bg-card);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.check-list-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-color: rgba(46, 204, 113, 0.2);
+}
+
+.check-list-item.nok:hover {
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+/* 8D Process Visuals */
+.eight-d-tab {
+  padding: 10px;
+}
+
 .eight-d-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin: 30px 0;
+}
+
+.eight-d-grid::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 5%;
+  right: 5%;
+  height: 4px;
+  background: var(--border-color);
+  z-index: 1;
+  border-radius: 2px;
+}
+
+/* The active progress rail behind steps */
+.eight-d-progress-rail {
+  position: absolute;
+  top: 18px;
+  left: 5%;
+  height: 4px;
+  background: linear-gradient(90deg, #3498db, var(--primary-color));
+  z-index: 2;
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .eight-d-step {
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  text-align: center;
   position: relative;
-  transition: all 0.3s;
-  opacity: 0.5;
-}
-
-.eight-d-step.active {
-  opacity: 1;
-  background: rgba(52, 152, 219, 0.05);
-  border-color: rgba(52, 152, 219, 0.3);
-}
-
-.eight-d-step.current {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 12%;
 }
 
 .step-number {
-  font-size: 1.2rem;
-  font-weight: 900;
-  color: var(--primary-color);
-  margin-bottom: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .step-name {
   font-size: 0.7rem;
   font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
   text-transform: uppercase;
 }
 
-.inspection-details-view {
-  padding: 10px;
+.eight-d-step.active .step-number {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 10px rgba(113, 75, 103, 0.3);
 }
 
-.check-list .check-status {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.eight-d-step.active .step-name {
+  color: var(--primary-color);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.eight-d-step.current .step-number {
+  border-color: #f39c12;
+  box-shadow: 0 0 15px rgba(243, 156, 18, 0.4);
+  transform: scale(1.15);
+}
+
+.eight-d-step.current .step-name {
+  color: #f39c12;
+}
+
+/* Modals extra polish */
+.specs-view {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+}
+
+.specs-card {
+  padding: 16px;
+  background: var(--bg-main);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: box-shadow 0.2s;
+}
+
+.specs-card:hover {
+  box-shadow: inset 0 0 0 1px var(--primary-color);
 }
