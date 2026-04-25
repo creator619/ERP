@@ -16,9 +16,11 @@ import {
   ExternalLink,
   QrCode
 } from 'lucide-react';
+import { useData } from '../../contexts/DataContext';
 import './BlockchainTraceability.css';
 
 const BlockchainTraceability = ({ addToast }) => {
+  const { ledgers } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [activeLedger, setActiveLedger] = useState(null);
@@ -28,20 +30,7 @@ const BlockchainTraceability = ({ addToast }) => {
     { id: 'BLK-9940', type: 'Material Intake', time: '15 perce', hash: '0000x2e88...1f44', status: 'Confirmed' }
   ]);
 
-  const mockProductHistory = {
-    'AXLE-2024-001': {
-      name: 'Nagysebességű Tengely (V3)',
-      status: 'Blockchain Verified',
-      finalHash: 'SHA256: 8f2a4c11e2e88b99d3d11a221f44e556...',
-      steps: [
-        { title: 'Alapanyag Beérkezés', date: '2024-04-10 08:30', actor: 'Beszerzés - Kovács J.', hash: '0x4f12...a9b2', details: 'Acélötvözet S355J2W, Tanúsítvány: EN 10204 3.1' },
-        { title: 'CNC Esztergálás', date: '2024-04-12 14:15', actor: 'Gyártás - Nagy P.', hash: '0x8d33...f1e4', details: 'Gép: DMG MORI CTX, Program: AXLE_V3_FINAL' },
-        { title: 'Hőkezelés', date: '2024-04-13 10:00', actor: 'Külső Partner - HeatTreat Kft.', hash: '0x2b44...c6d7', details: '600°C feszültségmentesítő izzítás' },
-        { title: 'Ultrahangos Vizsgálat', date: '2024-04-15 09:45', actor: 'Minőségügy - Ügyvezető Igazgató', hash: '0x9a55...e8f9', details: 'Repedésmentes, Megfelelő' },
-        { title: 'Blockchain Lezárás', date: '2024-04-24 14:00', actor: 'Rendszer AI', hash: '0x0f66...b1a2', details: 'Digitális Termék Útlevél generálva' }
-      ]
-    }
-  };
+
 
   const handleSearch = (e) => {
     if (e) e.preventDefault();
@@ -51,7 +40,7 @@ const BlockchainTraceability = ({ addToast }) => {
     setActiveLedger(null);
 
     setTimeout(() => {
-      const result = mockProductHistory[searchTerm.toUpperCase()];
+      const result = ledgers[searchTerm.toUpperCase()];
       if (result) {
         setActiveLedger(result);
         addToast('Kriptográfiai eredet igazolva!', 'success');

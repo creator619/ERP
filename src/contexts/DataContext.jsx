@@ -6,6 +6,24 @@ const DataContext = createContext();
 export const useData = () => useContext(DataContext);
 
 export const DataProvider = ({ children }) => {
+  const generateHash = () => '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
+  // 0. Blockchain Ledgers
+  const [ledgers, setLedgers] = useState({
+    'AXLE-2024-001': {
+      name: 'Nagysebességű Tengely (V3)',
+      status: 'Blockchain Verified',
+      finalHash: 'SHA256: 8f2a4c11e2e88b99d3d11a221f44e556...',
+      steps: [
+        { title: 'Alapanyag Beérkezés', date: '2024-04-10 08:30', actor: 'Beszerzés - Kovács J.', hash: '0x4f12...a9b2', details: 'Acélötvözet S355J2W, Tanúsítvány: EN 10204 3.1' },
+        { title: 'CNC Esztergálás', date: '2024-04-12 14:15', actor: 'Gyártás - Nagy P.', hash: '0x8d33...f1e4', details: 'Gép: DMG MORI CTX, Program: AXLE_V3_FINAL' },
+        { title: 'Hőkezelés', date: '2024-04-13 10:00', actor: 'Külső Partner - HeatTreat Kft.', hash: '0x2b44...c6d7', details: '600°C feszültségmentesítő izzítás' },
+        { title: 'Ultrahangos Vizsgálat', date: '2024-04-15 09:45', actor: 'Minőségügy - Ügyvezető Igazgató', hash: '0x9a55...e8f9', details: 'Repedésmentes, Megfelelő' },
+        { title: 'Blockchain Lezárás', date: '2024-04-24 14:00', actor: 'Rendszer AI', hash: '0x0f66...b1a2', details: 'Digitális Termék Útlevél generálva' }
+      ]
+    }
+  });
+
   // 1. Initial Products State (Inventory)
   const [products, setProducts] = useState([
     { 
@@ -196,6 +214,22 @@ export const DataProvider = ({ children }) => {
           severity: 'success'
         });
 
+        // Blockchain Főkönyvi bejegyzés generálása
+        const now = new Date().toLocaleString('hu-HU');
+        setLedgers(prev => ({
+          ...prev,
+          [woId]: {
+            name: endProduct,
+            status: 'Blockchain Verified',
+            finalHash: `SHA256: ${generateHash().substring(2)}`,
+            steps: [
+              { title: 'Alapanyag Beérkezés', date: now, actor: 'ERP Rendszer', hash: generateHash().substring(0,18), details: `Felhasznált: ${requiredBom.map(b => b.item).join(', ')}` },
+              { title: 'Gyártási Folyamat (MES)', date: now, actor: 'Minőségellenőrzés', hash: generateHash().substring(0,18), details: `Munkalap sorszám: ${woId}` },
+              { title: 'Blockchain Lezárás', date: now, actor: 'RailParts Core', hash: generateHash().substring(0,18), details: `Útlevél Létrehozva (${endQty} db)` }
+            ]
+          }
+        }));
+
         return updatedProducts;
       });
     }
@@ -208,7 +242,8 @@ export const DataProvider = ({ children }) => {
       products, setProducts, 
       workOrders, setWorkOrders,
       advanceWorkOrderStage,
-      getBomStatus
+      getBomStatus,
+      ledgers
     }}>
       {children}
     </DataContext.Provider>
