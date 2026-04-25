@@ -21,6 +21,26 @@ export const DataProvider = ({ children }) => {
         { title: 'Ultrahangos Vizsgálat', date: '2024-04-15 09:45', actor: 'Minőségügy - Ügyvezető Igazgató', hash: '0x9a55...e8f9', details: 'Repedésmentes, Megfelelő' },
         { title: 'Blockchain Lezárás', date: '2024-04-24 14:00', actor: 'Rendszer AI', hash: '0x0f66...b1a2', details: 'Digitális Termék Útlevél generálva' }
       ]
+    },
+    'RW/MO/003': {
+      name: 'Válaszfal elem (tűzgátló)',
+      status: 'Blockchain Verified',
+      finalHash: 'SHA256: e8f9c6d72b449a55...',
+      steps: [
+        { title: 'Alapanyag Beérkezés', date: '2024-04-17 08:30', actor: 'ERP Rendszer', hash: '0x1a2b...3c4d', details: 'Felhasznált: Tűzgátló panel' },
+        { title: 'Gyártási Folyamat (MES)', date: '2024-04-18 14:15', actor: 'Minőségellenőrzés', hash: '0x5e6f...7a8b', details: 'Munkalap sorszám: RW/MO/003' },
+        { title: 'Blockchain Lezárás', date: '2024-04-18 16:00', actor: 'RailParts Core', hash: '0x9c0d...1e2f', details: 'Útlevél Létrehozva (142 db)' }
+      ]
+    },
+    'RW/MO/004': {
+      name: 'Utastéri LED modul',
+      status: 'Blockchain Verified',
+      finalHash: 'SHA256: 1f44e5568f2a4c11...',
+      steps: [
+        { title: 'Alapanyag Beérkezés', date: '2024-04-11 08:30', actor: 'ERP Rendszer', hash: '0x3x4e...5d6f', details: 'Felhasznált: LED szalag (5m)' },
+        { title: 'Gyártási Folyamat (MES)', date: '2024-04-12 11:15', actor: 'Minőségellenőrzés', hash: '0x7g8h...9i0j', details: 'Munkalap sorszám: RW/MO/004' },
+        { title: 'Blockchain Lezárás', date: '2024-04-12 12:00', actor: 'RailParts Core', hash: '0x1k2l...3m4n', details: 'Útlevél Létrehozva (85 db)' }
+      ]
     }
   });
 
