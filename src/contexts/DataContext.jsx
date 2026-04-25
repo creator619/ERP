@@ -92,9 +92,9 @@ export const DataProvider = ({ children }) => {
       batches: [],
       history: [{ date: '2024-04-15', type: 'OUT', qty: 10, reason: 'Készlet kimerült' }]
     },
-    { id: 5, name: 'Alumínium profil (2m)', category: 'Nyersanyag', price: '12,000 Ft', stock: 150, minStock: 50, sku: 'RAW-ALU-02', abc: 'C', location: 'R-szektor, 01-A', trend: [150,150,150,150,150,150,150], batches: [], history: [] },
+    { id: 5, name: 'Alumínium profil (2m)', category: 'Nyersanyag', price: '12,000 Ft', stock: 5, minStock: 50, sku: 'RAW-ALU-02', abc: 'C', location: 'R-szektor, 01-A', trend: [150,150,150,150,150,150,150], batches: [], history: [] },
     { id: 6, name: 'Ajtómotor (DC-42)', category: 'Elektronika', price: '89,000 Ft', stock: 12, minStock: 10, sku: 'RAW-MOT-42', abc: 'A', location: 'E-szektor, 02-B', trend: [12,12,12,12,12,12,12], batches: [], history: [] },
-    { id: 7, name: 'Edzett üveg (4mm)', category: 'Nyersanyag', price: '25,000 Ft', stock: 200, minStock: 100, sku: 'RAW-GLS-04', abc: 'B', location: 'R-szektor, 05-A', trend: [200,200,200,200,200,200,200], batches: [], history: [] },
+    { id: 7, name: 'Edzett üveg (4mm)', category: 'Nyersanyag', price: '25,000 Ft', stock: 5, minStock: 100, sku: 'RAW-GLS-04', abc: 'B', location: 'R-szektor, 05-A', trend: [200,200,200,200,200,200,200], batches: [], history: [] },
     { id: 8, name: 'PVC keret profil', category: 'Nyersanyag', price: '4,500 Ft', stock: 500, minStock: 200, sku: 'RAW-PVC-01', abc: 'C', location: 'R-szektor, 05-B', trend: [500,500,500,500,500,500,500], batches: [], history: [] }
   ]);
 
@@ -130,6 +130,36 @@ export const DataProvider = ({ children }) => {
       bom: [
         { item: 'Edzett üveg (4mm)', sku: 'RAW-GLS-04', required: 24 },
         { item: 'PVC keret profil', sku: 'RAW-PVC-01', required: 48 }
+      ]
+    },
+    { 
+      id: 'RW/MO/003', 
+      product: 'Válaszfal elem (tűzgátló)', 
+      quantity: 142, 
+      progress: 100, 
+      currentStage: 4,
+      status: 'Completed', 
+      deadline: '2024-04-18', 
+      priority: 'Low', 
+      technician: 'Szabó Anna',
+      workCenter: 'MC-105 (Összeszerelő Sor)',
+      bom: [
+        { item: 'Tűzgátló panel', sku: 'RAW-PNL-99', required: 142 }
+      ]
+    },
+    { 
+      id: 'RW/MO/004', 
+      product: 'Utastéri LED modul', 
+      quantity: 85, 
+      progress: 100, 
+      currentStage: 4,
+      status: 'Completed', 
+      deadline: '2024-04-12', 
+      priority: 'High', 
+      technician: 'Kovács János',
+      workCenter: 'MC-102 (Elektronika)',
+      bom: [
+        { item: 'LED szalag (5m)', sku: 'RAW-LED-05', required: 85 }
       ]
     }
   ]);
