@@ -1,86 +1,207 @@
+/* Logistics.css - Premium Light Theme Updates */
+
 .logistics-wrapper {
-    animation: fadeIn 0.5s ease-out;
+  animation: fadeInLogistics 0.5s ease-out forwards;
+  padding-bottom: 20px;
+}
+
+@keyframes fadeInLogistics {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .shipment-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 25px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
 }
 
 .shipment-card {
-    padding: 25px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
+  padding: 25px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
 }
 
 .shipment-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--primary-color);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  border-color: rgba(52, 152, 219, 0.3);
+}
+
+.shipment-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-color);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.shipment-card:hover::before {
+  opacity: 1;
 }
 
 .route-visualization {
-    margin: 20px 0;
-    position: relative;
-    padding: 0 10px;
+  margin: 25px 0;
+  padding: 10px 0;
+  position: relative;
 }
 
 .route-line {
-    height: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
-    position: relative;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  position: relative;
 }
 
 .route-progress {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), #2ecc71);
-    border-radius: 2px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #3498db, var(--primary-color));
+  border-radius: 2px;
+  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .route-marker {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: white;
-    border: 3px solid var(--primary-color);
-    z-index: 2;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 3px solid var(--border-color);
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  transition: border-color 0.3s;
 }
 
-.route-marker.start { left: 0; }
+.route-marker.start { left: 0; border-color: #3498db; }
 .route-marker.end { left: 100%; }
-.route-marker.current { 
-    width: 16px;
-    height: 16px;
-    box-shadow: 0 0 15px var(--primary-color);
+
+.route-marker.current {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  box-shadow: 0 0 0 0 rgba(113, 75, 103, 0.4);
+  animation: pulseMarker 2s infinite cubic-bezier(0.66, 0, 0, 1);
+  transition: left 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pulseMarker {
+  to { box-shadow: 0 0 0 12px rgba(113, 75, 103, 0); }
 }
 
 .port-monitor {
-    margin-top: 30px;
-    padding: 25px;
-    border-radius: 20px;
+  padding: 30px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.02);
 }
 
 .port-status-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
 .port-item {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  padding: 15px;
+  background: var(--bg-main);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: background 0.3s, transform 0.2s;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.port-item:hover {
+  background: rgba(52, 152, 219, 0.03);
+  transform: translateY(-2px);
+  border-color: rgba(52, 152, 219, 0.2);
+}
+
+/* Modal Timeline Updates */
+.shipment-detail {
+  padding: 10px;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 30px;
+  margin-top: 20px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 6px;
+  width: 2px;
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.timeline-event {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.timeline-event:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -30px;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 3px solid var(--border-color);
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.timeline-event.done .timeline-dot {
+  background: #2ecc71;
+  border-color: rgba(46, 204, 113, 0.3);
+}
+
+.timeline-event.active .timeline-dot {
+  background: var(--primary-color);
+  border-color: rgba(113, 75, 103, 0.3);
+  box-shadow: 0 0 0 0 rgba(113, 75, 103, 0.4);
+  animation: pulseTimeline 2s infinite;
+}
+
+.timeline-event.pending .timeline-dot {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+@keyframes pulseTimeline {
+  to { box-shadow: 0 0 0 8px rgba(113, 75, 103, 0); }
+}
+
+.timeline-content {
+  background: var(--bg-card);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.timeline-event.active .timeline-content {
+  border-color: rgba(52, 152, 219, 0.4);
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.08);
 }
