@@ -23,7 +23,7 @@ import './Manufacturing.css';
 
 const Manufacturing = ({ addToast }) => {
   const { workOrders, advanceWorkOrderStage, getBomStatus } = useData();
-    { 
+  
   const [selectedWO, setSelectedWO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('stages');
