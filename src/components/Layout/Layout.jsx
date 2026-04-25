@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import AIAssistant from '../AI/AIAssistant';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
 
@@ -49,6 +50,9 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
           {children}
         </div>
       </main>
+      
+      {/* Global AI Assistant Bot */}
+      <AIAssistant />
     </div>
   );
 };
