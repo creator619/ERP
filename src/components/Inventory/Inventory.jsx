@@ -26,10 +26,13 @@ import {
   ClipboardList
 } from 'lucide-react';
 import Modal from '../UI/Modal';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useData } from '../../contexts/DataContext';
 import auditLogService from '../../services/AuditLogService';
 import './Inventory.css';
 
 const Inventory = ({ addToast }) => {
+  const { products, setProducts } = useData();
   const [viewType, setViewType] = useState('kanban');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,75 +42,6 @@ const Inventory = ({ addToast }) => {
   const [newProduct, setNewProduct] = useState({
     name: '', category: '', price: '', stock: 0, minStock: 0, sku: '', abc: 'C', location: ''
   });
-
-  const [products, setProducts] = useState([
-    { 
-      id: 1, 
-      name: 'Poggyásztartó modul (Alumínium)', 
-      category: 'Beltér', 
-      price: '42,000 Ft', 
-      stock: 15, 
-      minStock: 10,
-      sku: 'RW-INT-001',
-      abc: 'B',
-      location: 'A-szektor, 04-B polc',
-      trend: [10, 12, 11, 15, 14, 18, 15],
-      batches: [
-        { id: 'B-8821', qty: 10, expiry: '2025-12-01', status: 'Passed' },
-        { id: 'B-8822', qty: 5, expiry: '2026-01-15', status: 'Passed' }
-      ],
-      history: [
-        { date: '2024-04-22', type: 'IN', qty: 20, reason: 'Beszerzés #PO-102' },
-        { date: '2024-04-23', type: 'OUT', qty: 5, reason: 'Gyártás RW/MO/003' }
-      ]
-    },
-    { 
-      id: 2, 
-      name: 'Hőszigetelt kocsiablak', 
-      category: 'Nyílászáró', 
-      price: '158,000 Ft', 
-      stock: 42, 
-      minStock: 20,
-      sku: 'RW-WIN-042',
-      abc: 'A',
-      location: 'W-szektor, 10-C polc',
-      trend: [30, 35, 42, 40, 45, 42, 42],
-      batches: [
-        { id: 'B-9901', qty: 42, expiry: '2027-06-10', status: 'Passed' }
-      ],
-      history: [{ date: '2024-04-20', type: 'IN', qty: 50, reason: 'Beszállítás' }]
-    },
-    { 
-      id: 3, 
-      name: 'Automata tolóajtó rendszer', 
-      category: 'Nyílászáró', 
-      price: '450,000 Ft', 
-      stock: 5, 
-      minStock: 8,
-      sku: 'RW-DOR-015',
-      abc: 'A',
-      location: 'W-szektor, 02-A polc',
-      trend: [12, 10, 8, 7, 6, 5, 5],
-      batches: [
-        { id: 'B-7712', qty: 5, expiry: '2026-03-20', status: 'Passed' }
-      ],
-      history: [{ date: '2024-04-21', type: 'OUT', qty: 2, reason: 'Javítási munkalap' }]
-    },
-    { 
-      id: 4, 
-      name: 'Válaszfal elem (tűzgátló)', 
-      category: 'Beltér', 
-      price: '85,000 Ft', 
-      stock: 0, 
-      minStock: 5,
-      sku: 'RW-PAR-012',
-      abc: 'C',
-      location: 'P-szektor, 01-D polc',
-      trend: [15, 12, 10, 8, 5, 2, 0],
-      batches: [],
-      history: [{ date: '2024-04-15', type: 'OUT', qty: 10, reason: 'Készlet kimerült' }]
-    },
-  ]);
 
   const StockSparkline = ({ data, color = 'var(--primary-color)' }) => {
     const width = 100;

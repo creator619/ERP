@@ -17,62 +17,13 @@ import {
   BarChart2
 } from 'lucide-react';
 import Modal from '../UI/Modal';
+import { useData } from '../../contexts/DataContext';
 import auditLogService from '../../services/AuditLogService';
 import './Manufacturing.css';
 
 const Manufacturing = ({ addToast }) => {
-  const [workOrders, setWorkOrders] = useState([
+  const { workOrders, advanceWorkOrderStage, getBomStatus } = useData();
     { 
-      id: 'RW/MO/001', 
-      product: 'Automata tolóajtó', 
-      quantity: 5, 
-      progress: 40, 
-      currentStage: 1,
-      status: 'In Progress', 
-      deadline: '2024-04-28', 
-      priority: 'High', 
-      technician: 'Nagy Péter',
-      workCenter: 'MC-101 (Profilvágó)',
-      bom: [
-        { item: 'Alumínium profil (2m)', required: 20, available: 150, status: 'ok' },
-        { item: 'Ajtómotor (DC-42)', required: 5, available: 12, status: 'ok' },
-        { item: 'Vezérlő panel', required: 5, available: 3, status: 'missing' }
-      ]
-    },
-    { 
-      id: 'RW/MO/002', 
-      product: 'Hőszigetelt ablak', 
-      quantity: 24, 
-      progress: 100, 
-      currentStage: 4,
-      status: 'Completed', 
-      deadline: '2024-04-22', 
-      priority: 'Medium', 
-      technician: 'Kovács János',
-      workCenter: 'MC-103 (Festőkabin)',
-      bom: [
-        { item: 'Edzett üveg (4mm)', required: 48, available: 200, status: 'ok' },
-        { item: 'PVC keret profil', required: 96, available: 500, status: 'ok' }
-      ]
-    },
-    { 
-      id: 'RW/MO/003', 
-      product: 'Poggyásztartó modul', 
-      quantity: 12, 
-      progress: 75, 
-      currentStage: 3,
-      status: 'In Progress', 
-      deadline: '2024-05-02', 
-      priority: 'Medium', 
-      technician: 'Szabó Anna',
-      workCenter: 'MC-102 (Hidraulikus Prés)',
-      bom: [
-        { item: 'Acél lemez (1.5mm)', required: 12, available: 50, status: 'ok' },
-        { item: 'Rögzítő csavar szett', required: 144, available: 1000, status: 'ok' }
-      ]
-    }
-  ]);
-
   const [selectedWO, setSelectedWO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('stages');
@@ -91,26 +42,22 @@ const Manufacturing = ({ addToast }) => {
   };
 
   const handleNextStage = (woId) => {
-    setWorkOrders(prev => prev.map(wo => {
-      if (wo.id === woId) {
-        const nextStage = Math.min(wo.currentStage + 1, stages.length);
-        const nextProgress = (nextStage / stages.length) * 100;
-        const nextStatus = nextProgress === 100 ? 'Completed' : 'In Progress';
-        
-        auditLogService.log({
-          user: 'Gyártásvezető',
-          action: 'Fázisváltás',
-          module: 'Manufacturing',
-          details: `${wo.product} (${woId}) -> ${stages[nextStage - 1].name} kész.`,
-          severity: nextProgress === 100 ? 'success' : 'info'
-        });
-
-        return { ...wo, currentStage: nextStage, progress: nextProgress, status: nextStatus };
-      }
-      return wo;
-    }));
-    addToast('Gyártási fázis frissítve', 'success');
-    setIsModalOpen(false);
+    const completed = advanceWorkOrderStage(woId, stages.length);
+    if (completed) {
+      addToast('Gyártás Befejezve! Készletbe bevételezve', 'success');
+      setTimeout(() => setIsModalOpen(false), 800);
+    } else {
+      addToast('Gyártási fázis frissítve', 'success');
+    }
+    
+    // Frissítjük a Modalban is a selectedWO state-t!
+    setSelectedWO(prev => {
+      if (!prev || prev.id !== woId) return prev;
+      const nextStage = Math.min(prev.currentStage + 1, stages.length);
+      const nextProgress = (nextStage / stages.length) * 100;
+      const nextStatus = nextProgress === 100 ? 'Completed' : 'In Progress';
+      return { ...prev, currentStage: nextStage, progress: nextProgress, status: nextStatus };
+    });
   };
 
   const [viewMode, setViewMode] = useState('orders'); // 'orders' or 'monitor'
@@ -363,7 +310,7 @@ const Manufacturing = ({ addToast }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedWO.bom.map((item, i) => (
+                    {getBomStatus(selectedWO).map((item, i) => (
                       <tr key={i}>
                         <td>{item.item}</td>
                         <td style={{ fontWeight: 700 }}>{item.required} db</td>
