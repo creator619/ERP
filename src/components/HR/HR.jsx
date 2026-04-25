@@ -4,7 +4,6 @@ import {
   UserPlus, 
   Briefcase, 
   Calendar, 
-  Search, 
   Mail, 
   Phone,
   CheckCircle2,
@@ -12,14 +11,11 @@ import {
   MoreVertical,
   Award,
   TrendingUp,
-  DollarSign,
-  Heart,
-  Umbrella,
-  GraduationCap,
   Target,
   ShieldCheck,
   AlertTriangle,
-  Ban
+  Ban,
+  GraduationCap
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
@@ -30,6 +26,9 @@ const HR = ({ addToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [activeMainView, setActiveMainView] = useState('employees');
+  
+  // States for micro animations
+  const [approvingLeaveId, setApprovingLeaveId] = useState(null);
 
   const [employees, setEmployees] = useState([
     { 
@@ -64,7 +63,7 @@ const HR = ({ addToast }) => {
       role: 'Projektmenedzser', 
       dept: 'Management', 
       status: 'Aktív', 
-      kpi: 95,
+      kpi: 98,
       shifts: ['DE', 'DE', 'DE', 'DE', 'SZAB', 'PIH', 'PIH'],
       certifications: [
         { name: 'PMP Certification', expiry: '2026-01-10', status: 'valid' }
@@ -86,7 +85,7 @@ const HR = ({ addToast }) => {
 
   const getKPIColor = (val) => {
     if (val >= 90) return '#2ecc71';
-    if (val >= 75) return '#f1c40f';
+    if (val >= 75) return '#f39c12';
     return '#e74c3c';
   };
 
@@ -106,15 +105,6 @@ const HR = ({ addToast }) => {
         const newShifts = [...emp.shifts];
         const currentIndex = SHIFT_CYCLE.indexOf(newShifts[dayIdx]);
         newShifts[dayIdx] = SHIFT_CYCLE[(currentIndex + 1) % SHIFT_CYCLE.length];
-        
-        auditLogService.log({
-          user: 'HR Admin',
-          action: 'Műszak Módosítás',
-          module: 'HR',
-          details: `${emp.name} műszakja frissítve (${dayIdx+1}. nap: ${newShifts[dayIdx]})`,
-          severity: 'info'
-        });
-
         return { ...emp, shifts: newShifts };
       }
       return emp;
@@ -132,50 +122,89 @@ const HR = ({ addToast }) => {
     addToast('Sikeres napi érkeztetés (Blokkolás) rögzítve', 'success');
   };
 
+  const handleApproveLeave = (reqId) => {
+    setApprovingLeaveId(reqId);
+    
+    // Smooth micro-animation timeout
+    setTimeout(() => {
+       setLeaveRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: 'Approved' } : r));
+       setApprovingLeaveId(null);
+       addToast('Szabadság jóváhagyva', 'success');
+    }, 600);
+  };
+
+  // Modern SVG Gauge rendering
+  const renderGauge = (val) => {
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius;
+    // We only want a 270 degree arc (0.75 of circle)
+    const arcLength = circumference * 0.75; 
+    const dashoffset = circumference - ((val / 100) * arcLength);
+
+    return (
+      <div className="gauge-container">
+        <svg fill="transparent" width="150" height="150" viewBox="0 0 100 100" className="gauge-svg">
+          <circle className="gauge-bg" cx="50" cy="50" r={radius} strokeDasharray={`${arcLength} ${circumference}`} strokeDashoffset="0" />
+          <circle 
+            className="gauge-progress" cx="50" cy="50" r={radius} 
+            stroke={getKPIColor(val)} 
+            style={{ '--target-offset': dashoffset, strokeDasharray: circumference }} 
+          />
+        </svg>
+        <div className="gauge-text">
+           <span style={{ fontSize: '2rem', fontWeight: 900, color: getKPIColor(val) }}>{val}%</span>
+           <span className="text-muted" style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>Hatékonyság</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="hr-module">
-      <div className="invoicing-header" style={{ marginBottom: '25px' }}>
+      <div className="invoicing-header" style={{ marginBottom: '35px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <div className="module-icon-container" style={{ background: 'rgba(155, 89, 182, 0.1)', color: '#9b59b6', padding: '12px', borderRadius: '12px' }}>
-            <Users size={24} />
+            <Users size={28} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Humánerőforrás & Képzés</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Kompetencia-mátrix és teljesítménymérés</p>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Humánerőforrás (HR)</h2>
+            <p className="text-muted" style={{ fontSize: '0.9rem', marginTop: '4px' }}>Átfogó alkalmazotti profilok és kompetenciamenedzsment</p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="view-btn" onClick={dailyCheckIn} style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)' }}>
-            <Clock size={20} /> Napi Blokkolás
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="view-btn" onClick={dailyCheckIn} style={{ borderColor: '#9b59b6', color: '#9b59b6' }}>
+            <Clock size={16} /> Érkeztetés
           </button>
-          <button className="create-btn" onClick={() => addToast('Új munkatárs felvétele', 'info')}>
-            <UserPlus size={20} /> Új Alkalmazott
+          <button className="create-btn" style={{ background: '#9b59b6', boxShadow: '0 4px 15px rgba(155, 89, 182, 0.3)' }} onClick={() => addToast('Új munkatárs felvétele felület', 'info')}>
+            <UserPlus size={18} /> Alkalmazott Kódolása
           </button>
         </div>
       </div>
 
-      <div className="hr-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Létszám</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>124 fő</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px', marginBottom: '35px' }}>
+        <div className="stat-card">
+          <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Teljes Létszám</p>
+          <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>124 fő</div>
         </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Átlag KPI</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2ecc71' }}>86%</div>
+        <div className="stat-card">
+          <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Átlagos KPI (Havi)</p>
+          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '8px' }}>
+             86% <TrendingUp size={18} />
+          </div>
         </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Lejáró vizsgák</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e74c3c' }}>8 db</div>
+        <div className="stat-card">
+          <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Lejáratközeli Vizsgák</p>
+          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#e74c3c' }}>8 db</div>
         </div>
-        <div className="stat-card glass">
-          <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Fluktuáció</p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>2.4%</div>
+        <div className="stat-card">
+          <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Fluktuációs Ráta</p>
+          <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>2.4%</div>
         </div>
       </div>
 
-      <div className="module-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+      <div className="module-tabs" style={{ display: 'flex', gap: '5px', marginBottom: '25px', background: 'var(--bg-card)', padding: '5px', borderRadius: '15px', width: 'fit-content', border: '1px solid var(--border-color)' }}>
         <button className={`tab-btn ${activeMainView === 'employees' ? 'active' : ''}`} onClick={() => setActiveMainView('employees')}>
-          <Users size={16} /> Dolgozók
+          <Users size={16} /> Dolgozói Adatbázis
         </button>
         <button className={`tab-btn ${activeMainView === 'matrix' ? 'active' : ''}`} onClick={() => setActiveMainView('matrix')}>
           <Target size={16} /> Kompetencia Mátrix
@@ -189,15 +218,15 @@ const HR = ({ addToast }) => {
       </div>
 
       {activeMainView === 'employees' && (
-        <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+        <div className="list-view" style={{ borderRadius: '20px', overflow: 'hidden' }}>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Alkalmazott</th>
+                <th>Név / Identitás</th>
                 <th>Beosztás</th>
                 <th>Osztály</th>
-                <th>Teljesítmény</th>
-                <th>Vizsgák</th>
+                <th>Hatékonyság (KPI)</th>
+                <th>Jogosítványok</th>
                 <th></th>
               </tr>
             </thead>
@@ -205,31 +234,31 @@ const HR = ({ addToast }) => {
               {employees.map(emp => (
                 <tr key={emp.id} onClick={() => openEmployeeDetails(emp)} style={{ cursor: 'pointer' }}>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(155, 89, 182, 0.1)', color: '#9b59b6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', border: '1px solid rgba(155, 89, 182, 0.3)' }}>
                         {emp.name.split(' ').map(n => n[0]).join('')}
                       </div>
-                      <span style={{ fontWeight: 600 }}>{emp.name}</span>
+                      <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{emp.name}</span>
                     </div>
                   </td>
-                  <td>{emp.role}</td>
-                  <td><span className="text-muted">{emp.dept}</span></td>
+                  <td style={{ fontWeight: 600 }}>{emp.role}</td>
+                  <td><span className="text-muted" style={{ fontWeight: 600, fontSize: '0.85rem' }}>{emp.dept}</span></td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ flex: 1, height: '6px', width: '60px', background: 'var(--border-color)', borderRadius: '3px' }}>
-                        <div style={{ width: `${emp.kpi}%`, height: '100%', background: getKPIColor(emp.kpi), borderRadius: '3px' }}></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ flex: 1, height: '8px', width: '80px', background: 'var(--bg-main)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${emp.kpi}%`, height: '100%', background: getKPIColor(emp.kpi), borderRadius: '4px', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)' }}></div>
                       </div>
-                      <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{emp.kpi}%</span>
+                      <span style={{ fontWeight: 800, fontSize: '0.85rem' }}>{emp.kpi}%</span>
                     </div>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '4px' }}>
+                    <div style={{ display: 'flex', gap: '6px' }}>
                       {emp.certifications.map((c, i) => (
-                        <div key={i} title={c.name} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c.status === 'valid' ? '#2ecc71' : c.status === 'warning' ? '#f1c40f' : '#e74c3c' }}></div>
+                        <div key={i} title={c.name} style={{ width: '12px', height: '12px', borderRadius: '50%', background: c.status === 'valid' ? '#2ecc71' : c.status === 'warning' ? '#f39c12' : '#e74c3c', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}></div>
                       ))}
                     </div>
                   </td>
-                  <td><button className="view-btn-small"><MoreVertical size={16} /></button></td>
+                  <td style={{ textAlign: 'right' }}><button className="view-btn-small" style={{ borderRadius: '8px' }}><MoreVertical size={16} /></button></td>
                 </tr>
               ))}
             </tbody>
@@ -238,38 +267,38 @@ const HR = ({ addToast }) => {
       )}
 
       {activeMainView === 'matrix' && (
-        <div className="matrix-view glass" style={{ padding: '25px', borderRadius: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Szakmai Kompetencia Mátrix (Heatmap)</h3>
-            <div style={{ display: 'flex', gap: '15px', fontSize: '0.7rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><div className="matrix-cell" style={{ background: '#2ecc71' }}></div> Szakértő</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><div className="matrix-cell" style={{ background: '#3498db' }}></div> Haladó</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><div className="matrix-cell" style={{ background: '#f1c40f' }}></div> Kezdő</div>
+        <div className="matrix-view" style={{ padding: '30px', borderRadius: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><Target color="#9b59b6" /> Szakmai Kompetencia Mátrix (Heatmap)</h3>
+            <div style={{ display: 'flex', gap: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="matrix-cell" style={{ background: 'rgba(46, 204, 113, 0.8)', margin: 0 }}></div> Szakértő</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="matrix-cell" style={{ background: 'rgba(52, 152, 219, 0.8)', margin: 0 }}></div> Haladó</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div className="matrix-cell" style={{ background: 'rgba(241, 196, 15, 0.8)', margin: 0 }}></div> Kezdő</div>
             </div>
           </div>
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto', borderRadius: '15px', border: '1px solid var(--border-color)' }}>
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Munkatárs</th>
-                  <th>Hegesztés</th>
-                  <th>CNC Prog.</th>
-                  <th>Minőségell.</th>
-                  <th>Logisztika</th>
-                  <th>Villanyszer.</th>
-                  <th>CAD/CAM</th>
+                  <th>Név</th>
+                  <th style={{ textAlign: 'center' }}>Hegesztés</th>
+                  <th style={{ textAlign: 'center' }}>CNC Prog.</th>
+                  <th style={{ textAlign: 'center' }}>Minőségell.</th>
+                  <th style={{ textAlign: 'center' }}>Logisztika</th>
+                  <th style={{ textAlign: 'center' }}>Villanyszer.</th>
+                  <th style={{ textAlign: 'center' }}>CAD/CAM</th>
                 </tr>
               </thead>
               <tbody>
                 {employees.map(emp => (
                   <tr key={emp.id}>
-                    <td><span style={{ fontWeight: 700 }}>{emp.name}</span></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? '#2ecc71' : '#f1c40f' }}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? '#3498db' : 'rgba(255,255,255,0.05)' }}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? '#3498db' : '#2ecc71' }}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 3 ? '#2ecc71' : 'rgba(255,255,255,0.05)' }}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: '#f1c40f' }}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? '#2ecc71' : '#3498db' }}></div></td>
+                    <td><span style={{ fontWeight: 800 }}>{emp.name}</span></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? 'rgba(46, 204, 113, 0.8)' : 'rgba(241, 196, 15, 0.8)' }} title={`${emp.name}: Hegesztés`}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? 'rgba(52, 152, 219, 0.8)' : 'var(--bg-main)' }} title={`${emp.name}: CNC`}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? 'rgba(52, 152, 219, 0.8)' : 'rgba(46, 204, 113, 0.8)' }} title={`${emp.name}: Minőség`}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 3 ? 'rgba(46, 204, 113, 0.8)' : 'var(--bg-main)' }} title={`${emp.name}: Logisztika`}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: 'rgba(241, 196, 15, 0.8)' }} title={`${emp.name}: Villanyszerelés`}></div></td>
+                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? 'rgba(46, 204, 113, 0.8)' : 'rgba(52, 152, 219, 0.8)' }} title={`${emp.name}: CAD/CAM`}></div></td>
                   </tr>
                 ))}
               </tbody>
@@ -279,22 +308,22 @@ const HR = ({ addToast }) => {
       )}
 
       {activeMainView === 'shifts' && (
-        <div className="shifts-view glass" style={{ padding: '25px', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '25px' }}>Heti Műszakbeosztás</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div className="shift-grid" style={{ fontWeight: 800, background: 'transparent' }}>
-              <div>Dolgozó</div>
-              <div>Hé</div><div>Ke</div><div>Sze</div><div>Csü</div><div>Pé</div><div style={{ color: '#e74c3c' }}>Szo</div><div style={{ color: '#e74c3c' }}>Va</div>
+        <div className="shifts-view" style={{ padding: '30px', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}><Clock color="#9b59b6" /> Heti Műszak Kiosztás (Kapszulák)</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div className="shift-grid" style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+              <div style={{ paddingLeft: '10px' }}>Alkalmazott Identitás</div>
+              <div style={{ textAlign: 'center' }}>Hétfő</div><div style={{ textAlign: 'center' }}>Kedd</div><div style={{ textAlign: 'center' }}>Szerda</div><div style={{ textAlign: 'center' }}>Csütörtök</div><div style={{ textAlign: 'center' }}>Péntek</div><div style={{ color: '#e74c3c', textAlign: 'center' }}>Szombat</div><div style={{ color: '#e74c3c', textAlign: 'center' }}>Vasárnap</div>
             </div>
             {employees.map(emp => (
-              <div key={emp.id} className="shift-grid">
-                <div style={{ fontWeight: 700 }}>{emp.name}</div>
+              <div key={emp.id} className="shift-grid" style={{ background: 'var(--bg-main)', borderRadius: '15px', border: '1px solid var(--border-color)', padding: '15px' }}>
+                <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{emp.name}</div>
                 {emp.shifts.map((shift, idx) => (
                   <div 
                     key={idx} 
                     className={`shift-cell ${STYLES_MAP[shift]}`} 
                     onClick={() => handleShiftChange(emp.id, idx)}
-                    title="Kattints a műszak váltásához"
+                    title="Kattints a váltáshoz"
                   >
                     {shift}
                   </div>
@@ -306,38 +335,39 @@ const HR = ({ addToast }) => {
       )}
 
       {activeMainView === 'leaves' && (
-        <div className="leaves-view glass" style={{ padding: '25px', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Függőben lévő szabadságigények</h3>
+        <div className="leaves-view list-view" style={{ padding: '30px', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}><Calendar color="#9b59b6" /> Beérkező Szabadságigények</h3>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Dolgozó</th>
+                <th>Feladó</th>
                 <th>Típus</th>
-                <th>Időszak</th>
-                <th>Státusz</th>
-                <th>Művelet</th>
+                <th>Időszak (Start - End)</th>
+                <th>Engedély Státusz</th>
+                <th>Akció</th>
               </tr>
             </thead>
             <tbody>
               {leaveRequests.map(req => (
-                <tr key={req.id}>
-                  <td><span style={{ fontWeight: 700 }}>{req.name}</span></td>
-                  <td>{req.type}</td>
-                  <td><span className="text-muted">{req.start} - {req.end}</span></td>
+                <tr key={req.id} className={`leave-row ${approvingLeaveId === req.id ? 'approving' : ''}`}>
+                  <td><span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{req.name}</span></td>
+                  <td style={{ fontWeight: 600 }}>{req.type}</td>
+                  <td><span className="text-muted" style={{ fontWeight: 600 }}>{req.start} <span style={{ margin: '0 5px' }}>&rarr;</span> {req.end}</span></td>
                   <td>
                     <span className={`status-badge ${req.status === 'Approved' ? 'active' : 'warning'}`}>
                       {req.status === 'Approved' ? 'Jóváhagyva' : 'Függőben'}
                     </span>
                   </td>
                   <td>
-                    {req.status === 'Pending' && (
+                    {req.status === 'Pending' ? (
                       <div style={{ display: 'flex', gap: '10px' }}>
-                        <button className="view-btn-small" style={{ color: '#2ecc71' }} onClick={() => {
-                          setLeaveRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'Approved' } : r));
-                          addToast('Szabadság jóváhagyva', 'success');
-                        }}><CheckCircle2 size={16} /></button>
-                        <button className="view-btn-small" style={{ color: '#e74c3c' }}><Ban size={16} /></button>
+                        <button className="view-btn-small" style={{ color: '#2ecc71', borderColor: 'rgba(46, 204, 113, 0.3)' }} onClick={() => handleApproveLeave(req.id)} disabled={approvingLeaveId === req.id}>
+                          <CheckCircle2 size={16} /> {approvingLeaveId === req.id ? '...' : ''}
+                        </button>
+                        <button className="view-btn-small" style={{ color: '#e74c3c', borderColor: 'rgba(231, 76, 60, 0.3)' }} disabled={approvingLeaveId === req.id}><Ban size={16} /></button>
                       </div>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Lezárva</span>
                     )}
                   </td>
                 </tr>
@@ -350,59 +380,66 @@ const HR = ({ addToast }) => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={`Dolgozói Profil: ${selectedEmployee?.name}`}
-        width="850px"
+        title={selectedEmployee ? `Employee Digital Twin: ${selectedEmployee.name}` : ''}
+        width="800px"
         footer={
-          <>
-            <button className="view-btn" onClick={() => setIsModalOpen(false)}>Bezárás</button>
-            <button className="create-btn" onClick={() => addToast('Profil frissítve', 'success')}>Adatok mentése</button>
-          </>
+           <button className="view-btn" onClick={() => setIsModalOpen(false)}>Ablak Bezárása</button>
         }
       >
         {selectedEmployee && (
           <div className="hr-detail-view">
-            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', borderBottom: '1px solid var(--border-color)', borderRadius: 0, padding: 0 }}>
-              <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Áttekintés</div>
-              <div className={`settings-nav-item ${activeTab === 'training' ? 'active' : ''}`} onClick={() => setActiveTab('training')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Képzési Mátrix</div>
+            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '30px', background: 'transparent', padding: 0 }}>
+              <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')} style={{ flex: 1, textAlign: 'center' }}>Áttekintés & Teljesítmény</div>
+              <div className={`settings-nav-item ${activeTab === 'training' ? 'active' : ''}`} onClick={() => setActiveTab('training')} style={{ flex: 1, textAlign: 'center' }}>Végzettség & Engedélyek</div>
             </div>
 
             {activeTab === 'overview' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
-                <div className="glass" style={{ padding: '20px', borderRadius: '15px' }}>
-                  <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '20px', textTransform: 'uppercase' }}>Teljesítmény (KPI)</h4>
-                  <div style={{ textAlign: 'center', padding: '10px' }}>
-                    <div style={{ fontSize: '3rem', fontWeight: 800, color: getKPIColor(selectedEmployee.kpi) }}>{selectedEmployee.kpi}%</div>
-                    <p className="text-muted" style={{ fontSize: '0.8rem' }}>Havi hatékonysági index</p>
-                    <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <span className="text-muted">Minőség</span>
-                        <span style={{ fontWeight: 700 }}>94%</span>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <span className="text-muted">Határidő</span>
-                        <span style={{ fontWeight: 700 }}>88%</span>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <span className="text-muted">Fegyelem</span>
-                        <span style={{ fontWeight: 700 }}>100%</span>
-                      </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                <div style={{ padding: '25px', borderRadius: '20px', background: 'var(--bg-main)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '20px', alignSelf: 'flex-start' }}>KPI Monitor</h4>
+                  
+                  {renderGauge(selectedEmployee.kpi)}
+                  
+                  <div style={{ marginTop: '25px', width: '100%', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                      <span className="text-muted" style={{ fontWeight: 600 }}>Minőség</span>
+                      <span style={{ fontWeight: 800 }}>94%</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', textAlign: 'center' }}>
+                      <span className="text-muted" style={{ fontWeight: 600 }}>Határidő</span>
+                      <span style={{ fontWeight: 800 }}>88%</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', textAlign: 'right' }}>
+                      <span className="text-muted" style={{ fontWeight: 600 }}>Fegyelem</span>
+                      <span style={{ fontWeight: 800, color: '#2ecc71' }}>100%</span>
                     </div>
                   </div>
                 </div>
-                <div className="glass" style={{ padding: '20px', borderRadius: '15px' }}>
-                  <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '20px', textTransform: 'uppercase' }}>Személyes Adatok</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span className="text-muted">Munkaviszony kezdete:</span>
-                      <span style={{ fontWeight: 600 }}>2020.05.12</span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ padding: '25px', borderRadius: '20px', background: 'var(--bg-main)', border: '1px solid var(--border-color)' }}>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '15px' }}>Személyes Adatok</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span className="text-muted" style={{ fontWeight: 600 }}>Belépés Dátuma:</span>
+                        <span style={{ fontWeight: 800 }}>2020.05.12</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span className="text-muted" style={{ fontWeight: 600 }}>Besorolás:</span>
+                        <span style={{ fontWeight: 800, color: 'var(--primary-color)' }}>{selectedEmployee.role}</span>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span className="text-muted">Munkabér:</span>
-                      <span style={{ fontWeight: 600 }}>Bizalmas (HR+)</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span className="text-muted">Szabadság (Nap):</span>
-                      <span style={{ fontWeight: 600 }}>12 / 25</span>
+                  </div>
+
+                  <div style={{ padding: '25px', borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid rgba(241, 196, 15, 0.3)' }}>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '15px' }}>Éves Szabadság (Nap)</h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <span style={{ fontSize: '1.5rem', fontWeight: 900 }}>12 <span style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>/ 25</span></span>
+                       <div style={{ display: 'flex', gap: '5px' }}>
+                         {Array.from({length: 10}).map((_, i) => (
+                            <div key={i} style={{ width: '10px', height: '24px', borderRadius: '4px', background: i < 5 ? '#f39c12' : 'var(--bg-main)' }}></div>
+                         ))}
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -411,24 +448,28 @@ const HR = ({ addToast }) => {
 
             {activeTab === 'training' && (
               <div className="training-view">
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '15px' }}>Szakmai Tanúsítványok</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <Briefcase color="#9b59b6" /> Szakmai Tanúsítványok (Licenszek)
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {selectedEmployee.certifications.map((c, i) => (
-                    <div key={i} className="glass" style={{ padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: `4px solid ${c.status === 'valid' ? '#2ecc71' : c.status === 'warning' ? '#f1c40f' : '#e74c3c'}` }}>
-                      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                        {c.status === 'valid' ? <ShieldCheck size={20} color="#2ecc71" /> : <AlertTriangle size={20} color={c.status === 'warning' ? '#f1c40f' : '#e74c3c'} />}
+                    <div key={i} className={`training-card ${c.status === 'valid' ? 'valid' : c.status === 'warning' ? 'warning' : 'danger'}`}>
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                        <div style={{ padding: '12px', borderRadius: '50%', background: 'var(--bg-card)', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                           {c.status === 'valid' ? <ShieldCheck size={24} color="#2ecc71" /> : <AlertTriangle size={24} color={c.status === 'warning' ? '#f39c12' : '#e74c3c'} />}
+                        </div>
                         <div>
-                          <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>{c.name}</p>
-                          <p className="text-muted" style={{ fontSize: '0.75rem' }}>Lejárat: {c.expiry}</p>
+                          <p style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '4px' }}>{c.name}</p>
+                          <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600 }}>Rendszer szerinti lejárat: {c.expiry}</p>
                         </div>
                       </div>
-                      <span className={`status-badge ${c.status === 'valid' ? 'active' : c.status === 'warning' ? 'warning' : 'danger'}`}>
-                        {c.status === 'valid' ? 'Érvényes' : c.status === 'warning' ? 'Hamarosan lejár' : 'LEJÁRT'}
+                      <span className={`status-badge ${c.status === 'valid' ? 'active' : c.status === 'warning' ? 'warning' : 'danger'}`} style={{ padding: '8px 16px', fontSize: '0.8rem' }}>
+                        {c.status === 'valid' ? 'Érvényes' : c.status === 'warning' ? 'Hamarosan lejár' : 'LEJÁRT LICENSZ'}
                       </span>
                     </div>
                   ))}
-                  <button className="view-btn" style={{ width: '100%', marginTop: '10px' }}>
-                    <GraduationCap size={16} /> Új képzés rögzítése
+                  <button className="create-btn" style={{ width: '100%', marginTop: '20px', gap: '10px', background: '#9b59b6', boxShadow: 'none' }}>
+                    <GraduationCap size={18} /> Új Képzés / Vizsga Rögzítése
                   </button>
                 </div>
               </div>
