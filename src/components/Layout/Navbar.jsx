@@ -12,9 +12,11 @@ import {
   MessageSquare,
   Menu
 } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
 
-const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguage, toggleSidebar }) => {
+const Navbar = ({ activeModuleLabel, currency, setCurrency, toggleSidebar }) => {
+  const { language, setLanguage, t } = useLanguage();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -38,7 +40,7 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguag
       <div className="navbar-right">
         <div className="search-bar glass">
           <Search size={18} className="text-muted" />
-          <input type="text" placeholder="Globális keresés (Ctrl+K)..." />
+          <input type="text" placeholder={t('nav.search')} />
         </div>
         
         <div className="nav-action-wrapper">
@@ -50,8 +52,8 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguag
           {showNotifications && (
             <div className="dropdown-menu glass notifications-dropdown">
               <div className="dropdown-header">
-                <h4>Értesítések</h4>
-                <span>Összes olvasottnak jelölése</span>
+                <h4>{t('nav.notifications')}</h4>
+                <span>{t('nav.markAllRead')}</span>
               </div>
               <div className="dropdown-body">
                 {notifications.map(n => (
@@ -65,7 +67,7 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguag
                   </div>
                 ))}
               </div>
-              <div className="dropdown-footer">Összes értesítés megtekintése</div>
+              <div className="dropdown-footer">{t('nav.viewAll')}</div>
             </div>
           )}
         </div>
@@ -114,10 +116,10 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, language, setLanguag
                 </div>
               </div>
               <div className="dropdown-divider"></div>
-              <div className="dropdown-item"><User size={16} /> Profilom</div>
-              <div className="dropdown-item"><Settings size={16} /> Beállítások</div>
+              <div className="dropdown-item"><User size={16} /> {t('nav.profile')}</div>
+              <div className="dropdown-item"><Settings size={16} /> {t('nav.settings')}</div>
               <div className="dropdown-divider"></div>
-              <div className="dropdown-item text-error"><LogOut size={16} /> Kijelentkezés</div>
+              <div className="dropdown-item text-error"><LogOut size={16} /> {t('nav.logout')}</div>
             </div>
           )}
         </div>

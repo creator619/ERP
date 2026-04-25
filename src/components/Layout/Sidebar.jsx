@@ -18,30 +18,32 @@ import {
   ShieldCheck,
   Link as LinkIcon
 } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
 
 const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogout }) => {
+  const { t } = useLanguage();
   const menuItems = [
-    { id: 'dashboard', label: 'Műszerfal', icon: <LayoutDashboard size={20} /> },
-    { id: 'bi', label: 'Vezetői BI', icon: <BarChart3 size={20} /> },
-    { id: 'compliance', label: 'Megfelelőség', icon: <ShieldCheck size={20} /> },
-    { id: 'intelligence', label: 'AI Vezérlőterem', icon: <Brain size={20} /> },
-    { id: 'documents', label: 'Riportközpont', icon: <FileCheck size={20} /> },
-    { id: 'traceability', label: 'Blockchain Eredet', icon: <LinkIcon size={20} /> },
-    { id: 'projects', label: 'Projektek', icon: <Folder size={20} /> },
-    { id: 'manufacturing', label: 'Gyártás', icon: <Settings size={20} /> },
-    { id: 'quality', label: 'Minőségügy', icon: <ShieldCheck size={20} /> },
-    { id: 'maintenance', label: 'Karbantartás', icon: <Wrench size={20} /> },
-    { id: 'purchase', label: 'Beszerzés', icon: <ShoppingCart size={20} /> },
-    { id: 'crm', label: 'CRM', icon: <Users size={20} /> },
-    { id: 'inventory', label: 'Készlet', icon: <Package size={20} /> },
-    { id: 'logistics', label: 'Logisztika', icon: <Truck size={20} /> },
-    { id: 'sales', label: 'Értékesítés', icon: <ShoppingCart size={20} /> },
-    { id: 'invoicing', label: 'Számlázás', icon: <FileText size={20} /> },
-    { id: 'hr', label: 'HR', icon: <Users size={20} /> },
-    { id: 'dms', label: 'Dokumentumok', icon: <Folder size={20} /> },
-    { id: 'messenger', label: 'Üzenetek', icon: <MessageSquare size={20} /> },
-    { id: 'settings', label: 'Beállítások', icon: <Settings size={20} /> },
+    { id: 'dashboard', label: t('menu.dashboard'), icon: <LayoutDashboard size={20} /> },
+    { id: 'bi', label: t('menu.bi'), icon: <BarChart3 size={20} /> },
+    { id: 'compliance', label: t('menu.compliance'), icon: <ShieldCheck size={20} /> },
+    { id: 'intelligence', label: t('menu.intelligence'), icon: <Brain size={20} /> },
+    { id: 'documents', label: t('menu.documents'), icon: <FileCheck size={20} /> },
+    { id: 'traceability', label: t('menu.traceability'), icon: <LinkIcon size={20} /> },
+    { id: 'projects', label: t('menu.projects'), icon: <Folder size={20} /> },
+    { id: 'manufacturing', label: t('menu.manufacturing'), icon: <Settings size={20} /> },
+    { id: 'quality', label: t('menu.quality'), icon: <ShieldCheck size={20} /> },
+    { id: 'maintenance', label: t('menu.maintenance'), icon: <Wrench size={20} /> },
+    { id: 'purchase', label: t('menu.purchase'), icon: <ShoppingCart size={20} /> },
+    { id: 'crm', label: t('menu.crm'), icon: <Users size={20} /> },
+    { id: 'inventory', label: t('menu.inventory'), icon: <Package size={20} /> },
+    { id: 'logistics', label: t('menu.logistics'), icon: <Truck size={20} /> },
+    { id: 'sales', label: t('menu.sales'), icon: <ShoppingCart size={20} /> },
+    { id: 'invoicing', label: t('menu.invoicing'), icon: <FileText size={20} /> },
+    { id: 'hr', label: t('menu.hr'), icon: <Users size={20} /> },
+    { id: 'dms', label: t('menu.dms'), icon: <Folder size={20} /> },
+    { id: 'messenger', label: t('menu.messenger'), icon: <MessageSquare size={20} /> },
+    { id: 'settings', label: t('menu.settings'), icon: <Settings size={20} /> },
   ];
 
   return (
@@ -74,7 +76,7 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
           <div className="avatar">SE</div>
           {isOpen && <div className="user-details">
             <p className="user-name">Simon Ernő</p>
-            <p className="user-role">Administrator</p>
+            <p className="user-role">{t('nav.userRole')}</p>
           </div>}
         </div>
         <button 
@@ -83,7 +85,7 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
           style={{ marginTop: '10px', padding: '8px 15px', background: 'rgba(220, 53, 69, 0.1)', color: '#ff6b6b' }}
         >
           <span className="nav-icon"><X size={18} /></span>
-          <span className="nav-label">Kijelentkezés</span>
+          <span className="nav-label">{t('nav.logout')}</span>
         </button>
       </div>
     </aside>

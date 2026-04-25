@@ -25,8 +25,10 @@ import './Dashboard.css';
 import auditLogService from '../../services/AuditLogService';
 import aiService from '../../services/AIService';
 import { Brain, Sparkles } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const Dashboard = () => {
+  const { t } = useLanguage();
   const [logs, setLogs] = useState(auditLogService.getLogs().slice(0, 10));
   const [activeAlerts, setActiveAlerts] = useState([
     { id: 1, type: 'danger', msg: 'Lejárt hegesztő vizsgák (2 fő)', module: 'HR' },
@@ -64,8 +66,8 @@ const Dashboard = () => {
     <div className="dashboard-enterprise">
       <div className="dashboard-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
-          <h1 className="responsive-title" style={{ fontWeight: 800, marginBottom: '5px' }}>Executive Mission Control</h1>
-          <p className="text-muted">RailParts Enterprise ERP • Globális Vállalati Áttekintés</p>
+          <h1 className="responsive-title" style={{ fontWeight: 800, marginBottom: '5px' }}>{t('dash.title')}</h1>
+          <p className="text-muted">{t('dash.welcome')}</p>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
            <div className="glass" style={{ padding: '8px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>

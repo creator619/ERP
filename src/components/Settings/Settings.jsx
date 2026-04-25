@@ -18,9 +18,11 @@ import {
   Cpu
 } from 'lucide-react';
 import auditLogService from '../../services/AuditLogService';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './Settings.css';
 
 const Settings = ({ addToast, theme, toggleTheme }) => {
+  const { t, language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState('general');
   const [logs, setLogs] = useState(auditLogService.getLogs());
 
@@ -72,15 +74,15 @@ const Settings = ({ addToast, theme, toggleTheme }) => {
             </div>
             <div className="settings-row" style={{ marginTop: '20px' }}>
               <div className="settings-group">
-                <label>Alapértelmezett Nyelv</label>
-                <select className="glass-input">
-                  <option>Magyar (HU)</option>
-                  <option>English (EN-GB)</option>
-                  <option>Deutsch (DE)</option>
+                <label>{t('settings.language')}</label>
+                <select className="glass-input" value={language} onChange={(e) => setLanguage(e.target.value)}>
+                  <option value="HU">Magyar (HU)</option>
+                  <option value="EN">English (EN)</option>
+                  <option value="DE">Deutsch (DE)</option>
                 </select>
               </div>
               <div className="settings-group">
-                <label>Pénznem</label>
+                <label>{t('settings.currency')}</label>
                 <select className="glass-input">
                   <option>HUF (Ft)</option>
                   <option>EUR (€)</option>
@@ -172,7 +174,7 @@ const Settings = ({ addToast, theme, toggleTheme }) => {
             <SettingsIcon size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Rendszer Adminisztráció</h2>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{t('settings.title')}</h2>
             <p className="text-muted" style={{ fontSize: '0.85rem' }}>Globális konfiguráció és biztonsági házirend</p>
           </div>
         </div>

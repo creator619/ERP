@@ -29,7 +29,6 @@ function App() {
   const [toasts, setToasts] = useState([]);
   const [theme, setTheme] = useState('light');
   const [currency, setCurrency] = useState('HUF');
-  const [language, setLanguage] = useState('HU');
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -98,7 +97,7 @@ function App() {
       case 'bi':
         return <ExecutiveBI {...props} currency={currency} />;
       case 'settings':
-        return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} language={language} setLanguage={setLanguage} />;
+        return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} />;
       default:
         return <Dashboard {...props} currency={currency} />;
     }
@@ -116,8 +115,6 @@ function App() {
         onLogout={handleLogout}
         currency={currency}
         setCurrency={setCurrency}
-        language={language}
-        setLanguage={setLanguage}
       >
         {renderModule()}
       </Layout>

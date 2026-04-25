@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
 
-const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, setCurrency, language, setLanguage }) => {
+const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, setCurrency }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+  const { t } = useLanguage();
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -17,29 +19,9 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
   };
 
   const getModuleLabel = (id) => {
-    const labels = {
-      dashboard: 'Műszerfal',
-      bi: 'Executive Business Intelligence',
-      compliance: 'Megfelelőség, Audit és Biztonság',
-      intelligence: 'AI Vezérlőterem és Stratégiai Központ',
-      documents: 'Riport- és Dokumentumközpont',
-      traceability: 'Blockchain Eredetigazolás és Ledger',
-      projects: 'Projektmenedzsment és Dokumentáció',
-      manufacturing: 'Gyártáskezelés',
-      quality: 'Minőségellenőrzés és Tanúsítás',
-      maintenance: 'Gép- és Eszközkarbantartás',
-      purchase: 'Beszerzés és Ellátási lánc',
-      crm: 'CRM - Ügyfélkapcsolatok',
-      inventory: 'Készletkezelés',
-      logistics: 'Globális Logisztika és SCM',
-      sales: 'Értékesítés',
-      invoicing: 'Számlázás',
-      hr: 'HR - Emberi Erőforrások',
-      dms: 'DMS - Dokumentumkezelés',
-      messenger: 'Belső Kommunikáció',
-      settings: 'Beállítások'
-    };
-    return labels[id] || 'Antigravity ERP';
+    const key = `menu.${id}`;
+    const translated = t(key);
+    return translated === key ? 'RailParts ERP' : translated;
   };
 
   return (
@@ -61,8 +43,6 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
           activeModuleLabel={getModuleLabel(activeModule)} 
           currency={currency}
           setCurrency={setCurrency}
-          language={language}
-          setLanguage={setLanguage}
           toggleSidebar={toggleSidebar}
         />
         <div className="content-inner">
