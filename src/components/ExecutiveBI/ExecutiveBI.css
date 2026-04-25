@@ -1,7 +1,43 @@
 .bi-wrapper {
-    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInBI 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    padding-bottom: 20px;
 }
 
+/* Premium Filter Buttons */
+.bi-filters {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-card);
+    padding: 6px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.bi-filter-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bi-filter-btn:hover {
+    color: var(--primary-color);
+    background: rgba(113, 75, 103, 0.05); /* very light primary */
+}
+
+.bi-filter-btn.active {
+    background: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(113, 75, 103, 0.3);
+}
+
+/* KPI Grid Setup */
 .bi-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -9,15 +45,26 @@
     margin-bottom: 30px;
 }
 
+/* Light Glassmorphic Premium Cards */
 .bi-card {
     padding: 25px;
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
     position: relative;
     overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+    cursor: default;
 }
 
+.bi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08), 0 0 20px rgba(113, 75, 103, 0.05);
+    border-color: rgba(113, 75, 103, 0.2);
+}
+
+/* Dynamic Left Border Glow */
 .bi-card::before {
     content: '';
     position: absolute;
@@ -25,44 +72,167 @@
     left: 0;
     width: 4px;
     height: 100%;
-    background: var(--primary-color);
-    opacity: 0.5;
+    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+    opacity: 0.9;
 }
 
+/* Chart Container & Boxes */
 .bi-chart-container {
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 25px;
     margin-bottom: 30px;
 }
 
 .bi-chart-box {
     padding: 30px;
-    border-radius: 24px;
+    border-radius: 20px;
     min-height: 400px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
 }
 
+.bi-chart-box:hover {
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+/* Bar Chart Bar Container & Hovering */
+.bi-bar-container {
+    cursor: pointer;
+    transition: filter 0.3s ease;
+}
+.bi-bar-container:hover {
+    filter: brightness(1.1);
+}
+
+.bi-bar-fill {
+    position: relative;
+    box-shadow: 0 -5px 15px rgba(113, 75, 103, 0.15);
+}
+.bi-bar-container:hover .bi-bar-fill {
+    box-shadow: 0 -8px 20px rgba(113, 75, 103, 0.3);
+}
+
+.bi-tooltip {
+    position: absolute;
+    top: -45px;
+    background: var(--bg-sidebar);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    white-space: nowrap;
+    z-index: 10;
+}
+.bi-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: var(--bg-sidebar);
+}
+.bi-bar-container:hover .bi-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Metric Display in Global box */
 .performance-metric {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.performance-metric::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    transition: width 0.5s ease;
+}
+
+.performance-metric:hover::after {
+    width: 100%;
 }
 
 .performance-metric:last-child {
     border-bottom: none;
 }
 
-.trend-up { color: #2ecc71; }
-.trend-down { color: #e74c3c; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+/* Trends */
+.trend-up { 
+    color: #28a745; 
+}
+.trend-down { 
+    color: #dc3545; 
 }
 
-.sparkline-container {
-    height: 40px;
-    width: 100px;
+@keyframes fadeInBI {
+    from { opacity: 0; transform: scale(0.98) translateY(10px); filter: blur(5px); }
+    to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+.region-bar-bg {
+    height: 8px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.region-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.region-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shine 2s infinite linear;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Glow Award Box */
+.award-box {
+    margin-top: auto;
+    padding: 20px;
+    background: rgba(241, 196, 15, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(241, 196, 15, 0.2);
+    transition: all 0.3s ease;
+}
+
+.award-box:hover {
+    box-shadow: 0 8px 25px rgba(241, 196, 15, 0.15);
+    border-color: rgba(241, 196, 15, 0.4);
+    transform: scale(1.02);
 }
