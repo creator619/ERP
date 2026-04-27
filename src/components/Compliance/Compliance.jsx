@@ -35,6 +35,18 @@ const Compliance = ({ addToast }) => {
   const [isNCRModalOpen, setIsNCRModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
+  const [isoDocuments, setIsoDocuments] = useState([
+    { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
+    { name: 'Munkavédelmi Kézikönyv', ref: 'SAFE-HS-001', version: 'v1.1', status: 'Review' },
+    { name: 'Minőségirányítási Kézikönyv', ref: 'QM-ISO-9001', version: 'v4.0', status: 'Approved' }
+  ]);
+
+  const [calibrationTools, setCalibrationTools] = useState([
+    { id: 'TOL-001', name: 'Digitális Tolómérő (Mitutoyo)', lastDate: '2023-11-12', nextDate: '2024-05-12', status: 'valid' },
+    { id: 'NYO-042', name: 'Nyomatékkulcs (Stahlwille)', lastDate: '2023-04-01', nextDate: '2024-04-01', status: 'expired' },
+    { id: 'MIV-009', name: 'Mikrométer (Mahr)', lastDate: '2023-10-20', nextDate: '2024-04-20', status: 'warning' }
+  ]);
+
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
       log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -106,11 +118,20 @@ const Compliance = ({ addToast }) => {
     { name: 'D8: Recognition', status: 'pending' },
   ];
 
-  const [isoDocuments, setIsoDocuments] = useState([
-    { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
-    { name: 'Munkavédelmi Kézikönyv', ref: 'SAFE-HS-001', version: 'v1.1', status: 'Review' },
-    { name: 'Minőségirányítási Kézikönyv', ref: 'QM-ISO-9001', version: 'v4.0', status: 'Approved' }
-  ]);
+  const openNCRDetails = (ncr) => {
+    setSelectedNCR(ncr);
+    setIsNCRModalOpen(true);
+  };
+
+  const generatePDFReport = () => {
+    setIsGeneratingPDF(true);
+    addToast('8D Riport generálása folyamatban...', 'info', 'A rendszer összeállítja a minőségügyi dokumentációt.');
+    
+    setTimeout(() => {
+      setIsGeneratingPDF(false);
+      addToast('Riport sikeresen legenerálva', 'success', 'A dokumentumot megtalálja a Riportközpontban.');
+    }, 2500);
+  };
 
   const uploadISODocument = () => {
     addToast('Dokumentum feltöltése...', 'info', 'Titkosított csatorna megnyitása...');
@@ -127,19 +148,16 @@ const Compliance = ({ addToast }) => {
     }, 1500);
   };
 
-  const openNCRDetails = (ncr) => {
-    setSelectedNCR(ncr);
-    setIsNCRModalOpen(true);
-  };
-
-  const generatePDFReport = () => {
-    setIsGeneratingPDF(true);
-    addToast('8D Riport generálása folyamatban...', 'info', 'A rendszer összeállítja a minőségügyi dokumentációt.');
-    
-    setTimeout(() => {
-      setIsGeneratingPDF(false);
-      addToast('Riport sikeresen legenerálva', 'success', 'A dokumentumot megtalálja a Riportközpontban.');
-    }, 2500);
+  const addCalibrationTool = () => {
+    const newTool = {
+      id: `TOOL-${Math.floor(Math.random() * 900) + 100}`,
+      name: 'Új Precíziós Mérőeszköz',
+      lastDate: new Date().toISOString().split('T')[0],
+      nextDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      status: 'valid'
+    };
+    setCalibrationTools(prev => [newTool, ...prev]);
+    addToast('Új eszköz hozzáadva', 'success', `${newTool.id} azonosítójú eszköz regisztrálva.`);
   };
 
   return (
@@ -389,14 +407,10 @@ const Compliance = ({ addToast }) => {
         <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Mérőeszköz Kalibrálás Kezelő</h3>
-              <button className="view-btn-small"><Plus size={14} /> Eszköz Hozzáadása</button>
+              <button className="view-btn-small" onClick={addCalibrationTool}><Plus size={14} /> Eszköz Hozzáadása</button>
            </div>
            
-           {[
-             { id: 'TOL-001', name: 'Digitális Tolómérő (Mitutoyo)', lastDate: '2023-11-12', nextDate: '2024-05-12', status: 'valid' },
-             { id: 'NYO-042', name: 'Nyomatékkulcs (Stahlwille)', lastDate: '2023-04-01', nextDate: '2024-04-01', status: 'expired' },
-             { id: 'MIV-009', name: 'Mikrométer (Mahr)', lastDate: '2023-10-20', nextDate: '2024-04-20', status: 'warning' }
-           ].map((tool, i) => (
+           {calibrationTools.map((tool, i) => (
              <div key={i} className={`calib-card ${tool.status === 'expired' ? 'pulse-expired' : ''}`}>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                    <div className={`calib-status-icon ${tool.status}`}>
@@ -483,7 +497,7 @@ const Compliance = ({ addToast }) => {
               <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Adatkezelési Tevékenységek (ROPA)</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                  {[
-                   { name: 'Dolgozói bérszámfejtés', type: 'Személyes', legal: 'Szerződéses', period: '7 év' },
+                   { name: 'Dolgozói bérszérfejtés', type: 'Személyes', legal: 'Szerződéses', period: '7 év' },
                    { name: 'Ügyfél kapcsolattartás', type: 'Business', legal: 'Jogos érdek', period: '5 év' },
                    { name: 'Beléptető rendszer (Kamera)', type: 'Biometrikus', legal: 'Biztonság', period: '3 nap' }
                  ].map((rec, i) => (
