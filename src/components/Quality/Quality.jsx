@@ -303,10 +303,10 @@ const Quality = ({ addToast }) => {
       >
         {selectedInspection && (
           <div className="inspection-details-view">
-            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', background: 'transparent', padding: 0 }}>
-              <div className={`settings-nav-item ${activeTab === 'checkpoints' ? 'active' : ''}`} onClick={() => setActiveTab('checkpoints')} style={{ flex: 1, textAlign: 'center' }}>Eredmények</div>
-              <div className={`settings-nav-item ${activeTab === '8d' ? 'active' : ''}`} onClick={() => setActiveTab('8d')} style={{ flex: 1, textAlign: 'center' }}>8D Elemzés</div>
-              <div className={`settings-nav-item ${activeTab === 'specs' ? 'active' : ''}`} onClick={() => setActiveTab('specs')} style={{ flex: 1, textAlign: 'center' }}>Referencia Adatok</div>
+            <div className="settings-nav">
+              <div className={`settings-nav-item ${activeTab === 'checkpoints' ? 'active' : ''}`} onClick={() => setActiveTab('checkpoints')}>Eredmények</div>
+              <div className={`settings-nav-item ${activeTab === '8d' ? 'active' : ''}`} onClick={() => setActiveTab('8d')}>8D Elemzés</div>
+              <div className={`settings-nav-item ${activeTab === 'specs' ? 'active' : ''}`} onClick={() => setActiveTab('specs')}>Referencia Adatok</div>
             </div>
 
             {activeTab === 'checkpoints' && (

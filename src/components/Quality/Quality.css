@@ -145,30 +145,38 @@
 }
 
 /* Modal Updates */
-.inspection-details-view {
-  background: var(--bg-main);
-  padding: 20px;
+.settings-nav {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px;
   border-radius: 12px;
+  margin-bottom: 25px;
+  gap: 5px;
 }
 
 .settings-nav-item {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
   cursor: pointer;
-  padding: 15px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-  border-bottom: 2px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .settings-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-main);
-  background: rgba(0,0,0,0.02);
 }
 
 .settings-nav-item.active {
+  background: rgba(155, 89, 182, 0.1);
   color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
+  border: 1px solid rgba(155, 89, 182, 0.2);
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.05);
 }
 
 .check-list-item {
