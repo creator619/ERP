@@ -22,6 +22,22 @@ const Quality = ({ addToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('checkpoints');
   const [isCreatingNCR, setIsCreatingNCR] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const handleExportPDF = (insp) => {
+    setIsGeneratingPDF(true);
+    setTimeout(() => {
+      auditLogService.log({
+        user: 'Minőségügyi Vezető',
+        action: 'Digitális Jegyzőkönyv Exportálva',
+        module: 'Quality',
+        details: `Jegyzőkönyv: ${insp.id}. Formátum: Hitelesített PDF.`,
+        severity: 'info'
+      });
+      addToast(`Jegyzőkönyv (${insp.id}) sikeresen generálva és letöltve`, 'success');
+      setIsGeneratingPDF(false);
+    }, 1800);
+  };
 
   const [inspections, setInspections] = useState([
     { id: 'QC-2024-001', item: 'Kocsiablak (RW-WIN-042)', batch: 'BCH-882', date: '2024-04-20', inspector: 'Kovács János', status: 'Passed', score: 100 },
@@ -297,7 +313,17 @@ const Quality = ({ addToast }) => {
                 )}
               </button>
             )}
-            <button className="create-btn" onClick={() => addToast('Jegyzőkönyv letöltve', 'success')}>Aláírt PDF</button>
+            <button 
+              className="create-btn" 
+              onClick={() => handleExportPDF(selectedInspection)}
+              disabled={isGeneratingPDF}
+            >
+              {isGeneratingPDF ? (
+                <><Loader2 size={18} className="spin-animation" /> Generálás...</>
+              ) : (
+                'Aláírt PDF'
+              )}
+            </button>
           </>
         }
       >
