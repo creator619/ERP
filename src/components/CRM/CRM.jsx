@@ -582,6 +582,8 @@ const CRM = ({ addToast }) => {
               </select>
            </div>
         </div>
+      </Modal>
+
       <Modal
         isOpen={isTenderModalOpen}
         onClose={() => setIsTenderModalOpen(false)}
