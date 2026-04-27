@@ -99,8 +99,21 @@ const DMS = ({ addToast }) => {
 
   const handleDownload = (doc) => {
     addToast(`${doc.name} letöltése megkezdődött`, 'info');
+    
+    // Simulating a file download
+    const dummyContent = `RailParts ERP - Dokumentum Tartalom\n\nFájlnév: ${doc.name}\nVerzió: ${doc.version}\nSzerző: ${doc.author}\nDátum: ${doc.updated}\n\nEz egy generált prototípus fájl.`;
+    const blob = new Blob([dummyContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.name.includes('.') ? doc.name : `${doc.name}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
     auditLogService.log({
-      user: 'John Doe',
+      user: 'Simon Ernő',
       action: 'Dokumentum letöltve',
       module: 'DMS',
       details: `${doc.name} (Verzió: ${doc.version})`,
