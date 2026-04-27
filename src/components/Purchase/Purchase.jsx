@@ -302,18 +302,18 @@ const Purchase = ({ addToast, currency }) => {
                  <label>Beszállító Neve</label>
                  <input 
                    type="text" 
+                   className="purchase-input"
                    value={newPOData.supplier}
                    onChange={(e) => setNewPOData({...newPOData, supplier: e.target.value})}
                    placeholder="pl. Knorr-Bremse"
-                   style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white !important', opacity: '1 !important' }}
                  />
               </div>
               <div className="settings-group">
                  <label>Kategória</label>
                  <select 
+                   className="purchase-select"
                    value={newPOData.category}
                    onChange={(e) => setNewPOData({...newPOData, category: e.target.value})}
-                   style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white !important', opacity: '1 !important' }}
                  >
                     <option value="Alkatrész">Alkatrész</option>
                     <option value="Nyersanyag">Nyersanyag</option>
@@ -334,6 +334,7 @@ const Purchase = ({ addToast, currency }) => {
                    <div key={index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr', gap: '10px' }}>
                       <input 
                         type="text" 
+                        className="purchase-input"
                         placeholder="Tétel neve" 
                         value={item.name}
                         onChange={(e) => {
@@ -341,10 +342,10 @@ const Purchase = ({ addToast, currency }) => {
                           items[index].name = e.target.value;
                           setNewPOData({...newPOData, items});
                         }}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white !important', opacity: '1 !important' }}
                       />
                       <input 
                         type="number" 
+                        className="purchase-input"
                         placeholder="Menny." 
                         value={item.qty}
                         onChange={(e) => {
@@ -352,10 +353,10 @@ const Purchase = ({ addToast, currency }) => {
                           items[index].qty = parseInt(e.target.value) || 0;
                           setNewPOData({...newPOData, items});
                         }}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white !important', opacity: '1 !important' }}
                       />
                       <input 
                         type="number" 
+                        className="purchase-input"
                         placeholder="Egységár" 
                         value={item.price}
                         onChange={(e) => {
@@ -363,7 +364,6 @@ const Purchase = ({ addToast, currency }) => {
                           items[index].price = parseInt(e.target.value) || 0;
                           setNewPOData({...newPOData, items});
                         }}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white !important', opacity: '1 !important' }}
                       />
                    </div>
                  ))}

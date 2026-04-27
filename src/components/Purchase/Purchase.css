@@ -169,3 +169,26 @@
   transform: scale(1.02);
 }
 
+/* New Purchase Form Styles */
+.purchase-input, .purchase-select {
+  width: 100% !important;
+  padding: 12px !important;
+  border-radius: 10px !important;
+  background: #1a1a1a !important;
+  border: 1px solid var(--border-color) !important;
+  color: white !important;
+  font-size: 0.9rem !important;
+  outline: none !important;
+  opacity: 1 !important;
+}
+
+.purchase-input:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2) !important;
+}
+
+.purchase-input::placeholder {
+  color: rgba(255,255,255,0.3) !important;
+}
+
+
