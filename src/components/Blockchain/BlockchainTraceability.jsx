@@ -20,7 +20,7 @@ import { useData } from '../../contexts/DataContext';
 import './BlockchainTraceability.css';
 
 const BlockchainTraceability = ({ addToast }) => {
-  const { ledgers } = useData();
+  const { ledgers, workOrders } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [activeLedger, setActiveLedger] = useState(null);
@@ -40,12 +40,32 @@ const BlockchainTraceability = ({ addToast }) => {
     setActiveLedger(null);
 
     setTimeout(() => {
-      const result = ledgers[searchTerm.toUpperCase()];
-      if (result) {
-        setActiveLedger(result);
+      const searchKey = searchTerm.toUpperCase();
+      const ledgerResult = ledgers[searchKey];
+      const woResult = workOrders.find(wo => wo.id.toUpperCase() === searchKey);
+
+      if (ledgerResult) {
+        setActiveLedger(ledgerResult);
         addToast('Kriptográfiai eredet igazolva!', 'success');
+      } else if (woResult) {
+        // Ha még nincs a ledgerben (gyártás alatt), generálunk egy ideiglenes nézetet
+        setActiveLedger({
+          name: woResult.product,
+          status: 'In Production',
+          finalHash: 'Megerősítésre vár (Bányászat folyamatban...)',
+          steps: [
+            { 
+              title: 'Gyártás elindítva', 
+              date: woResult.deadline, 
+              actor: woResult.technician, 
+              hash: 'PENDING...', 
+              details: `Munkalap rögzítve. Mennyiség: ${woResult.quantity} db. Jelenlegi haladás: ${woResult.progress}%` 
+            }
+          ]
+        });
+        addToast('Aktív gyártási folyamat észlelve.', 'info');
       } else {
-        addToast('A keresett azonosító nem található a láncban.', 'error');
+        addToast('A keresett azonosító nem található.', 'error');
       }
       setIsVerifying(false);
     }, 2000);
@@ -96,7 +116,10 @@ const BlockchainTraceability = ({ addToast }) => {
                <div className="ledger-header glass">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <div>
-                        <span className="verify-label"><ShieldCheck size={14} /> BLOCKCHAIN VERIFIED</span>
+                        <span className={`verify-label ${activeLedger.status === 'In Production' ? 'warning' : ''}`}>
+                           {activeLedger.status === 'In Production' ? <RefreshCw size={14} className="spin" /> : <ShieldCheck size={14} />}
+                           {activeLedger.status === 'In Production' ? ' PRODUCTION IN PROGRESS' : ' BLOCKCHAIN VERIFIED'}
+                        </span>
                         <h2 style={{ fontSize: '1.8rem', fontWeight: 900, marginTop: '10px' }}>{activeLedger.name}</h2>
                         <p className="hash-display">{activeLedger.finalHash}</p>
                      </div>

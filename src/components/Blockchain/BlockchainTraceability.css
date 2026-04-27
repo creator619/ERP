@@ -55,7 +55,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 15px 20px;
-    color: white;
+    color: var(--text-muted);
     outline: none;
     transition: all 0.3s;
     font-family: 'Courier New', Courier, monospace;
