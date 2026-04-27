@@ -69,6 +69,13 @@ const Inventory = ({ addToast }) => {
     setProducts(prev => prev.map(p => {
       if (p.id === id) {
         const newStock = Math.max(0, p.stock + amount);
+        const updatedProduct = { ...p, stock: newStock };
+        
+        // Frissítjük a kijelölt terméket is, hogy a Modal-ban azonnal látszódjon a változás
+        if (selectedProduct && selectedProduct.id === id) {
+          setSelectedProduct(updatedProduct);
+        }
+
         auditLogService.log({
           user: 'Raktárkezelő',
           action: 'Készletmódosítás',
@@ -76,7 +83,7 @@ const Inventory = ({ addToast }) => {
           details: `${p.name} (${p.sku}) készlet változott: ${p.stock} -> ${newStock}. Ok: ${reason}`,
           severity: newStock <= p.minStock ? 'warning' : 'info'
         });
-        return { ...p, stock: newStock };
+        return updatedProduct;
       }
       return p;
     }));
