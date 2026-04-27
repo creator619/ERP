@@ -34,6 +34,7 @@ const Compliance = ({ addToast }) => {
   const [selectedNCR, setSelectedNCR] = useState(null);
   const [isNCRModalOpen, setIsNCRModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isAddToolModalOpen, setIsAddToolModalOpen] = useState(false);
 
   const [isoDocuments, setIsoDocuments] = useState([
     { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
@@ -46,6 +47,12 @@ const Compliance = ({ addToast }) => {
     { id: 'NYO-042', name: 'Nyomatékkulcs (Stahlwille)', lastDate: '2023-04-01', nextDate: '2024-04-01', status: 'expired' },
     { id: 'MIV-009', name: 'Mikrométer (Mahr)', lastDate: '2023-10-20', nextDate: '2024-04-20', status: 'warning' }
   ]);
+
+  const [newTool, setNewTool] = useState({
+    id: '',
+    name: '',
+    interval: 180
+  });
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
@@ -148,16 +155,23 @@ const Compliance = ({ addToast }) => {
     }, 1500);
   };
 
-  const addCalibrationTool = () => {
-    const newTool = {
-      id: `TOOL-${Math.floor(Math.random() * 900) + 100}`,
-      name: 'Új Precíziós Mérőeszköz',
+  const handleSaveTool = () => {
+    if (!newTool.id || !newTool.name) {
+      addToast('Hiba', 'warning', 'Kérjük töltsön ki minden mezőt!');
+      return;
+    }
+
+    const toolEntry = {
+      ...newTool,
       lastDate: new Date().toISOString().split('T')[0],
-      nextDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      nextDate: new Date(Date.now() + newTool.interval * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: 'valid'
     };
-    setCalibrationTools(prev => [newTool, ...prev]);
-    addToast('Új eszköz hozzáadva', 'success', `${newTool.id} azonosítójú eszköz regisztrálva.`);
+
+    setCalibrationTools(prev => [toolEntry, ...prev]);
+    setIsAddToolModalOpen(false);
+    setNewTool({ id: '', name: '', interval: 180 });
+    addToast('Eszköz regisztrálva', 'success', `${toolEntry.name} hozzáadva a nyilvántartáshoz.`);
   };
 
   return (
@@ -407,7 +421,7 @@ const Compliance = ({ addToast }) => {
         <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Mérőeszköz Kalibrálás Kezelő</h3>
-              <button className="view-btn-small" onClick={addCalibrationTool}><Plus size={14} /> Eszköz Hozzáadása</button>
+              <button className="view-btn-small" onClick={() => setIsAddToolModalOpen(true)}><Plus size={14} /> Eszköz Hozzáadása</button>
            </div>
            
            {calibrationTools.map((tool, i) => (
@@ -467,20 +481,6 @@ const Compliance = ({ addToast }) => {
                 </div>
              </div>
            ))}
-           
-           <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '15px' }}>
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: '10px' }}>Audit Eredményesség (YTD)</h4>
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
-                 <div style={{ width: '85%', height: '100%', background: '#2ecc71' }} title="Lezárva"></div>
-                 <div style={{ width: '10%', height: '100%', background: '#f1c40f' }} title="Folyamatban"></div>
-                 <div style={{ width: '5%', height: '100%', background: '#e74c3c' }} title="Kritikus hiba"></div>
-              </div>
-              <div style={{ display: 'flex', gap: '20px', marginTop: '10px', fontSize: '0.7rem' }}>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#2ecc71' }}></div> 85% Sikeres</div>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#f1c40f' }}></div> 10% Javító intézkedés</div>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#e74c3c' }}></div> 5% Eltérés</div>
-              </div>
-           </div>
         </div>
       )}
 
@@ -497,7 +497,7 @@ const Compliance = ({ addToast }) => {
               <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Adatkezelési Tevékenységek (ROPA)</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                  {[
-                   { name: 'Dolgozói bérszérfejtés', type: 'Személyes', legal: 'Szerződéses', period: '7 év' },
+                   { name: 'Dolgozói bérszámfejtés', type: 'Személyes', legal: 'Szerződéses', period: '7 év' },
                    { name: 'Ügyfél kapcsolattartás', type: 'Business', legal: 'Jogos érdek', period: '5 év' },
                    { name: 'Beléptető rendszer (Kamera)', type: 'Biometrikus', legal: 'Biztonság', period: '3 nap' }
                  ].map((rec, i) => (
@@ -610,6 +610,55 @@ const Compliance = ({ addToast }) => {
            </div>
         </div>
       )}
+
+      {/* Add Calibration Tool Modal */}
+      <Modal
+        isOpen={isAddToolModalOpen}
+        onClose={() => setIsAddToolModalOpen(false)}
+        title="Új Mérőeszköz Regisztrálása"
+        width="500px"
+        footer={
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <button className="view-btn" onClick={() => setIsAddToolModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleSaveTool}>Eszköz Mentése</button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
+          <div className="settings-group">
+            <label>Eszköz Azonosító (ID)</label>
+            <input 
+              type="text" 
+              placeholder="pl: TOL-002" 
+              value={newTool.id} 
+              onChange={(e) => setNewTool({...newTool, id: e.target.value})}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '12px', borderRadius: '10px', width: '100%' }}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Eszköz Megnevezése</label>
+            <input 
+              type="text" 
+              placeholder="pl: Digitális Mikrométer" 
+              value={newTool.name} 
+              onChange={(e) => setNewTool({...newTool, name: e.target.value})}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '12px', borderRadius: '10px', width: '100%' }}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Kalibrálási Ciklus (nap)</label>
+            <select 
+              value={newTool.interval} 
+              onChange={(e) => setNewTool({...newTool, interval: parseInt(e.target.value)})}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '12px', borderRadius: '10px', width: '100%' }}
+            >
+              <option value={90} style={{ background: 'var(--bg-card)' }}>90 nap (Negyedéves)</option>
+              <option value={180} style={{ background: 'var(--bg-card)' }}>180 nap (Féléves)</option>
+              <option value={365} style={{ background: 'var(--bg-card)' }}>365 nap (Éves)</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
 
       {/* NCR Details Modal */}
       <Modal
