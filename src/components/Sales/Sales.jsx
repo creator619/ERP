@@ -29,17 +29,17 @@ const Sales = ({ addToast }) => {
     title: '',
     customer: '',
     value: '',
-    stage: 'Prospecting',
+    stage: 'Felkutatás',
     priority: 'Medium'
   });
   const [opportunities, setOpportunities] = useState([
-    { id: 'OPP-101', title: 'MÁV Ablak Csere', customer: 'MÁV-START', value: 12500000, probability: 70, stage: 'Qualified', priority: 'High' },
-    { id: 'OPP-102', title: 'GYSEV Ajtó modernizáció', customer: 'GYSEV', value: 8400000, probability: 40, stage: 'Negotiation', priority: 'Medium' },
-    { id: 'OPP-103', title: 'Stadler Poggyásztartók', customer: 'Stadler Rail', value: 24500000, probability: 90, stage: 'Closing', priority: 'High' },
-    { id: 'OPP-104', title: 'ÖBB Belső válaszfalak', customer: 'ÖBB', value: 15600000, probability: 20, stage: 'Prospecting', priority: 'Low' },
+    { id: 'OPP-101', title: 'MÁV Ablak Csere', customer: 'MÁV-START', value: 12500000, probability: 70, stage: 'Minősítés', priority: 'High' },
+    { id: 'OPP-102', title: 'GYSEV Ajtó modernizáció', customer: 'GYSEV', value: 8400000, probability: 40, stage: 'Tárgyalás', priority: 'Medium' },
+    { id: 'OPP-103', title: 'Stadler Poggyásztartók', customer: 'Stadler Rail', value: 24500000, probability: 90, stage: 'Lezárás', priority: 'High' },
+    { id: 'OPP-104', title: 'ÖBB Belső válaszfalak', customer: 'ÖBB', value: 15600000, probability: 20, stage: 'Felkutatás', priority: 'Low' },
   ]);
 
-  const stages = ['Prospecting', 'Qualified', 'Negotiation', 'Closing'];
+  const stages = ['Felkutatás', 'Minősítés', 'Tárgyalás', 'Lezárás'];
 
   const handleAddOpportunity = () => {
     if (!newOppData.title || !newOppData.customer || !newOppData.value) {
@@ -63,7 +63,7 @@ const Sales = ({ addToast }) => {
 
     setOpportunities([...opportunities, newOpp]);
     setIsAddingOpp(false);
-    setNewOppData({ title: '', customer: '', value: '', stage: 'Prospecting', priority: 'Medium' });
+    setNewOppData({ title: '', customer: '', value: '', stage: 'Felkutatás', priority: 'Medium' });
     addToast('Új értékesítési lehetőség rögzítve', 'success');
 
     auditLogService.log({
