@@ -167,6 +167,35 @@ const DMS = ({ addToast }) => {
     });
   };
 
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const handleDelete = (id) => {
+    const docToDelete = documents.find(d => d.id === id);
+    setDocuments(documents.filter(doc => doc.id !== id));
+    addToast(`${docToDelete.name} törölve`, 'warning');
+    setActiveDropdown(null);
+    
+    auditLogService.log({
+      user: 'Simon Ernő',
+      action: 'Dokumentum törölve',
+      module: 'DMS',
+      details: `${docToDelete.name}`,
+      severity: 'warning'
+    });
+  };
+
+  const toggleDropdown = (e, id) => {
+    e.stopPropagation();
+    setActiveDropdown(activeDropdown === id ? null : id);
+  };
+
+  // Close dropdown when clicking elsewhere
+  React.useEffect(() => {
+    const close = () => setActiveDropdown(null);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, []);
+
   return (
     <div className="dms-wrapper">
       <input 
@@ -228,7 +257,7 @@ const DMS = ({ addToast }) => {
             <div>Frissítve</div>
             <div>Szerző</div>
             <div>Státusz</div>
-            <div></div>
+            <div style={{ textAlign: 'right', paddingRight: '10px' }}>Műveletek</div>
           </div>
           {filteredDocs.map(doc => (
             <div key={doc.id} className="file-row">
@@ -249,10 +278,30 @@ const DMS = ({ addToast }) => {
                   {doc.status}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '5px' }}>
+              <div className="file-actions-wrapper">
                 <button className="view-btn-small" onClick={() => handleDownload(doc)} title="Letöltés"><Download size={16} /></button>
                 <button className="view-btn-small" onClick={() => openHistory(doc)} title="Előzmények"><History size={16} /></button>
-                <button className="view-btn-small"><MoreVertical size={16} /></button>
+                <div style={{ position: 'relative' }}>
+                  <button 
+                    className="view-btn-small" 
+                    onClick={(e) => toggleDropdown(e, doc.id)}
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                  {activeDropdown === doc.id && (
+                    <div className="file-dropdown glass">
+                      <button className="dropdown-action-item"><Eye size={14} /> Megnyitás</button>
+                      <button className="dropdown-action-item"><ExternalLink size={14} /> Megosztás</button>
+                      <div className="dropdown-divider" style={{ margin: '4px 0' }}></div>
+                      <button 
+                        className="dropdown-action-item danger" 
+                        onClick={() => handleDelete(doc.id)}
+                      >
+                        <Trash2 size={14} /> Törlés
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}

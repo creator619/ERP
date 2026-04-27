@@ -49,7 +49,7 @@
 
 .file-row {
     display: grid;
-    grid-template-columns: 40px 2fr 1fr 1fr 100px 50px;
+    grid-template-columns: 40px 2fr 1fr 1fr 120px 120px;
     align-items: center;
     padding: 15px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -119,3 +119,54 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* DMS Action Dropdown */
+.file-actions-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.file-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 180px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    padding: 8px 0;
+    margin-top: 5px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.dropdown-action-item {
+    width: 100%;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.dropdown-action-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary-color);
+}
+
+.dropdown-action-item.danger {
+    color: #e74c3c;
+}
+
+.dropdown-action-item.danger:hover {
+    background: rgba(231, 76, 60, 0.1);
+}
+
