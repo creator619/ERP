@@ -18,27 +18,21 @@ import {
   GraduationCap,
   ChevronRight,
   DollarSign,
-  Heart
+  Heart,
+  CalendarCheck,
+  Stethoscope
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import { useData } from '../../contexts/DataContext';
 import './HR.css';
 
 const HR = ({ addToast }) => {
-  const { employees, setEmployees, skillDefinitions } = useData();
+  const { employees, setEmployees, skillDefinitions, leaveRequests, approveLeave } = useData();
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
   const [activeMainView, setActiveMainView] = useState('employees');
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
-  const [attendance, setAttendance] = useState({});
   const [newEmployeeData, setNewEmployeeData] = useState({ name: '', role: '', dept: 'Gyártás', salary: 450000 });
-
-  const openEmployeeDetails = (emp) => {
-    setSelectedEmployee(emp);
-    setIsModalOpen(true);
-    setActiveTab('overview');
-  };
 
   const getKPIColor = (val) => {
     if (val >= 90) return '#2ecc71';
@@ -46,27 +40,9 @@ const HR = ({ addToast }) => {
     return '#e74c3c';
   };
 
-  const handleAddEmployee = () => {
-    if (!newEmployeeData.name || !newEmployeeData.role) {
-      addToast('Kérjük töltsön ki minden kötelező mezőt!', 'warning');
-      return;
-    }
-
-    const newEmp = {
-      id: `EMP-${Date.now()}`,
-      name: newEmployeeData.name,
-      role: newEmployeeData.role,
-      department: newEmployeeData.dept,
-      salary: parseInt(newEmployeeData.salary),
-      performance: 85,
-      avatar: newEmployeeData.name.split(' ').map(n => n[0]).join(''),
-      skills: { welding: 1, cnc: 1, forklift: 1, assembly: 1 },
-      certs: []
-    };
-
-    setEmployees([...employees, newEmp]);
-    setIsAddingEmployee(false);
-    addToast(`${newEmp.name} sikeresen felvéve`, 'success');
+  const handleApprove = (id) => {
+    approveLeave(id);
+    addToast('Szabadság jóváhagyva', 'success', 'A dolgozó kerete frissült.');
   };
 
   const handleMatrixChange = (empId, skillId) => {
@@ -87,6 +63,28 @@ const HR = ({ addToast }) => {
     return 'rgba(255,255,255,0.05)';
   };
 
+  const handleAddEmployee = () => {
+    if (!newEmployeeData.name || !newEmployeeData.role) {
+      addToast('Mezők kitöltése kötelező!', 'warning');
+      return;
+    }
+    const newEmp = {
+      id: `EMP-${Date.now()}`,
+      name: newEmployeeData.name,
+      role: newEmployeeData.role,
+      department: newEmployeeData.dept,
+      salary: parseInt(newEmployeeData.salary),
+      performance: 85,
+      avatar: newEmployeeData.name.split(' ').map(n => n[0]).join(''),
+      skills: { welding: 1, cnc: 1, forklift: 1, assembly: 1 },
+      leaveBalance: { total: 20, used: 0, sick: 0 },
+      certs: []
+    };
+    setEmployees([...employees, newEmp]);
+    setIsAddingEmployee(false);
+    addToast(`${newEmp.name} rögzítve`, 'success');
+  };
+
   const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
 
   return (
@@ -98,7 +96,7 @@ const HR = ({ addToast }) => {
           </div>
           <div>
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Humánerőforrás (HR 2.0)</h2>
-            <p className="text-muted" style={{ fontSize: '0.9rem' }}>III. FÁZIS: Kompetencia Menedzsment és Bérszámfejtés</p>
+            <p className="text-muted" style={{ fontSize: '0.9rem' }}>III. FÁZIS: Kompetencia, Bér és Szabadságkezelés</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -110,19 +108,19 @@ const HR = ({ addToast }) => {
 
       <div className="hr-stats-grid">
          <div className="stat-card glass">
-            <p className="text-muted">Teljes Létszám</p>
-            <div className="stat-value">{employees.length} fő</div>
-            <p className="stat-label">Aktív állomány</p>
+            <p className="text-muted">Szabadságon</p>
+            <div className="stat-value">{leaveRequests.filter(r => r.status === 'Approved' && r.type === 'Fizetett').length} fő</div>
+            <p className="stat-label">Jelenleg távol</p>
          </div>
          <div className="stat-card glass">
-            <p className="text-muted">Havi Bérköltség</p>
-            <div className="stat-value">{formatHUF(employees.reduce((acc, curr) => acc + curr.salary, 0))}</div>
-            <p className="stat-label">Bruttó alapbér</p>
+            <p className="text-muted">Betegállomány</p>
+            <div className="stat-value" style={{ color: '#e74c3c' }}>{leaveRequests.filter(r => r.status === 'Approved' && r.type === 'Betegszabadság').length} fő</div>
+            <p className="stat-label">Aktív igazolások</p>
          </div>
          <div className="stat-card glass">
-            <p className="text-muted">Átlagos Teljesítmény</p>
-            <div className="stat-value" style={{ color: '#2ecc71' }}>91.2%</div>
-            <p className="stat-label">KPI átlag</p>
+            <p className="text-muted">Függő Igények</p>
+            <div className="stat-value" style={{ color: '#f1c40f' }}>{leaveRequests.filter(r => r.status === 'Pending').length} db</div>
+            <p className="stat-label">Jóváhagyásra vár</p>
          </div>
       </div>
 
@@ -133,11 +131,11 @@ const HR = ({ addToast }) => {
         <div className={`comp-tab ${activeMainView === 'matrix' ? 'active' : ''}`} onClick={() => setActiveMainView('matrix')}>
            <Target size={16} /> Kompetencia Mátrix
         </div>
+        <div className={`comp-tab ${activeMainView === 'leaves' ? 'active' : ''}`} onClick={() => setActiveMainView('leaves')}>
+           <CalendarCheck size={16} /> Szabadság & Betegség
+        </div>
         <div className={`comp-tab ${activeMainView === 'payroll' ? 'active' : ''}`} onClick={() => setActiveMainView('payroll')}>
            <DollarSign size={16} /> Bérszámfejtés
-        </div>
-        <div className={`comp-tab ${activeMainView === 'certs' ? 'active' : ''}`} onClick={() => setActiveMainView('certs')}>
-           <GraduationCap size={16} /> Oktatás & Vizsgák
         </div>
       </div>
 
@@ -147,34 +145,37 @@ const HR = ({ addToast }) => {
             <thead>
               <tr>
                 <th>Név</th>
-                <th>Beosztás</th>
                 <th>Osztály</th>
-                <th>Teljesítmény</th>
-                <th style={{ textAlign: 'right' }}>Havi Bér</th>
-                <th></th>
+                <th>Szabadság (Kivett/Összes)</th>
+                <th>Betegszabadság</th>
+                <th style={{ textAlign: 'right' }}>Havi Bruttó</th>
               </tr>
             </thead>
             <tbody>
               {employees.map(emp => (
-                <tr key={emp.id} onClick={() => openEmployeeDetails(emp)} style={{ cursor: 'pointer' }}>
+                <tr key={emp.id}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div className="avatar-circle">{emp.avatar}</div>
                       <div style={{ fontWeight: 800 }}>{emp.name}</div>
                     </div>
                   </td>
-                  <td style={{ fontWeight: 600 }}>{emp.role}</td>
                   <td><span className="text-muted" style={{ fontSize: '0.8rem' }}>{emp.department}</span></td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                       <div className="progress-mini" style={{ width: '60px' }}>
-                          <div className="progress-fill" style={{ width: `${emp.performance}%`, background: getKPIColor(emp.performance) }}></div>
+                       <div className="progress-mini" style={{ width: '80px' }}>
+                          <div className="progress-fill" style={{ width: `${(emp.leaveBalance.used / emp.leaveBalance.total) * 100}%`, background: '#9b59b6' }}></div>
                        </div>
-                       <span style={{ fontWeight: 800, fontSize: '0.75rem' }}>{emp.performance}%</span>
+                       <span style={{ fontWeight: 800, fontSize: '0.75rem' }}>{emp.leaveBalance.used} / {emp.leaveBalance.total}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: emp.leaveBalance.sick > 0 ? '#e74c3c' : 'var(--text-muted)' }}>
+                       <Stethoscope size={14} />
+                       <span style={{ fontWeight: 700, fontSize: '0.75rem' }}>{emp.leaveBalance.sick} nap</span>
                     </div>
                   </td>
                   <td style={{ textAlign: 'right', fontWeight: 800 }}>{formatHUF(emp.salary)}</td>
-                  <td style={{ textAlign: 'right' }}><ChevronRight size={18} className="text-muted" /></td>
                 </tr>
               ))}
             </tbody>
@@ -185,11 +186,11 @@ const HR = ({ addToast }) => {
       {activeMainView === 'matrix' && (
         <div className="glass" style={{ padding: '30px', borderRadius: '24px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Szakmai Kompetencia Mátrix (Hőtérkép)</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Szakmai Kompetencia Mátrix</h3>
               <div style={{ display: 'flex', gap: '15px', fontSize: '0.7rem' }}>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#2ecc71' }}></div> Szakértő (5)</div>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#3498db' }}></div> Haladó (3-4)</div>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#f1c40f' }}></div> Kezdő (1-2)</div>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#2ecc71' }}></div> Szakértő</div>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#3498db' }}></div> Haladó</div>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#f1c40f' }}></div> Kezdő</div>
               </div>
            </div>
            <div style={{ overflowX: 'auto' }}>
@@ -223,72 +224,66 @@ const HR = ({ addToast }) => {
         </div>
       )}
 
-      {activeMainView === 'payroll' && (
+      {activeMainView === 'leaves' && (
         <div className="payroll-grid">
            <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Bérköltség Eloszlás</h3>
-              <div className="payroll-chart-sim">
-                 {employees.map((emp, i) => (
-                   <div key={i} className="payroll-bar-row">
-                      <span style={{ width: '100px', fontSize: '0.75rem', fontWeight: 700 }}>{emp.name}</span>
-                      <div style={{ flex: 1, height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
-                         <div style={{ height: '100%', background: '#9b59b6', width: `${(emp.salary / 800000) * 100}%` }}></div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Beérkező Igények</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                 {leaveRequests.map(req => (
+                   <div key={req.id} className="ncr-card" style={{ borderLeft: `4px solid ${req.status === 'Approved' ? '#2ecc71' : '#f1c40f'}`, padding: '15px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                         <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                               <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>{req.empName}</span>
+                               <span className={`status-badge ${req.type === 'Fizetett' ? 'info' : 'danger'}`} style={{ fontSize: '0.6rem' }}>{req.type.toUpperCase()}</span>
+                            </div>
+                            <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '5px' }}>{req.start} &rarr; {req.end} ({req.days} nap)</p>
+                         </div>
+                         {req.status === 'Pending' ? (
+                           <button className="create-btn-small" onClick={() => handleApprove(req.id)} style={{ background: '#2ecc71' }}>Jóváhagyás</button>
+                         ) : (
+                           <div style={{ color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', fontWeight: 800 }}>
+                              <CheckCircle2 size={16} /> JÓVÁHAGYVA
+                           </div>
+                         )}
                       </div>
-                      <span style={{ width: '80px', textAlign: 'right', fontSize: '0.75rem', fontWeight: 800 }}>{formatHUF(emp.salary)}</span>
                    </div>
                  ))}
               </div>
            </div>
            <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Kifizetési Ütemező</h3>
-              <div className="ncr-card" style={{ borderLeft: '4px solid #2ecc71' }}>
-                 <p style={{ fontWeight: 800, fontSize: '0.85rem' }}>Áprilisi bérek átutalása</p>
-                 <p style={{ fontSize: '0.7rem', marginTop: '5px' }}>Határidő: 2024.05.05 • Összesen: 4.8M HUF</p>
-                 <button className="view-btn-small" style={{ marginTop: '10px' }}>Fájl generálása</button>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Kapacitás Elemzés</h3>
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                 <AlertTriangle size={32} color="#f1c40f" style={{ marginBottom: '10px' }} />
+                 <p style={{ fontSize: '0.85rem' }}>A májusi szabadságok miatt a <strong>Hegesztő részleg</strong> kapacitása 20%-kal csökken.</p>
               </div>
            </div>
         </div>
       )}
 
-      {activeMainView === 'certs' && (
-        <div className="glass" style={{ padding: '30px', borderRadius: '24px' }}>
-           <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Lejáró Tanúsítványok & Oktatások</h3>
-           <div className="certs-grid">
-              {employees.flatMap(emp => emp.certs.map(c => ({ ...c, empName: emp.name }))).map((cert, i) => (
-                <div key={i} className={`cert-card-mini ${cert.status}`}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 800 }}>{cert.name}</span>
-                      {cert.status === 'warning' && <AlertTriangle size={16} color="#f39c12" />}
+      {activeMainView === 'payroll' && (
+        <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+           <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Bérköltség Analízis</h3>
+           <div className="payroll-chart-sim">
+              {employees.map((emp, i) => (
+                <div key={i} className="payroll-bar-row">
+                   <span style={{ width: '120px', fontSize: '0.75rem', fontWeight: 700 }}>{emp.name}</span>
+                   <div style={{ flex: 1, height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', background: '#9b59b6', width: `${(emp.salary / 800000) * 100}%` }}></div>
                    </div>
-                   <p style={{ fontSize: '0.75rem', marginTop: '5px' }}>Dolgozó: {cert.empName}</p>
-                   <p style={{ fontSize: '0.75rem', color: cert.status === 'warning' ? '#f39c12' : 'inherit' }}>Lejár: {cert.expiry}</p>
-                   <button className="view-btn-small" style={{ marginTop: '10px', width: '100%' }}>Oktatás Ütemezése</button>
+                   <span style={{ width: '100px', textAlign: 'right', fontSize: '0.75rem', fontWeight: 800 }}>{formatHUF(emp.salary)}</span>
                 </div>
               ))}
            </div>
         </div>
       )}
 
-      <Modal
-        isOpen={isAddingEmployee}
-        onClose={() => setIsAddingEmployee(false)}
-        title="Új munkatárs felvétele"
-        width="450px"
-      >
+      <Modal isOpen={isAddingEmployee} onClose={() => setIsAddingEmployee(false)} title="Új munkatárs" width="400px">
         <div className="settings-row" style={{ maxWidth: '100%', gap: '15px' }}>
-           <div className="settings-group">
-              <label>Teljes Név</label>
-              <input type="text" value={newEmployeeData.name} onChange={(e) => setNewEmployeeData({...newEmployeeData, name: e.target.value})} />
-           </div>
-           <div className="settings-group">
-              <label>Beosztás</label>
-              <input type="text" value={newEmployeeData.role} onChange={(e) => setNewEmployeeData({...newEmployeeData, role: e.target.value})} />
-           </div>
-           <div className="settings-group">
-              <label>Havi Bruttó Bér (HUF)</label>
-              <input type="number" value={newEmployeeData.salary} onChange={(e) => setNewEmployeeData({...newEmployeeData, salary: e.target.value})} />
-           </div>
-           <button className="create-btn" onClick={handleAddEmployee} style={{ width: '100%', marginTop: '10px' }}>Felvétel az állományba</button>
+           <input type="text" placeholder="Név" value={newEmployeeData.name} onChange={(e) => setNewEmployeeData({...newEmployeeData, name: e.target.value})} />
+           <input type="text" placeholder="Beosztás" value={newEmployeeData.role} onChange={(e) => setNewEmployeeData({...newEmployeeData, role: e.target.value})} />
+           <input type="number" placeholder="Bruttó Bér" value={newEmployeeData.salary} onChange={(e) => setNewEmployeeData({...newEmployeeData, salary: e.target.value})} />
+           <button className="create-btn" onClick={handleAddEmployee} style={{ width: '100%' }}>Rögzítés</button>
         </div>
       </Modal>
     </div>
