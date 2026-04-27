@@ -35,6 +35,17 @@ const Quality = ({ addToast }) => {
         severity: 'info'
       });
       addToast(`Jegyzőkönyv (${insp.id}) sikeresen generálva és letöltve`, 'success');
+      
+      // Add to central Document Engine
+      const newDoc = {
+        id: `DOC-${insp.id.split('-').pop()}-${Math.floor(Math.random() * 1000)}`,
+        name: `Minőségügyi Jegyzőkönyv: ${insp.id}`,
+        date: new Date().toISOString().split('T')[0],
+        status: 'Generated'
+      };
+      const existingDocs = JSON.parse(localStorage.getItem('generated_documents') || '[]');
+      localStorage.setItem('generated_documents', JSON.stringify([newDoc, ...existingDocs]));
+      
       setIsGeneratingPDF(false);
     }, 1800);
   };

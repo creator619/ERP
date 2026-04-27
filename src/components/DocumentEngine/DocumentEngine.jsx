@@ -27,11 +27,30 @@ const DocumentEngine = ({ addToast }) => {
     { id: 'INV-AUDIT', title: 'Készlet Audit Riport', type: 'Inventory', icon: <PieChart size={20} />, color: '#2ecc71' }
   ];
 
-  const recentDocs = [
+  const [recentDocs, setRecentDocs] = useState([
     { id: 'DOC-1024', name: 'MÁV-START Áprilisi Számla', date: '2024-04-20', status: 'Generated' },
     { id: 'DOC-1025', name: 'OEE Hatékonysági Riport Q1', date: '2024-04-22', status: 'Archived' },
     { id: 'DOC-1026', name: 'Logisztikai Költségterv v2', date: '2024-04-23', status: 'Generated' }
-  ];
+  ]);
+
+  React.useEffect(() => {
+    const loadDocs = () => {
+      const stored = JSON.parse(localStorage.getItem('generated_documents') || '[]');
+      if (stored.length > 0) {
+        // Filter out docs already in recentDocs to avoid duplicates if needed, 
+        // but for a demo, simple prepend is fine or just merge.
+        setRecentDocs(prev => {
+          const combined = [...stored, ...prev];
+          // Simple de-duplication by ID
+          return Array.from(new Map(combined.map(item => [item.id, item])).values());
+        });
+      }
+    };
+
+    loadDocs();
+    window.addEventListener('focus', loadDocs);
+    return () => window.removeEventListener('focus', loadDocs);
+  }, []);
 
   const openPreview = (doc) => {
     setSelectedDoc(doc);
