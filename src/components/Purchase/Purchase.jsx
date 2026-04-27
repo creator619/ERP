@@ -36,7 +36,14 @@ const Purchase = ({ addToast, currency }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
   const [isAlternativesModalOpen, setIsAlternativesModalOpen] = useState(false);
+  const [selectedSuppliers, setSelectedSuppliers] = useState([]);
   const [activeTab, setActiveTab] = useState('items');
+
+  const toggleSupplier = (name) => {
+    setSelectedSuppliers(prev => 
+      prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
+    );
+  };
 
   const [orders, setOrders] = useState([
     { 
@@ -501,43 +508,63 @@ const Purchase = ({ addToast, currency }) => {
              { name: 'Siemens Mobility Parts', score: 95, price: 'Közepes', risk: 'Alacsony', delivery: '5 nap' },
              { name: 'Alstom Components Gmbh', score: 92, price: 'Magas', risk: 'Alacsony', delivery: '3 nap' },
              { name: 'Wabtec Rail UK', score: 88, price: 'Alacsony', risk: 'Közepes', delivery: '12 nap' }
-           ].map((s, i) => (
-             <div key={i} className="glass" style={{ padding: '20px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <div style={{ width: '45px', height: '45px', borderRadius: '10px', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
-                   {s.name.charAt(0)}
-                </div>
-                <div style={{ flex: 1 }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                      <h4 style={{ fontWeight: 800 }}>{s.name}</h4>
-                      <span style={{ fontWeight: 800, color: '#2ecc71' }}>{s.score}% Match</span>
-                   </div>
-                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '12px' }}>
-                      <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
-                         <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Ár</p>
-                         <p style={{ fontSize: '0.9rem', fontWeight: 900, color: '#f1c40f' }}>{s.price}</p>
-                      </div>
-                      <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
-                         <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Kockázat</p>
-                         <p style={{ fontSize: '0.9rem', fontWeight: 900, color: s.risk === 'Alacsony' ? '#2ecc71' : '#f1c40f' }}>{s.risk}</p>
-                      </div>
-                      <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
-                         <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Szállítás</p>
-                         <p style={{ fontSize: '0.9rem', fontWeight: 900, color: '#3498db' }}>{s.delivery}</p>
-                      </div>
-                   </div>
-                </div>
-                <ChevronRight size={20} className="text-muted" />
-             </div>
-           ))}
+           ].map((s, i) => {
+             const isSelected = selectedSuppliers.includes(s.name);
+             return (
+               <div 
+                 key={i} 
+                 className="glass" 
+                 onClick={() => toggleSupplier(s.name)}
+                 style={{ 
+                   padding: '20px', 
+                   borderRadius: '15px', 
+                   display: 'flex', 
+                   alignItems: 'center', 
+                   gap: '20px', 
+                   cursor: 'pointer',
+                   border: isSelected ? '2px solid var(--primary-color)' : '1px solid transparent',
+                   background: isSelected ? 'rgba(52, 152, 219, 0.1)' : 'rgba(255,255,255,0.03)',
+                   transition: 'all 0.2s ease'
+                 }}
+               >
+                  <div style={{ width: '45px', height: '45px', borderRadius: '10px', background: isSelected ? 'var(--primary-color)' : 'rgba(255,255,255,0.1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                     {isSelected ? <CheckCircle2 size={24} /> : s.name.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                        <h4 style={{ fontWeight: 800 }}>{s.name}</h4>
+                        <span style={{ fontWeight: 800, color: '#2ecc71' }}>{s.score}% Match</span>
+                     </div>
+                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '12px' }}>
+                        <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                           <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Ár</p>
+                           <p style={{ fontSize: '0.9rem', fontWeight: 900, color: '#f1c40f' }}>{s.price}</p>
+                        </div>
+                        <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                           <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Kockázat</p>
+                           <p style={{ fontSize: '0.9rem', fontWeight: 900, color: s.risk === 'Alacsony' ? '#2ecc71' : '#f1c40f' }}>{s.risk}</p>
+                        </div>
+                        <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                           <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Szállítás</p>
+                           <p style={{ fontSize: '0.9rem', fontWeight: 900, color: '#3498db' }}>{s.delivery}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <ChevronRight size={20} className="text-muted" />
+               </div>
+             );
+           })}
            <button 
              className="create-btn" 
-             style={{ width: '100%', marginTop: '10px' }} 
+             disabled={selectedSuppliers.length === 0}
+             style={{ width: '100%', marginTop: '10px', opacity: selectedSuppliers.length === 0 ? 0.5 : 1, cursor: selectedSuppliers.length === 0 ? 'not-allowed' : 'pointer' }} 
              onClick={() => {
-               addToast('Ajánlatkérés (RFQ) kiküldve az alternatív beszállítóknak', 'success');
+               addToast(`Ajánlatkérés (RFQ) kiküldve ${selectedSuppliers.length} beszállítónak`, 'success');
                setIsAlternativesModalOpen(false);
+               setSelectedSuppliers([]);
              }}
            >
-              Ajánlatkérés Kiküldése az Alternatívákra
+              {selectedSuppliers.length === 0 ? 'Válasszon beszállítót' : `Ajánlatkérés Kiküldése (${selectedSuppliers.length})`}
            </button>
         </div>
       </Modal>
