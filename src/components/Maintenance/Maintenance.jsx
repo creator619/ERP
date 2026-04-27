@@ -101,6 +101,7 @@ const Maintenance = ({ addToast }) => {
 
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [partNameInput, setPartNameInput] = useState('');
   const [simulatedTemp, setSimulatedTemp] = useState(42);
   const [activeTab, setActiveTab] = useState('telemetry');
   const [downtimeTicker, setDowntimeTicker] = useState(0);
@@ -125,15 +126,36 @@ const Maintenance = ({ addToast }) => {
     setIsModalOpen(false);
   };
 
-  const handleOrderPart = (partName) => {
+  const handleOrderPart = (customName) => {
+    const finalName = customName || partNameInput || 'Általános alkatrész';
+    
+    // Save to global pending requests for Purchase module
+    const pendingRequests = JSON.parse(localStorage.getItem('pending_purchase_requests') || '[]');
+    const newRequest = {
+      id: `REQ-${Math.floor(Math.random() * 1000)}`,
+      supplier: 'Karbantartási Igény',
+      date: new Date().toISOString().split('T')[0],
+      total: 0,
+      status: 'Ordered',
+      category: 'Alkatrész',
+      approvalStep: 0,
+      rating: 4.5,
+      scores: { quality: 90, delivery: 90, price: 90, responsiveness: 90, innovation: 90 },
+      items: [{ name: finalName, qty: 1, price: 0 }]
+    };
+    
+    localStorage.setItem('pending_purchase_requests', JSON.stringify([...pendingRequests, newRequest]));
+
     auditLogService.log({
       user: 'Maintenance Manager',
-      action: 'Alkatrész rendelési igény indítva',
+      action: 'Egyedi alkatrész igény leadva',
       module: 'Maintenance',
-      details: `${partName} - Igény továbbítva a Beszerzés felé`,
+      details: `${finalName} - Igény továbbítva a Beszerzés felé`,
       severity: 'warning'
     });
-    addToast(`Rendelési igény továbbítva a Beszerzés felé: ${partName}`, 'success');
+
+    addToast(`Rendelési igény leadva: ${finalName}`, 'success');
+    setPartNameInput('');
     setIsModalOpen(false);
   };
 
@@ -372,13 +394,26 @@ const Maintenance = ({ addToast }) => {
                        </div>
                     ))}
                  </div>
-                                   <button 
-                    className="view-btn-small" 
-                    style={{ marginTop: '20px', width: '100%', padding: '12px', fontSize: '0.9rem' }}
-                    onClick={() => handleOrderPart(selectedMachine.parts[0]?.name || 'Alkatrész')}
-                  >
-                    Alkatrész rendelése
-                  </button>
+                 <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
+                     <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '10px', display: 'block' }}>Egyedi alkatrész igény leadása</label>
+                     <div style={{ display: 'flex', gap: '10px' }}>
+                        <input 
+                           type="text" 
+                           placeholder="Alkatrész pontos neve..." 
+                           value={partNameInput}
+                           onChange={(e) => setPartNameInput(e.target.value)}
+                           style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                        />
+                        <button 
+                           className="create-btn" 
+                           style={{ padding: '0 20px' }}
+                           onClick={() => handleOrderPart()}
+                           disabled={!partNameInput}
+                        >
+                           <ArrowRight size={18} />
+                        </button>
+                     </div>
+                  </div>
               </div>
             )}
 

@@ -84,6 +84,22 @@ const Purchase = ({ addToast, currency }) => {
     );
   };
 
+  useEffect(() => {
+    const checkPendingRequests = () => {
+      const pending = JSON.parse(localStorage.getItem('pending_purchase_requests') || '[]');
+      if (pending.length > 0) {
+        setOrders(prev => [...pending, ...prev]);
+        localStorage.removeItem('pending_purchase_requests');
+        addToast(`${pending.length} új beszerzési igény érkezett a Karbantartástól`, 'info');
+      }
+    };
+
+    checkPendingRequests();
+    // Also check when window regains focus to handle background updates
+    window.addEventListener('focus', checkPendingRequests);
+    return () => window.removeEventListener('focus', checkPendingRequests);
+  }, [addToast]);
+
   const [orders, setOrders] = useState([
     { 
       id: 'PO/2024/001', 
