@@ -34,6 +34,8 @@ import './Purchase.css';
 const Purchase = ({ addToast, currency }) => {
   const [selectedPO, setSelectedPO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
+  const [isAlternativesModalOpen, setIsAlternativesModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('items');
 
   const [orders, setOrders] = useState([
@@ -394,8 +396,8 @@ const Purchase = ({ addToast, currency }) => {
                            <strong> Javaslat:</strong> Kérjen további 5% engedményt a szállítási határidő 3 napos kitolása fejében."
                         </p>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                           <button className="view-btn-small">Piaci ár összehasonlítás</button>
-                           <button className="view-btn-small">Alternatív beszállítók</button>
+                           <button className="view-btn-small" onClick={() => setIsMarketModalOpen(true)}>Piaci ár összehasonlítás</button>
+                           <button className="view-btn-small" onClick={() => setIsAlternativesModalOpen(true)}>Alternatív beszállítók</button>
                         </div>
                      </div>
                      <div className="glass" style={{ padding: '25px', borderRadius: '20px' }}>
@@ -439,6 +441,89 @@ const Purchase = ({ addToast, currency }) => {
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={isMarketModalOpen}
+        onClose={() => setIsMarketModalOpen(false)}
+        title="Piaci Ár Összehasonlító (AI Benchmarking)"
+        width="600px"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+           <div className="glass" style={{ padding: '20px', borderRadius: '15px', borderLeft: '4px solid #2ecc71' }}>
+              <p className="text-muted" style={{ fontSize: '0.75rem' }}>Globális Piaci Átlag (2024 Q2)</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+                 <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{formatCurrency(168000)} / egység</div>
+                 <div style={{ color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 800 }}>
+                    <TrendingUp size={16} /> -4.2% megtakarítási potenciál
+                 </div>
+              </div>
+           </div>
+
+           <div className="settings-group">
+              <label>Árkülönbség Analízis</label>
+              <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                 <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '0.8rem' }}>
+                       <span>Aktuális Beszállító</span>
+                       <span style={{ fontWeight: 800 }}>{formatCurrency(150000)}</span>
+                    </div>
+                    <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                       <div style={{ width: '85%', height: '100%', background: 'var(--primary-color)' }}></div>
+                    </div>
+                 </div>
+                 <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '0.8rem' }}>
+                       <span>Piaci Top 10 Átlag</span>
+                       <span style={{ fontWeight: 800 }}>{formatCurrency(142000)}</span>
+                    </div>
+                    <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                       <div style={{ width: '75%', height: '100%', background: '#2ecc71' }}></div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+           
+           <p className="text-muted" style={{ fontSize: '0.75rem', fontStyle: 'italic' }}>
+             *Az adatok a RailParts Global Database és külső API források alapján kerültek összesítésre.
+           </p>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isAlternativesModalOpen}
+        onClose={() => setIsAlternativesModalOpen(false)}
+        title="Alternatív Beszállítók Javaslata"
+        width="650px"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+           {[
+             { name: 'Siemens Mobility Parts', score: 95, price: 'Közepes', risk: 'Alacsony', delivery: '5 nap' },
+             { name: 'Alstom Components Gmbh', score: 92, price: 'Magas', risk: 'Alacsony', delivery: '3 nap' },
+             { name: 'Wabtec Rail UK', score: 88, price: 'Alacsony', risk: 'Közepes', delivery: '12 nap' }
+           ].map((s, i) => (
+             <div key={i} className="glass" style={{ padding: '20px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ width: '45px', height: '45px', borderRadius: '10px', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
+                   {s.name.charAt(0)}
+                </div>
+                <div style={{ flex: 1 }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                      <h4 style={{ fontWeight: 800 }}>{s.name}</h4>
+                      <span style={{ fontWeight: 800, color: '#2ecc71' }}>{s.score}% Match</span>
+                   </div>
+                   <div style={{ display: 'flex', gap: '15px', fontSize: '0.7rem' }}>
+                      <span className="text-muted">Ár: <strong style={{ color: 'white' }}>{s.price}</strong></span>
+                      <span className="text-muted">Kockázat: <strong style={{ color: 'white' }}>{s.risk}</strong></span>
+                      <span className="text-muted">Szállítás: <strong style={{ color: 'white' }}>{s.delivery}</strong></span>
+                   </div>
+                </div>
+                <ChevronRight size={20} className="text-muted" />
+             </div>
+           ))}
+           <button className="create-btn" style={{ width: '100%', marginTop: '10px' }} onClick={() => addToast('Ajánlatkérés (RFQ) kiküldve', 'success')}>
+              Ajánlatkérés Kiküldése az Alternatívákra
+           </button>
+        </div>
       </Modal>
     </div>
   );
