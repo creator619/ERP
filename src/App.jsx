@@ -56,7 +56,7 @@ function App() {
   };
 
   const renderModule = () => {
-    const props = { addToast };
+    const props = { addToast, setActiveModule };
     switch (activeModule) {
       case 'dashboard':
         return <Dashboard {...props} />;

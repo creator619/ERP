@@ -27,7 +27,7 @@ import aiService from '../../services/AIService';
 import { Brain, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-const Dashboard = () => {
+const Dashboard = ({ setActiveModule }) => {
   const { t } = useLanguage();
   const [logs, setLogs] = useState(auditLogService.getLogs().slice(0, 10));
   const [activeAlerts, setActiveAlerts] = useState([
@@ -103,7 +103,12 @@ const Dashboard = () => {
                           <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>{alert.msg}</p>
                           <p className="text-muted" style={{ fontSize: '0.7rem' }}>Modul: {alert.module}</p>
                        </div>
-                       <button className="view-btn-small">Intézkedés</button>
+                       <button 
+                          className="view-btn-small"
+                          onClick={() => setActiveModule(alert.module.toLowerCase())}
+                       >
+                          Intézkedés
+                       </button>
                     </div>
                  ))}
               </div>
@@ -132,7 +137,13 @@ const Dashboard = () => {
                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.7rem', color: 'var(--primary-color)', fontWeight: 700 }}>
                         <Sparkles size={12} /> Confidence: 94%
                      </div>
-                     <button className="view-btn-small" style={{ fontSize: '0.7rem' }}>Elemzés megnyitása</button>
+                     <button 
+                        className="view-btn-small" 
+                        style={{ fontSize: '0.7rem' }}
+                        onClick={() => setActiveModule('intelligence')}
+                     >
+                        Elemzés megnyitása
+                     </button>
                   </div>
                </div>
             </div>
