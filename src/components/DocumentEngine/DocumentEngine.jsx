@@ -92,6 +92,22 @@ const DocumentEngine = ({ addToast }) => {
     }, 1500);
   };
 
+  const handleRequestAIReport = () => {
+    addToast('AI elemzés indítása...', 'info');
+    
+    setTimeout(() => {
+      const newReport = {
+        id: `DOC-${Math.floor(Math.random() * 1000) + 2000}`,
+        name: 'Költség-Haszon Elemzés (Stadler)',
+        date: new Date().toISOString().split('T')[0],
+        status: 'Generated'
+      };
+      
+      setRecentDocs([newReport, ...recentDocs]);
+      addToast('Az AI riport elkészült!', 'success');
+    }, 2500);
+  };
+
   return (
     <div className="doc-engine-module">
       <div className="invoicing-header" style={{ marginBottom: '30px' }}>
@@ -174,7 +190,8 @@ const DocumentEngine = ({ addToast }) => {
            <div className="ai-report-suggest glass" style={{ marginTop: '30px', padding: '20px', borderRadius: '20px', border: '1px solid rgba(155, 89, 182, 0.3)' }}>
               <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#9b59b6', marginBottom: '10px' }}>AI Riport Javaslat</h4>
               <p style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '15px' }}>Az Oracle szerint érdemes lenne generálni egy "Költség-Haszon Elemzést" a Stadler projekt aktuális állásáról.</p>
-              <button className="create-btn-small" style={{ background: '#9b59b6', width: '100%' }}>Riport Kérése</button>
+                             <button className="create-btn-small" style={{ background: '#9b59b6', width: '100%', border: 'none', color: 'white', cursor: 'pointer', padding: '8px', borderRadius: '8px' }} onClick={handleRequestAIReport}>Riport Kérése</button>
+
            </div>
         </div>
       </div>
