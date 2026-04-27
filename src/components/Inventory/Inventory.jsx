@@ -295,10 +295,10 @@ const Inventory = ({ addToast }) => {
       >
         {selectedProduct && (
           <div className="inventory-details-view">
-            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', borderBottom: '1px solid var(--border-color)', borderRadius: 0, padding: 0 }}>
-              <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Áttekintés</div>
-              <div className={`settings-nav-item ${activeTab === 'traceability' ? 'active' : ''}`} onClick={() => setActiveTab('traceability')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Traceability</div>
-              <div className={`settings-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Mozgásnapló</div>
+            <div className="settings-nav">
+              <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>Áttekintés</div>
+              <div className={`settings-nav-item ${activeTab === 'traceability' ? 'active' : ''}`} onClick={() => setActiveTab('traceability')}>Traceability</div>
+              <div className={`settings-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>Mozgásnapló</div>
             </div>
 
             {activeTab === 'overview' && (

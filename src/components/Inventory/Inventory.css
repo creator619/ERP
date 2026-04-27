@@ -138,3 +138,38 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Inventory Details Tabs Fix */
+.inventory-details-view .settings-nav {
+  background: rgba(0, 0, 0, 0.03) !important;
+  padding: 6px !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--border-color);
+  gap: 6px !important;
+  flex-direction: row !important;
+  width: 100% !important;
+}
+
+.inventory-details-view .settings-nav-item {
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 10px 20px !important;
+  justify-content: center;
+  flex: 1;
+}
+
+.inventory-details-view .settings-nav-item:hover {
+  background: rgba(155, 89, 182, 0.05);
+  color: #9b59b6;
+}
+
+.inventory-details-view .settings-nav-item.active {
+  background: #9b59b6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+  transform: scale(1.02);
+}
+
