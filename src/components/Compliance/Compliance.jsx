@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Shield, 
   History, 
@@ -29,13 +29,21 @@ const Compliance = ({ addToast }) => {
   const [activeTab, setActiveTab] = useState('audit');
   const [logs] = useState(auditLogService.getLogs());
   const [searchTerm, setSearchTerm] = useState('');
+  const [moduleFilter, setModuleFilter] = useState('all');
 
-  const filteredLogs = logs.filter(log => 
-    log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.details.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredLogs = logs.filter(log => {
+    const matchesSearch = 
+      log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.details.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesModule = moduleFilter === 'all' || log.module === moduleFilter;
+    
+    return matchesSearch && matchesModule;
+  });
+
+  const uniqueModules = ['all', ...new Set(logs.map(log => log.module))];
 
   const ncrList = [
     { id: 'NCR-2024-042', project: 'Stadler EuroDual', issue: 'Anyaghiba: Alumínium profil vetemedés', status: 'In Review', severity: 'High', date: '2024-04-20' },
@@ -117,9 +125,30 @@ const Compliance = ({ addToast }) => {
                  <Search size={18} />
                   <input type="text" placeholder="Keresés az események között..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ color: 'var(--text-muted)' }} />
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                 <button className="view-btn-small"><Filter size={14} /> Szűrés</button>
-              </div>
+               <div style={{ display: 'flex', gap: '10px' }}>
+                  <select 
+                    className="view-btn-small" 
+                    value={moduleFilter}
+                    onChange={(e) => setModuleFilter(e.target.value)}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.05)', 
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-main)',
+                      padding: '0 15px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      fontSize: '0.8rem',
+                      fontWeight: 600
+                    }}
+                  >
+                    {uniqueModules.map(m => (
+                      <option key={m} value={m} style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                        {m === 'all' ? 'Összes Modul' : m}
+                      </option>
+                    ))}
+                  </select>
+               </div>
            </div>
 
            <div className="audit-table-container">
