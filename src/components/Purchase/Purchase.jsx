@@ -34,8 +34,12 @@ import { useData } from '../../contexts/DataContext';
 import './Purchase.css';
 
 const Purchase = ({ addToast, currency }) => {
-  const { procurementOrders: orders, setProcurementOrders: setOrders } = useData();
-  const [requisitions, setRequisitions] = useState([]);
+  const { 
+    procurementOrders: orders, 
+    setProcurementOrders: setOrders,
+    procurementRequests: requisitions,
+    setProcurementRequests: setRequisitions 
+  } = useData();
   const [purchaseView, setPurchaseView] = useState('orders'); // 'orders' or 'requests'
   const [selectedPO, setSelectedPO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,20 +120,6 @@ const Purchase = ({ addToast, currency }) => {
     );
   };
 
-  useEffect(() => {
-    const checkPendingRequests = () => {
-      const pending = JSON.parse(localStorage.getItem('pending_purchase_requests') || '[]');
-      if (pending.length > 0) {
-        setRequisitions(prev => [...pending, ...prev]);
-        localStorage.removeItem('pending_purchase_requests');
-        addToast(`${pending.length} új beszerzési igény érkezett a Karbantartástól`, 'info');
-      }
-    };
-
-    checkPendingRequests();
-    window.addEventListener('focus', checkPendingRequests);
-    return () => window.removeEventListener('focus', checkPendingRequests);
-  }, [addToast]);
 
   const spendCategories = [
     { name: 'Nyersanyag', value: 45, color: '#3498db' },

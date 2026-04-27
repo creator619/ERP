@@ -276,6 +276,8 @@ export const DataProvider = ({ children }) => {
     }
   ]);
 
+  const [procurementRequests, setProcurementRequests] = useState([]);
+
   // BOM Availability Check Hook
   const getBomStatus = (wo) => {
     return wo.bom.map(b => {
@@ -386,10 +388,10 @@ export const DataProvider = ({ children }) => {
     switch (insight.type) {
       case 'inventory':
       case 'logistics':
-        // Add to Procurement as a priority request
-        const newPO = {
-          id: `PO-AI-${Math.floor(Math.random() * 1000)}`,
-          supplier: 'Prediktív Beszerzés (AI)',
+        // Add to Procurement REQUESTS instead of Orders
+        const newReq = {
+          id: `REQ-AI-${Math.floor(Math.random() * 1000)}`,
+          supplier: 'Prediktív Javaslat (AI)',
           date: now,
           total: 0,
           status: 'Request',
@@ -399,7 +401,7 @@ export const DataProvider = ({ children }) => {
           scores: { quality: 95, delivery: 95, price: 95, responsiveness: 95, innovation: 95 },
           items: [{ name: insight.title.split(' - ')[0], qty: 100, price: 0 }]
         };
-        setProcurementOrders(prev => [newPO, ...prev]);
+        setProcurementRequests(prev => [newReq, ...prev]);
         auditLogService.log({
           user: 'AI Oracle',
           action: 'Beszerzési igény generálva',
@@ -443,6 +445,7 @@ export const DataProvider = ({ children }) => {
       machines, setMachines,
       maintenanceTasks, setMaintenanceTasks,
       procurementOrders, setProcurementOrders,
+      procurementRequests, setProcurementRequests,
       executeAIAction
     }}>
       {children}
