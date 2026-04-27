@@ -36,20 +36,41 @@ const DocumentEngine = ({ addToast }) => {
   React.useEffect(() => {
     const loadDocs = () => {
       const stored = JSON.parse(localStorage.getItem('generated_documents') || '[]');
-      if (stored.length > 0) {
-        // Filter out docs already in recentDocs to avoid duplicates if needed, 
-        // but for a demo, simple prepend is fine or just merge.
-        setRecentDocs(prev => {
-          const combined = [...stored, ...prev];
-          // Simple de-duplication by ID
-          return Array.from(new Map(combined.map(item => [item.id, item])).values());
-        });
-      }
+      
+      setRecentDocs(prev => {
+        // Initial hardcoded docs
+        const initialDocs = [
+          { id: 'DOC-1024', name: 'MÁV-START Áprilisi Számla', date: '2024-04-20', status: 'Generated' },
+          { id: 'DOC-1025', name: 'OEE Hatékonysági Riport Q1', date: '2024-04-22', status: 'Archived' },
+          { id: 'DOC-1026', name: 'Logisztikai Költségterv v2', date: '2024-04-23', status: 'Generated' }
+        ];
+
+        // Combine stored (newest) with initial
+        const combined = [...stored, ...initialDocs];
+        
+        // Remove duplicates by ID and keep the first occurrence (which is the newest from stored)
+        const uniqueDocs = [];
+        const seenIds = new Set();
+        
+        for (const doc of combined) {
+          if (!seenIds.has(doc.id)) {
+            uniqueDocs.push(doc);
+            seenIds.add(doc.id);
+          }
+        }
+        
+        return uniqueDocs;
+      });
     };
 
     loadDocs();
     window.addEventListener('focus', loadDocs);
-    return () => window.removeEventListener('focus', loadDocs);
+    // Also listen for storage events in case of multiple tabs (though less likely in this demo)
+    window.addEventListener('storage', loadDocs);
+    return () => {
+      window.removeEventListener('focus', loadDocs);
+      window.removeEventListener('storage', loadDocs);
+    };
   }, []);
 
   const openPreview = (doc) => {
