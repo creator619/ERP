@@ -33,6 +33,8 @@ const CRM = ({ addToast }) => {
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+  const [newInteraction, setNewInteraction] = useState({ type: 'Call', desc: '' });
 
   const [partners, setPartners] = useState([
     { id: 1, name: 'MÁV-START Zrt.', email: 'beszerzes@mav-start.hu', phone: '+36 1 511 1111', city: 'Budapest', tags: ['Vevő', 'Kiemelt'], status: 'Aktív', manager: 'Szabó Anna',
@@ -97,6 +99,39 @@ const CRM = ({ addToast }) => {
       severity: 'info'
     });
     addToast('Partner adatok mentve', 'success');
+  };
+
+  const handleAddInteraction = () => {
+    if (!newInteraction.desc) return;
+    
+    const interaction = {
+      ...newInteraction,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    setPartners(prev => prev.map(p => {
+      if (p.id === selectedPartner.id) {
+        const updatedPartner = {
+          ...p,
+          interactions: [interaction, ...p.interactions]
+        };
+        setSelectedPartner(updatedPartner);
+        return updatedPartner;
+      }
+      return p;
+    }));
+
+    auditLogService.log({
+      user: 'Sales Manager',
+      action: 'Új interakció',
+      module: 'CRM',
+      details: `${selectedPartner.name}: ${interaction.type} rögzítve`,
+      severity: 'info'
+    });
+
+    setIsInteractionModalOpen(false);
+    setNewInteraction({ type: 'Call', desc: '' });
+    addToast('Interakció rögzítve', 'success');
   };
 
   const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
@@ -287,7 +322,7 @@ const CRM = ({ addToast }) => {
                   )) : (
                     <div style={{ textAlign: 'center', padding: '40px' }} className="text-muted">Nincs rögzített interakció.</div>
                   )}
-                  <button className="view-btn" style={{ width: '100%' }} onClick={() => addToast('Új bejegyzés rögzítése', 'info')}>
+                  <button className="view-btn" style={{ width: '100%' }} onClick={() => setIsInteractionModalOpen(true)}>
                     <MessageSquare size={16} /> Új Interakció Rögzítése
                   </button>
                 </div>
@@ -305,7 +340,7 @@ const CRM = ({ addToast }) => {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-color)' }}>
-                          {new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF' }).format(opp.value)}
+                           {new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF' }).format(opp.value)}
                         </div>
                         <button className="view-btn-small">Pipeline Megnyitása <ExternalLink size={14} /></button>
                       </div>
@@ -319,6 +354,44 @@ const CRM = ({ addToast }) => {
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={isInteractionModalOpen}
+        onClose={() => setIsInteractionModalOpen(false)}
+        title="Új Interakció Rögzítése"
+        width="500px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsInteractionModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleAddInteraction}>Rögzítés</button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+           <div className="settings-group">
+              <label>Interakció Típusa</label>
+              <select 
+                value={newInteraction.type} 
+                onChange={(e) => setNewInteraction({...newInteraction, type: e.target.value})}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              >
+                 <option value="Call">Telefonhívás</option>
+                 <option value="Meeting">Személyes Megbeszélés</option>
+                 <option value="Email">Email váltás</option>
+                 <option value="Note">Belső Megjegyzés</option>
+              </select>
+           </div>
+           <div className="settings-group">
+              <label>Leírás / Összefoglaló</label>
+              <textarea 
+                value={newInteraction.desc} 
+                onChange={(e) => setNewInteraction({...newInteraction, desc: e.target.value})}
+                placeholder="Miről volt szó? Mik a következő lépések?"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', minHeight: '120px', outline: 'none' }}
+              />
+           </div>
+        </div>
       </Modal>
     </div>
   );
