@@ -36,8 +36,47 @@ const Purchase = ({ addToast, currency }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
   const [isAlternativesModalOpen, setIsAlternativesModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedSuppliers, setSelectedSuppliers] = useState([]);
   const [activeTab, setActiveTab] = useState('items');
+
+  const [newPOData, setNewPOData] = useState({
+    supplier: '',
+    category: 'Alkatrész',
+    items: [{ name: '', qty: 1, price: 0 }]
+  });
+
+  const handleCreatePO = () => {
+    if (!newPOData.supplier || newPOData.items[0].name === '') return;
+
+    const total = newPOData.items.reduce((acc, item) => acc + (item.qty * item.price), 0);
+    const newPO = {
+      id: `PO/2024/${(orders.length + 1).toString().padStart(3, '0')}`,
+      supplier: newPOData.supplier,
+      date: new Date().toISOString().split('T')[0],
+      total: total,
+      status: 'Ordered',
+      category: newPOData.category,
+      approvalStep: 0,
+      rating: 4.0,
+      scores: { quality: 80, delivery: 80, price: 80, responsiveness: 80, innovation: 80 },
+      items: newPOData.items
+    };
+
+    setOrders(prev => [newPO, ...prev]);
+
+    auditLogService.log({
+      user: 'Purchasing Agent',
+      action: 'Új beszerzési igény rögzítve',
+      module: 'Purchase',
+      details: `${newPO.id} - ${newPO.supplier}`,
+      severity: 'info'
+    });
+
+    setIsCreateModalOpen(false);
+    setNewPOData({ supplier: '', category: 'Alkatrész', items: [{ name: '', qty: 1, price: 0 }] });
+    addToast('Új beszerzési igény sikeresen rögzítve', 'success');
+  };
 
   const toggleSupplier = (name) => {
     setSelectedSuppliers(prev => 
@@ -240,10 +279,100 @@ const Purchase = ({ addToast, currency }) => {
             <p className="text-muted" style={{ fontSize: '0.85rem' }}>Globális ellátási lánc menedzsment és költéselemzés</p>
           </div>
         </div>
-        <button className="create-btn" onClick={() => addToast('Új igény rögzítése', 'info')}>
+        <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
           <Plus size={20} /> Új Beszerzés
         </button>
       </div>
+
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Új Beszerzési Igény Rögzítése"
+        width="700px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsCreateModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleCreatePO}>Igény Rögzítése</button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div className="settings-group">
+                 <label>Beszállító Neve</label>
+                 <input 
+                   type="text" 
+                   value={newPOData.supplier}
+                   onChange={(e) => setNewPOData({...newPOData, supplier: e.target.value})}
+                   placeholder="pl. Knorr-Bremse"
+                   style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white' }}
+                 />
+              </div>
+              <div className="settings-group">
+                 <label>Kategória</label>
+                 <select 
+                   value={newPOData.category}
+                   onChange={(e) => setNewPOData({...newPOData, category: e.target.value})}
+                   style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white' }}
+                 >
+                    <option value="Alkatrész">Alkatrész</option>
+                    <option value="Nyersanyag">Nyersanyag</option>
+                    <option value="Szolgáltatás">Szolgáltatás</option>
+                 </select>
+              </div>
+           </div>
+
+           <div className="settings-group">
+              <label>Rendelt Tételek</label>
+              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 {newPOData.items.map((item, index) => (
+                   <div key={index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr', gap: '10px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Tétel neve" 
+                        value={item.name}
+                        onChange={(e) => {
+                          const items = [...newPOData.items];
+                          items[index].name = e.target.value;
+                          setNewPOData({...newPOData, items});
+                        }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                      />
+                      <input 
+                        type="number" 
+                        placeholder="Menny." 
+                        value={item.qty}
+                        onChange={(e) => {
+                          const items = [...newPOData.items];
+                          items[index].qty = parseInt(e.target.value) || 0;
+                          setNewPOData({...newPOData, items});
+                        }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                      />
+                      <input 
+                        type="number" 
+                        placeholder="Egységár" 
+                        value={item.price}
+                        onChange={(e) => {
+                          const items = [...newPOData.items];
+                          items[index].price = parseInt(e.target.value) || 0;
+                          setNewPOData({...newPOData, items});
+                        }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                      />
+                   </div>
+                 ))}
+                 <button 
+                   className="view-btn-small" 
+                   style={{ alignSelf: 'flex-start' }}
+                   onClick={() => setNewPOData({...newPOData, items: [...newPOData.items, { name: '', qty: 1, price: 0 }]})}
+                 >
+                   + Új tétel hozzáadása
+                 </button>
+              </div>
+           </div>
+        </div>
+      </Modal>
 
       <div className="purchase-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.5fr', gap: '25px', marginBottom: '25px' }}>
          <div className="purchase-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
