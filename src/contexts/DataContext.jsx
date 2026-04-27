@@ -191,6 +191,90 @@ export const DataProvider = ({ children }) => {
       ]
     }
   ]);
+  
+  // 3. Maintenance State
+  const [machines, setMachines] = useState([
+    { 
+      id: 'MC-101', 
+      name: 'Alumínium Profilvágó CNC', 
+      status: 'Healthy', 
+      health: 95, 
+      lastService: '2024-03-15', 
+      nextService: '2024-06-15', 
+      type: 'Gyártó gép', 
+      pdm: 42, 
+      downtimeCost: 15000, 
+      telemetry: [85, 87, 86, 90, 92, 88, 85, 84, 86],
+      parts: [
+        { name: 'Vágótárcsa (T-200)', stock: 5, required: 1, status: 'ok' },
+        { name: 'Hidraulika olaj (L-4)', stock: 20, required: 5, status: 'ok' }
+      ]
+    },
+    { 
+      id: 'MC-102', 
+      name: 'Hidraulikus Prés', 
+      status: 'Warning', 
+      health: 62, 
+      lastService: '2024-02-10', 
+      nextService: '2024-04-30', 
+      type: 'Présgép', 
+      pdm: 8,
+      downtimeCost: 25000,
+      telemetry: [60, 65, 70, 75, 80, 85, 70, 65, 62],
+      parts: [
+        { name: 'Tömítőgyűrű készlet', stock: 2, required: 1, status: 'ok' },
+        { name: 'Főhenger szelep', stock: 0, required: 1, status: 'missing' }
+      ]
+    },
+    { 
+      id: 'MC-104', 
+      name: 'Hegesztő Robot (KUKA)', 
+      status: 'Maintenance', 
+      health: 10, 
+      lastService: '2024-01-20', 
+      nextService: '2024-04-23', 
+      type: 'Robot', 
+      pdm: 0,
+      downtimeCost: 45000,
+      telemetry: [10, 12, 11, 10, 15, 12, 10, 11, 10],
+      parts: [
+        { name: 'Vezérlőkábel szett', stock: 1, required: 1, status: 'ok' }
+      ]
+    }
+  ]);
+
+  const [maintenanceTasks, setMaintenanceTasks] = useState([
+    { id: 'WO-001', machine: 'MC-102', task: 'Henger tömítés csere', priority: 'Magas', status: 'Várólista' },
+    { id: 'WO-002', machine: 'MC-104', task: 'Vezérlő panel diagnosztika', priority: 'Kritikus', status: 'Folyamatban' }
+  ]);
+
+  // 4. Procurement State
+  const [procurementOrders, setProcurementOrders] = useState([
+    { 
+      id: 'PO/2024/001', 
+      supplier: 'Knorr-Bremse Vasúti Kft.', 
+      date: '2024-04-10', 
+      total: 4500000, 
+      status: 'Delivered', 
+      category: 'Alkatrész',
+      approvalStep: 3, 
+      rating: 4.8,
+      scores: { quality: 98, delivery: 95, price: 90, responsiveness: 88, innovation: 85 },
+      items: [{ name: 'Féktárcsa szett (S-Line)', qty: 20, price: 150000 }]
+    },
+    { 
+      id: 'AI/2024/999', 
+      supplier: 'AI Javaslat (Sourcing)', 
+      date: new Date().toISOString().split('T')[0], 
+      total: 0, 
+      status: 'Request', 
+      category: 'Alkatrész',
+      approvalStep: 0, 
+      rating: 5.0,
+      scores: { quality: 100, delivery: 100, price: 100, responsiveness: 100, innovation: 100 },
+      items: []
+    }
+  ]);
 
   // BOM Availability Check Hook
   const getBomStatus = (wo) => {
@@ -295,13 +379,71 @@ export const DataProvider = ({ children }) => {
     return completed;
   };
 
+  // 5. AI Action Handler (Cross-module execution)
+  const executeAIAction = (insight) => {
+    const now = new Date().toISOString().split('T')[0];
+    
+    switch (insight.type) {
+      case 'inventory':
+      case 'logistics':
+        // Add to Procurement as a priority request
+        const newPO = {
+          id: `PO-AI-${Math.floor(Math.random() * 1000)}`,
+          supplier: 'Prediktív Beszerzés (AI)',
+          date: now,
+          total: 0,
+          status: 'Request',
+          category: insight.type === 'inventory' ? 'Alkatrész' : 'Nyersanyag',
+          approvalStep: 0,
+          rating: 4.9,
+          scores: { quality: 95, delivery: 95, price: 95, responsiveness: 95, innovation: 95 },
+          items: [{ name: insight.title.split(' - ')[0], qty: 100, price: 0 }]
+        };
+        setProcurementOrders(prev => [newPO, ...prev]);
+        auditLogService.log({
+          user: 'AI Oracle',
+          action: 'Beszerzési igény generálva',
+          module: 'Purchase',
+          details: `AI javaslat alapján: ${insight.title}`,
+          severity: 'info'
+        });
+        break;
+
+      case 'maintenance':
+        // Create a critical maintenance work order
+        const newMaint = {
+          id: `WO-AI-${Math.floor(Math.random() * 1000)}`,
+          machine: 'MC-102', // Defaulting to the one in warning
+          task: insight.recommendation,
+          priority: 'Kritikus',
+          status: 'Várólista'
+        };
+        setMaintenanceTasks(prev => [newMaint, ...prev]);
+        auditLogService.log({
+          user: 'AI Oracle',
+          action: 'Prediktív karbantartás ütemezve',
+          module: 'Maintenance',
+          details: `AI javaslat alapján: ${insight.recommendation}`,
+          severity: 'warning'
+        });
+        break;
+
+      default:
+        console.log("Unknown AI action type:", insight.type);
+    }
+  };
+
   return (
     <DataContext.Provider value={{
       products, setProducts, 
       workOrders, setWorkOrders,
       advanceWorkOrderStage,
       getBomStatus,
-      ledgers
+      ledgers,
+      machines, setMachines,
+      maintenanceTasks, setMaintenanceTasks,
+      procurementOrders, setProcurementOrders,
+      executeAIAction
     }}>
       {children}
     </DataContext.Provider>

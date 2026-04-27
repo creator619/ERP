@@ -27,9 +27,11 @@ import {
   Download
 } from 'lucide-react';
 import aiService from '../../services/AIService';
+import { useData } from '../../contexts/DataContext';
 import './AIInsights.css';
 
 const AIInsights = ({ addToast }) => {
+  const { executeAIAction } = useData();
   const [activeView, setActiveView] = useState('ai'); // 'ai', 'bi', 'simulator', or 'strategy'
   const [simValues, setSimValues] = useState({
     salesVolume: 100,
@@ -68,13 +70,19 @@ const AIInsights = ({ addToast }) => {
   };
 
   const handleExecuteInsight = (id) => {
+    const insight = insightData.find(i => i.id === id);
+    if (!insight) return;
+
     addToast(`AI művelet indítása (${id})...`, 'info');
     
     setTimeout(() => {
-      setInsightData(prev => prev.map(insight => 
-        insight.id === id ? { ...insight, executed: true } : insight
+      // Trigger global action in DataContext
+      executeAIAction(insight);
+
+      setInsightData(prev => prev.map(i => 
+        i.id === id ? { ...i, executed: true } : i
       ));
-      addToast('A javaslat sikeresen végrehajtva!', 'success');
+      addToast('A javaslat sikeresen továbbítva a megfelelő modulhoz!', 'success');
     }, 1500);
   };
 

@@ -24,80 +24,12 @@ import {
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
+import { useData } from '../../contexts/DataContext';
 import './Maintenance.css';
 
 const Maintenance = ({ addToast }) => {
+  const { machines, setMachines, maintenanceTasks: workOrders, setMaintenanceTasks: setWorkOrders } = useData();
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'kanban'
-  const [machines, setMachines] = useState([
-    { 
-      id: 'MC-101', 
-      name: 'Alumínium Profilvágó CNC', 
-      status: 'Healthy', 
-      health: 95, 
-      lastService: '2024-03-15', 
-      nextService: '2024-06-15', 
-      type: 'Gyártó gép', 
-      pdm: 42, // Days to failure
-      downtimeCost: 15000, // HUF / hour
-      telemetry: [85, 87, 86, 90, 92, 88, 85, 84, 86],
-      parts: [
-        { name: 'Vágótárcsa (T-200)', stock: 5, required: 1, status: 'ok' },
-        { name: 'Hidraulika olaj (L-4)', stock: 20, required: 5, status: 'ok' }
-      ]
-    },
-    { 
-      id: 'MC-102', 
-      name: 'Hidraulikus Prés', 
-      status: 'Warning', 
-      health: 62, 
-      lastService: '2024-02-10', 
-      nextService: '2024-04-30', 
-      type: 'Présgép', 
-      pdm: 8,
-      downtimeCost: 25000,
-      telemetry: [60, 65, 70, 75, 80, 85, 70, 65, 62],
-      parts: [
-        { name: 'Tömítőgyűrű készlet', stock: 2, required: 1, status: 'ok' },
-        { name: 'Főhenger szelep', stock: 0, required: 1, status: 'missing' }
-      ]
-    },
-    { 
-      id: 'MC-103', 
-      name: 'Festőkabin Szellőztető', 
-      status: 'Healthy', 
-      health: 88, 
-      lastService: '2024-04-01', 
-      nextService: '2024-07-01', 
-      type: 'Kiszolgáló', 
-      pdm: 65,
-      downtimeCost: 8000,
-      telemetry: [80, 82, 81, 85, 88, 87, 85, 84, 88],
-      parts: [
-        { name: 'HEPA Szűrő', stock: 12, required: 2, status: 'ok' }
-      ]
-    },
-    { 
-      id: 'MC-104', 
-      name: 'Hegesztő Robot (KUKA)', 
-      status: 'Maintenance', 
-      health: 10, 
-      lastService: '2024-01-20', 
-      nextService: '2024-04-23', 
-      type: 'Robot', 
-      pdm: 0,
-      downtimeCost: 45000,
-      telemetry: [10, 12, 11, 10, 15, 12, 10, 11, 10],
-      parts: [
-        { name: 'Vezérlőkábel szett', stock: 1, required: 1, status: 'ok' }
-      ]
-    },
-  ]);
-
-  const [workOrders, setWorkOrders] = useState([
-    { id: 'WO-001', machine: 'MC-102', task: 'Henger tömítés csere', priority: 'Magas', status: 'Várólista' },
-    { id: 'WO-002', machine: 'MC-104', task: 'Vezérlő panel diagnosztika', priority: 'Kritikus', status: 'Folyamatban' },
-    { id: 'WO-003', machine: 'MC-101', task: 'Éves megelőző szerviz', priority: 'Közepes', status: 'Várólista' }
-  ]);
 
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
