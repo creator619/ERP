@@ -42,6 +42,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
       <main className={`main-content ${isSidebarOpen ? '' : 'sidebar-closed'}`}>
         <Navbar 
           activeModuleLabel={getModuleLabel(activeModule)} 
+          setActiveModule={setActiveModule}
           currency={currency}
           setCurrency={setCurrency}
           toggleSidebar={toggleSidebar}

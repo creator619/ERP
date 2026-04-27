@@ -15,7 +15,7 @@ import {
 import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
 
-const Navbar = ({ activeModuleLabel, currency, setCurrency, toggleSidebar }) => {
+const Navbar = ({ activeModuleLabel, setActiveModule, currency, setCurrency, toggleSidebar }) => {
   const { language, setLanguage, t } = useLanguage();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -28,6 +28,45 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, toggleSidebar }) => 
     { id: 3, title: 'Sikeres mentés', desc: 'A készletszintek frissültek.', time: '3 órája', type: 'success', icon: <CheckCircle2 size={14} /> },
   ];
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const searchableItems = [
+    { id: 'dashboard', label: t('menu.dashboard'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'bi', label: t('menu.bi'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'compliance', label: t('menu.compliance'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'intelligence', label: t('menu.intelligence'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'documents', label: t('menu.documents'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'traceability', label: t('menu.traceability'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'projects', label: t('menu.projects'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'manufacturing', label: t('menu.manufacturing'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'quality', label: t('menu.quality'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'maintenance', label: t('menu.maintenance'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'purchase', label: t('menu.purchase'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'crm', label: t('menu.crm'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'inventory', label: t('menu.inventory'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'logistics', label: t('menu.logistics'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'sales', label: t('menu.sales'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'invoicing', label: t('menu.invoicing'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'hr', label: t('menu.hr'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'dms', label: t('menu.dms'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'messenger', label: t('menu.messenger'), category: 'Modul', icon: <Grid size={16} /> },
+    { id: 'settings', label: t('menu.settings'), category: 'Modul', icon: <Grid size={16} /> },
+  ];
+
+  const filteredResults = searchQuery.trim() === '' 
+    ? [] 
+    : searchableItems.filter(item => 
+        item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.id.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+  const handleSearchSelect = (id) => {
+    setActiveModule(id);
+    setSearchQuery('');
+    setShowSearchResults(false);
+  };
+
   return (
     <header className="navbar">
       <div className="navbar-left">
@@ -38,9 +77,42 @@ const Navbar = ({ activeModuleLabel, currency, setCurrency, toggleSidebar }) => 
       </div>
 
       <div className="navbar-right">
-        <div className="search-bar glass">
-          <Search size={18} className="text-muted" />
-          <input type="text" placeholder={t('nav.search')} />
+        <div className="search-container">
+          <div className="search-bar glass">
+            <Search size={18} className="text-muted" />
+            <input 
+              type="text" 
+              placeholder={t('nav.search')} 
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchResults(true);
+              }}
+              onFocus={() => setShowSearchResults(true)}
+            />
+          </div>
+
+          {showSearchResults && searchQuery.trim() !== '' && (
+            <div className="search-results glass">
+              {filteredResults.length > 0 ? (
+                filteredResults.map(result => (
+                  <button 
+                    key={result.id} 
+                    className="search-result-item"
+                    onClick={() => handleSearchSelect(result.id)}
+                  >
+                    <div className="search-result-icon">{result.icon}</div>
+                    <div className="search-result-info">
+                      <span className="search-result-title">{result.label}</span>
+                      <span className="search-result-category">{result.category}</span>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="no-results">{t('nav.noResults') || 'Nincs találat'}</div>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="nav-action-wrapper">
