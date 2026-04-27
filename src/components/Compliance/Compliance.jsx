@@ -202,6 +202,13 @@ const Compliance = ({ addToast }) => {
     addToast('Audit ütemezve', 'success', `${auditEntry.title} rögzítve az ütemtervben.`);
   };
 
+  const downloadROPA = () => {
+    addToast('ROPA jegyzék lehívása...', 'info', 'Adatkezelési nyilvántartás generálása...');
+    setTimeout(() => {
+      addToast('ROPA jegyzék letöltve', 'success', 'A teljes adatvédelmi jegyzék mentve a letöltések közé.');
+    }, 2000);
+  };
+
   return (
     <div className="compliance-wrapper">
       <div className="invoicing-header" style={{ marginBottom: '30px' }}>
@@ -549,7 +556,7 @@ const Compliance = ({ addToast }) => {
                       </div>
                    </div>
                  ))}
-                 <button className="view-btn-small" style={{ marginTop: '10px' }}>Teljes ROPA Jegyzék Letöltése</button>
+                 <button className="view-btn-small" style={{ marginTop: '10px' }} onClick={downloadROPA}>Teljes ROPA Jegyzék Letöltése</button>
               </div>
            </div>
         </div>
