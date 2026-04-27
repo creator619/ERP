@@ -243,8 +243,8 @@ const HR = ({ addToast }) => {
           <button className="view-btn" onClick={dailyCheckIn} style={{ borderColor: '#9b59b6', color: '#9b59b6' }}>
             <Clock size={16} /> Érkeztetés
           </button>
-          <button className="create-btn" style={{ background: '#9b59b6', boxShadow: '0 4px 15px rgba(155, 89, 182, 0.3)' }} onClick={() => addToast('Új munkatárs felvétele felület', 'info')}>
-            <UserPlus size={18} /> Alkalmazott Kódolása
+          <button className="view-btn" style={{ borderColor: '#9b59b6', color: '#9b59b6' }} onClick={() => addToast('Új munkatárs felvétele felület', 'info')}>
+            <UserPlus size={18} /> Új alkalmazott
           </button>
         </div>
       </div>
