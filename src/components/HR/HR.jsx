@@ -26,6 +26,8 @@ const HR = ({ addToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [activeMainView, setActiveMainView] = useState('employees');
+  const [isAddingCert, setIsAddingCert] = useState(false);
+  const [newCertData, setNewCertData] = useState({ name: '', expiry: '' });
   
   // States for micro animations
   const [approvingLeaveId, setApprovingLeaveId] = useState(null);
@@ -134,11 +136,14 @@ const HR = ({ addToast }) => {
   };
 
   const handleAddCertification = () => {
-    if (!selectedEmployee) return;
+    if (!selectedEmployee || !newCertData.name || !newCertData.expiry) {
+      addToast('Kérjük töltsön ki minden mezőt!', 'warning');
+      return;
+    }
 
     const newCert = {
-      name: 'Munkavédelmi továbbképzés (2024)',
-      expiry: '2025-04-27',
+      name: newCertData.name,
+      expiry: newCertData.expiry,
       status: 'valid'
     };
 
@@ -152,12 +157,13 @@ const HR = ({ addToast }) => {
       return emp;
     }));
 
-    // Update the selected employee in local state too
     setSelectedEmployee(prev => ({
       ...prev,
       certifications: [...prev.certifications, newCert]
     }));
 
+    setIsAddingCert(false);
+    setNewCertData({ name: '', expiry: '' });
     addToast(`Új vizsga rögzítve: ${selectedEmployee.name}`, 'success');
     
     auditLogService.log({
@@ -504,13 +510,42 @@ const HR = ({ addToast }) => {
                       </span>
                     </div>
                   ))}
-                  <button 
-                    className="create-btn" 
-                    style={{ width: '100%', marginTop: '20px', gap: '10px', background: '#9b59b6', boxShadow: 'none' }}
-                    onClick={handleAddCertification}
-                  >
-                    <GraduationCap size={18} /> Új Képzés / Vizsga Rögzítése
-                  </button>
+                  {isAddingCert ? (
+                    <div className="glass-card" style={{ padding: '20px', marginTop: '20px', background: 'rgba(155, 89, 182, 0.05)', border: '1px solid rgba(155, 89, 182, 0.2)' }}>
+                      <h5 style={{ fontWeight: 800, marginBottom: '15px', fontSize: '0.9rem' }}>Új adat rögzítése</h5>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div className="settings-group">
+                          <label>Tanúsítvány / Vizsga neve</label>
+                          <input 
+                            type="text" 
+                            placeholder="pl. Tűzvédelmi szakvizsga" 
+                            value={newCertData.name}
+                            onChange={(e) => setNewCertData({...newCertData, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="settings-group">
+                          <label>Lejárat dátuma</label>
+                          <input 
+                            type="date" 
+                            value={newCertData.expiry}
+                            onChange={(e) => setNewCertData({...newCertData, expiry: e.target.value})}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                           <button className="view-btn" style={{ flex: 1 }} onClick={() => setIsAddingCert(false)}>Mégse</button>
+                           <button className="create-btn" style={{ flex: 1, background: '#9b59b6' }} onClick={handleAddCertification}>Rögzítés</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button 
+                      className="create-btn" 
+                      style={{ width: '100%', marginTop: '20px', gap: '10px', background: '#9b59b6', boxShadow: 'none' }}
+                      onClick={() => setIsAddingCert(true)}
+                    >
+                      <GraduationCap size={18} /> Új Képzés / Vizsga Rögzítése
+                    </button>
+                  )}
                 </div>
               </div>
             )}
