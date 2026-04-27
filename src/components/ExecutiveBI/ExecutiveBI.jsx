@@ -178,7 +178,7 @@ const ExecutiveBI = ({ currency }) => {
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
              <button className="view-btn" onClick={() => setShowFilter(true)}><Filter size={16}/> Részletes Szűrő</button>
-             <button className="create-btn" style={{ background: 'linear-gradient(45deg, #9b59b6, #8e44ad)', border: 'none', boxShadow: '0 5px 15px rgba(155,89,182,0.3)' }}><Zap size={18} /> Prezentációs Mód</button>
+             <button className="bi-presentation-btn"><Zap size={18} /> Prezentációs Mód</button>
           </div>
         </div>
       </div>
