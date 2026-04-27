@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   FileText, 
   Folder, 
@@ -122,14 +122,52 @@ const DMS = ({ addToast }) => {
     }
   };
 
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const newDoc = {
+      id: documents.length + 1,
+      name: file.name,
+      category: activeCategory === 'all' ? 'contracts' : activeCategory,
+      version: 'v1.0',
+      updated: new Date().toISOString().split('T')[0],
+      author: 'Simon Ernő',
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      status: 'Érvényes',
+      history: [
+        { version: 'v1.0', date: new Date().toISOString().split('T')[0], user: 'Simon Ernő', comment: 'Kezdeti feltöltés' }
+      ]
+    };
+
+    setDocuments([newDoc, ...documents]);
+    addToast(`${file.name} sikeresen feltöltve`, 'success');
+    
+    auditLogService.log({
+      user: 'Simon Ernő',
+      action: 'Dokumentum feltöltve',
+      module: 'DMS',
+      details: `${file.name}`,
+      severity: 'success'
+    });
+  };
+
   return (
     <div className="dms-wrapper">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        onChange={handleFileUpload}
+      />
       <div className="dms-header">
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Dokumentumkezelő (DMS)</h2>
           <p className="text-muted" style={{ fontSize: '0.85rem' }}>Műszaki rajzok és tanúsítványok központi tára</p>
         </div>
-        <button className="create-btn" onClick={() => addToast('Új dokumentum feltöltése', 'info')}>
+        <button className="create-btn" onClick={() => fileInputRef.current.click()}>
           <Upload size={20} /> Fájl Feltöltése
         </button>
       </div>
