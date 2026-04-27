@@ -507,6 +507,8 @@ const CRM = ({ addToast }) => {
               </select>
            </div>
         </div>
+      </Modal>
+
       <Modal
         isOpen={isCreatePartnerModalOpen}
         onClose={() => setIsCreatePartnerModalOpen(false)}
