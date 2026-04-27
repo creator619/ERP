@@ -23,6 +23,7 @@ import {
   Eye
 } from 'lucide-react';
 import auditLogService from '../../services/AuditLogService';
+import Modal from '../UI/Modal';
 import './Compliance.css';
 
 const Compliance = ({ addToast }) => {
