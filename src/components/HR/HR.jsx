@@ -28,6 +28,13 @@ const HR = ({ addToast }) => {
   const [activeMainView, setActiveMainView] = useState('employees');
   const [isAddingCert, setIsAddingCert] = useState(false);
   const [newCertData, setNewCertData] = useState({ name: '', expiry: '' });
+  const [isAddingEmployee, setIsAddingEmployee] = useState(false);
+  const [newEmployeeData, setNewEmployeeData] = useState({ 
+    name: '', 
+    role: '', 
+    dept: 'Gyártás', 
+    kpi: 85 
+  });
   
   // States for micro animations
   const [approvingLeaveId, setApprovingLeaveId] = useState(null);
@@ -92,6 +99,38 @@ const HR = ({ addToast }) => {
     if (val >= 90) return '#2ecc71';
     if (val >= 75) return '#f39c12';
     return '#e74c3c';
+  };
+
+  const handleAddEmployee = () => {
+    if (!newEmployeeData.name || !newEmployeeData.role) {
+      addToast('Kérjük töltsön ki minden kötelező mezőt!', 'warning');
+      return;
+    }
+
+    const newEmp = {
+      id: employees.length + 1,
+      name: newEmployeeData.name,
+      role: newEmployeeData.role,
+      dept: newEmployeeData.dept,
+      status: 'Aktív',
+      kpi: parseInt(newEmployeeData.kpi),
+      shifts: ['DE', 'DE', 'DE', 'DE', 'DE', 'PIH', 'PIH'],
+      certifications: [],
+      matrix: { welding: 0, cnc: 0, quality: 0, logistics: 0, electrical: 0, cad: 0 }
+    };
+
+    setEmployees([...employees, newEmp]);
+    setIsAddingEmployee(false);
+    setNewEmployeeData({ name: '', role: '', dept: 'Gyártás', kpi: 85 });
+    addToast(`${newEmp.name} sikeresen felvéve a rendszerbe`, 'success');
+
+    auditLogService.log({
+      user: 'Simon Ernő',
+      action: 'Új alkalmazott felvéve',
+      module: 'HR',
+      details: `${newEmp.name} (${newEmp.role})`,
+      severity: 'success'
+    });
   };
 
   const STYLES_MAP = {
@@ -243,11 +282,66 @@ const HR = ({ addToast }) => {
           <button className="view-btn" onClick={dailyCheckIn} style={{ borderColor: '#9b59b6', color: '#9b59b6' }}>
             <Clock size={16} /> Érkeztetés
           </button>
-          <button className="view-btn" style={{ borderColor: '#9b59b6', color: '#9b59b6' }} onClick={() => addToast('Új munkatárs felvétele felület', 'info')}>
+          <button className="view-btn" style={{ borderColor: '#9b59b6', color: '#9b59b6' }} onClick={() => setIsAddingEmployee(true)}>
             <UserPlus size={18} /> Új alkalmazott
           </button>
         </div>
       </div>
+
+      <Modal
+        isOpen={isAddingEmployee}
+        onClose={() => setIsAddingEmployee(false)}
+        title="Új alkalmazott rögzítése a rendszerbe"
+        width="500px"
+      >
+        <div className="settings-row" style={{ maxWidth: '100%' }}>
+          <div className="settings-group">
+            <label>Teljes Név *</label>
+            <input 
+              type="text" 
+              placeholder="pl. Kis Géza" 
+              value={newEmployeeData.name}
+              onChange={(e) => setNewEmployeeData({...newEmployeeData, name: e.target.value})}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Beosztás *</label>
+            <input 
+              type="text" 
+              placeholder="pl. Minősített Hegesztő" 
+              value={newEmployeeData.role}
+              onChange={(e) => setNewEmployeeData({...newEmployeeData, role: e.target.value})}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Osztály</label>
+            <select 
+              value={newEmployeeData.dept}
+              onChange={(e) => setNewEmployeeData({...newEmployeeData, dept: e.target.value})}
+            >
+              <option value="Gyártás">Gyártás</option>
+              <option value="IT">IT</option>
+              <option value="Logisztika">Logisztika</option>
+              <option value="Minőségirányítás">Minőségirányítás</option>
+              <option value="Management">Management</option>
+            </select>
+          </div>
+          <div className="settings-group">
+            <label>Kezdő KPI (%)</label>
+            <input 
+              type="number" 
+              min="0" 
+              max="100"
+              value={newEmployeeData.kpi}
+              onChange={(e) => setNewEmployeeData({...newEmployeeData, kpi: e.target.value})}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+            <button className="view-btn" style={{ flex: 1 }} onClick={() => setIsAddingEmployee(false)}>Mégse</button>
+            <button className="create-btn" style={{ flex: 1, background: '#9b59b6' }} onClick={handleAddEmployee}>Munkatárs Felvétele</button>
+          </div>
+        </div>
+      </Modal>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px', marginBottom: '35px' }}>
         <div className="stat-card">
