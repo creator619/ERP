@@ -336,7 +336,7 @@ const Purchase = ({ addToast, currency }) => {
                           items[index].name = e.target.value;
                           setNewPOData({...newPOData, items});
                         }}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white' }}
                       />
                       <input 
                         type="number" 
@@ -347,7 +347,7 @@ const Purchase = ({ addToast, currency }) => {
                           items[index].qty = parseInt(e.target.value) || 0;
                           setNewPOData({...newPOData, items});
                         }}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white' }}
                       />
                       <input 
                         type="number" 
@@ -358,7 +358,7 @@ const Purchase = ({ addToast, currency }) => {
                           items[index].price = parseInt(e.target.value) || 0;
                           setNewPOData({...newPOData, items});
                         }}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white' }}
                       />
                    </div>
                  ))}
