@@ -31,7 +31,9 @@ import './CRM.css';
 const CRM = ({ addToast }) => {
   const [viewType, setViewType] = useState('kanban'); // 'kanban', 'list', or 'tenders'
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [selectedTender, setSelectedTender] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTenderModalOpen, setIsTenderModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
   const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
@@ -199,6 +201,11 @@ const CRM = ({ addToast }) => {
     addToast('Új partner sikeresen létrehozva', 'success');
   };
 
+  const openTenderDetails = (tender) => {
+    setSelectedTender(tender);
+    setIsTenderModalOpen(true);
+  };
+
   const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
 
   return (
@@ -281,7 +288,7 @@ const CRM = ({ addToast }) => {
 
            <div className="tender-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '25px' }}>
               {tenders.map(tender => (
-                <div key={tender.id} className="tender-card glass" style={{ padding: '25px', borderRadius: '20px' }}>
+                <div key={tender.id} className="tender-card glass" onClick={() => openTenderDetails(tender)} style={{ padding: '25px', borderRadius: '20px', cursor: 'pointer' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
                       <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--primary-color)' }}>{tender.id}</span>
                       <span className={`status-badge ${tender.status === 'Review' ? 'active' : tender.status === 'In Progress' ? 'warning' : 'info'}`}>
@@ -575,6 +582,61 @@ const CRM = ({ addToast }) => {
               </select>
            </div>
         </div>
+      <Modal
+        isOpen={isTenderModalOpen}
+        onClose={() => setIsTenderModalOpen(false)}
+        title={`Tender Részletek: ${selectedTender?.title}`}
+        width="600px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsTenderModalOpen(false)}>Bezárás</button>
+            <button className="create-btn" onClick={() => addToast('Státusz frissítve', 'success')}>Státusz Módosítása</button>
+          </>
+        }
+      >
+        {selectedTender && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(52, 152, 219, 0.1)', padding: '15px', borderRadius: '12px' }}>
+               <div>
+                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>Kiíró Intézmény</p>
+                  <p style={{ fontWeight: 700 }}>{selectedTender.issuer}</p>
+               </div>
+               <div style={{ textAlign: 'right' }}>
+                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>Várható Érték</p>
+                  <p style={{ fontWeight: 900, color: 'var(--primary-color)' }}>{formatHUF(selectedTender.value)}</p>
+               </div>
+            </div>
+
+            <div className="settings-group">
+               <label>Megfelelőségi Ellenőrzőlista</label>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                  {selectedTender.tasks.map((task, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                       <FileCheck size={16} color="#2ecc71" />
+                       <span style={{ fontSize: '0.9rem' }}>{task}</span>
+                       <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#2ecc71', fontWeight: 800 }}>KÉSZ</span>
+                    </div>
+                  ))}
+               </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+               <div className="glass" style={{ padding: '15px', borderRadius: '12px' }}>
+                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>Beadási Határidő</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e74c3c', marginTop: '5px' }}>
+                     <Clock size={16} />
+                     <span style={{ fontWeight: 700 }}>{selectedTender.deadline}</span>
+                  </div>
+               </div>
+               <div className="glass" style={{ padding: '15px', borderRadius: '12px' }}>
+                  <p className="text-muted" style={{ fontSize: '0.75rem' }}>Aktuális Státusz</p>
+                  <div style={{ fontWeight: 700, color: 'var(--primary-color)', marginTop: '5px' }}>
+                     {selectedTender.status === 'Review' ? 'Leadva / Ellenőrzés alatt' : 'Kidolgozás folyamatban'}
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
