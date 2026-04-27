@@ -75,6 +75,8 @@ const Purchase = ({ addToast, currency }) => {
     }
   ]);
 
+  const [requisitions, setRequisitions] = useState([]);
+  const [purchaseView, setPurchaseView] = useState('orders'); // 'orders' or 'requests'
   const [selectedPO, setSelectedPO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
@@ -82,6 +84,23 @@ const Purchase = ({ addToast, currency }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedSuppliers, setSelectedSuppliers] = useState([]);
   const [activeTab, setActiveTab] = useState('items');
+
+  const handleConvertRequest = (id) => {
+    const requestToConvert = requisitions.find(r => r.id === id);
+    if (requestToConvert) {
+      // Remove from requisitions
+      setRequisitions(prev => prev.filter(r => r.id !== id));
+      // Add to orders with updated status
+      const newOrder = { ...requestToConvert, status: 'Ordered' };
+      setOrders(prev => [newOrder, ...prev]);
+      
+      if (selectedPO?.id === id) {
+        setSelectedPO(null);
+        setIsModalOpen(false);
+      }
+      addToast('Beszerzési igény sikeresen megrendeléssé alakítva és a fő listára helyezve', 'success');
+    }
+  };
 
   const [newPOData, setNewPOData] = useState({
     supplier: '',
@@ -131,14 +150,13 @@ const Purchase = ({ addToast, currency }) => {
     const checkPendingRequests = () => {
       const pending = JSON.parse(localStorage.getItem('pending_purchase_requests') || '[]');
       if (pending.length > 0) {
-        setOrders(prev => [...pending, ...prev]);
+        setRequisitions(prev => [...pending, ...prev]);
         localStorage.removeItem('pending_purchase_requests');
         addToast(`${pending.length} új beszerzési igény érkezett a Karbantartástól`, 'info');
       }
     };
 
     checkPendingRequests();
-    // Also check when window regains focus to handle background updates
     window.addEventListener('focus', checkPendingRequests);
     return () => window.removeEventListener('focus', checkPendingRequests);
   }, [addToast]);
@@ -288,17 +306,49 @@ const Purchase = ({ addToast, currency }) => {
     <div className="purchase-module">
       <div className="invoicing-header" style={{ marginBottom: '25px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <div className="module-icon-container" style={{ background: 'rgba(230, 126, 34, 0.1)', color: '#e67e22', padding: '12px', borderRadius: '12px' }}>
+          <div className="module-icon-container" style={{ background: 'rgba(52, 152, 219, 0.1)', color: '#3498db', padding: '12px', borderRadius: '12px' }}>
             <ShoppingCart size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Stratégiai Beszerzés & AI Sourcing</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Globális ellátási lánc menedzsment és költéselemzés</p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Beszerzés & Ellátási Lánc</h2>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Globális készletgazdálkodás és beszállítói integráció</p>
           </div>
         </div>
-        <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
-          <Plus size={20} /> Új Beszerzés
-        </button>
+        <div style={{ display: 'flex', gap: '15px' }}>
+          <div className="view-controls glass" style={{ padding: '4px', borderRadius: '10px' }}>
+            <button 
+              className={`view-btn ${purchaseView === 'orders' ? 'active' : ''}`} 
+              onClick={() => setPurchaseView('orders')}
+            >
+              Rendelések
+            </button>
+            <button 
+              className={`view-btn ${purchaseView === 'requests' ? 'active' : ''}`} 
+              onClick={() => setPurchaseView('requests')}
+              style={{ position: 'relative' }}
+            >
+              Igények
+              {requisitions.length > 0 && (
+                <span style={{ 
+                  position: 'absolute', 
+                  top: '-8px', 
+                  right: '-8px', 
+                  background: '#e74c3c', 
+                  color: 'white', 
+                  fontSize: '0.6rem', 
+                  padding: '2px 6px', 
+                  borderRadius: '10px',
+                  boxShadow: '0 2px 5px rgba(231, 76, 60, 0.3)'
+                }}>
+                  {requisitions.length}
+                </span>
+              )}
+            </button>
+          </div>
+          <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
+            <Plus size={20} /> Új Beszerzés
+          </button>
+        </div>
       </div>
 
       <Modal
@@ -454,7 +504,7 @@ const Purchase = ({ addToast, currency }) => {
             </tr>
           </thead>
           <tbody>
-            {orders.map(po => (
+            {(purchaseView === 'orders' ? orders : requisitions).length > 0 ? (purchaseView === 'orders' ? orders : requisitions).map(po => (
               <tr key={po.id} onClick={() => openPODetails(po)} style={{ cursor: 'pointer' }}>
                 <td><strong style={{ color: 'var(--primary-color)' }}>{po.id}</strong></td>
                 <td>
@@ -473,13 +523,18 @@ const Purchase = ({ addToast, currency }) => {
                    </div>
                 </td>
                 <td>
-                  <span className={`status-badge ${po.status === 'Delivered' ? 'active' : po.status === 'Late' ? 'danger' : 'warning'}`}>
-                    {po.status === 'Delivered' ? 'Beérkezett' : po.status === 'Ordered' ? 'Szállítás alatt' : 'Késik'}
-                  </span>
+                  {getStatusBadge(po.status)}
                 </td>
                 <td><button className="view-btn-small"><MoreVertical size={16} /></button></td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+                  <Package size={40} style={{ opacity: 0.2, marginBottom: '15px' }} /><br />
+                  Nincs megjeleníthető {purchaseView === 'orders' ? 'rendelés' : 'igény'}.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
