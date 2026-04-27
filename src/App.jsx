@@ -22,6 +22,7 @@ import ExecutiveBI from './components/ExecutiveBI/ExecutiveBI';
 import AIInsights from './components/Intelligence/AIInsights';
 import Compliance from './components/Compliance/Compliance';
 import Planning from './components/Planning/Planning';
+import Finance from './components/Finance/Finance';
 import { ToastContainer } from './components/UI/Toast';
 
 function App() {
@@ -59,66 +60,37 @@ function App() {
   const renderModule = () => {
     const props = { addToast, setActiveModule };
     switch (activeModule) {
-      case 'dashboard':
-        return <Dashboard {...props} />;
-      case 'intelligence':
-        return <AIInsights {...props} />;
-      case 'documents':
-        return <DocumentEngine {...props} />;
-      case 'traceability':
-        return <BlockchainTraceability {...props} />;
-      case 'compliance':
-        return <Compliance {...props} />;
-      case 'planning':
-        return <Planning {...props} />;
-      case 'projects':
-        return <Projects {...props} />;
-      case 'manufacturing':
-        return <Manufacturing {...props} />;
-      case 'quality':
-        return <Quality {...props} />;
-      case 'maintenance':
-        return <Maintenance {...props} />;
-      case 'crm':
-        return <CRM {...props} />;
-      case 'inventory':
-        return <Inventory {...props} />;
-      case 'sales':
-        return <Sales {...props} />;
-      case 'invoicing':
-        return <Invoicing {...props} />;
-      case 'hr':
-        return <HR {...props} />;
-      case 'purchase':
-        return <Purchase {...props} />;
-      case 'messenger':
-        return <Messenger {...props} />;
-      case 'dms':
-        return <DMS {...props} />;
-      case 'logistics':
-        return <Logistics {...props} />;
-      case 'bi':
-        return <ExecutiveBI {...props} currency={currency} />;
-      case 'settings':
-        return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} />;
-      default:
-        return <Dashboard {...props} currency={currency} />;
+      case 'dashboard': return <Dashboard {...props} />;
+      case 'intelligence': return <AIInsights {...props} />;
+      case 'documents': return <DocumentEngine {...props} />;
+      case 'traceability': return <BlockchainTraceability {...props} />;
+      case 'compliance': return <Compliance {...props} />;
+      case 'planning': return <Planning {...props} />;
+      case 'finance': return <Finance {...props} />;
+      case 'projects': return <Projects {...props} />;
+      case 'manufacturing': return <Manufacturing {...props} />;
+      case 'quality': return <Quality {...props} />;
+      case 'maintenance': return <Maintenance {...props} />;
+      case 'crm': return <CRM {...props} />;
+      case 'inventory': return <Inventory {...props} />;
+      case 'sales': return <Sales {...props} />;
+      case 'invoicing': return <Invoicing {...props} />;
+      case 'hr': return <HR {...props} />;
+      case 'purchase': return <Purchase {...props} />;
+      case 'messenger': return <Messenger {...props} />;
+      case 'dms': return <DMS {...props} />;
+      case 'logistics': return <Logistics {...props} />;
+      case 'bi': return <ExecutiveBI {...props} currency={currency} />;
+      case 'settings': return <Settings {...props} theme={theme} toggleTheme={toggleTheme} currency={currency} setCurrency={setCurrency} />;
+      default: return <Dashboard {...props} currency={currency} />;
     }
   };
 
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
-  }
+  if (!isAuthenticated) return <Login onLogin={handleLogin} />;
 
   return (
     <>
-      <Layout 
-        activeModule={activeModule} 
-        setActiveModule={setActiveModule}
-        onLogout={handleLogout}
-        currency={currency}
-        setCurrency={setCurrency}
-      >
+      <Layout activeModule={activeModule} setActiveModule={setActiveModule} onLogout={handleLogout} currency={currency} setCurrency={setCurrency}>
         {renderModule()}
       </Layout>
       <ToastContainer toasts={toasts} removeToast={removeToast} />

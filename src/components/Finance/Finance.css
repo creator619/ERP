@@ -1,0 +1,63 @@
+.finance-wrapper {
+    animation: fadeIn 0.5s ease;
+}
+
+.finance-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.finance-stats-grid .stat-card {
+    padding: 25px;
+    border-radius: 20px;
+}
+
+.finance-stats-grid .stat-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    margin: 10px 0;
+}
+
+.finance-stats-grid .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.stat-change {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.stat-change.positive { color: #2ecc71; }
+.stat-change.negative { color: #e74c3c; }
+
+/* Fixed Assets Styles */
+.asset-summary-grid {
+    animation: slideUp 0.5s ease;
+}
+
+.assets-view .data-table tr {
+    transition: all 0.2s ease;
+}
+
+.assets-view .data-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* General Ledger Styles */
+.ledger-type-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
