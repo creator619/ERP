@@ -102,6 +102,16 @@ const Purchase = ({ addToast, currency }) => {
     }
   };
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'Delivered': return <span className="status-badge active">Beérkezett</span>;
+      case 'Ordered': return <span className="status-badge warning" style={{ background: 'rgba(52, 152, 219, 0.1)', color: '#3498db' }}>Szállítás alatt</span>;
+      case 'Late': return <span className="status-badge danger">Késik</span>;
+      case 'Request': return <span className="status-badge warning" style={{ background: 'rgba(241, 196, 15, 0.1)', color: '#f1c40f', border: '1px solid #f1c40f' }}>IGÉNY</span>;
+      default: return <span className="status-badge">{status}</span>;
+    }
+  };
+
   const [newPOData, setNewPOData] = useState({
     supplier: '',
     category: 'Alkatrész',
