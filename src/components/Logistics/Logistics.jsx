@@ -17,15 +17,20 @@ import './Logistics.css';
 const Logistics = ({ addToast }) => {
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPlanning, setIsPlanning] = useState(false);
+  const [newShipmentData, setNewShipmentData] = useState({
+    id: `SHP-2024-${Math.floor(Math.random() * 1000)}`,
+    origin: 'RailParts Raktár (HU)',
+    destination: '',
+    type: 'Road',
+    items: '',
+    eta: '',
+    vessel: ''
+  });
   
   // Animate progress on mount for visual WOW
   const [progressLoaded, setProgressLoaded] = useState(false);
-
-  useEffect(() => {
-    setTimeout(() => setProgressLoaded(true), 200);
-  }, []);
-
-  const shipments = [
+  const [shipmentList, setShipmentList] = useState([
     {
       id: 'SHP-2024-881',
       origin: 'Sanghaj, Kína',
@@ -79,7 +84,33 @@ const Logistics = ({ addToast }) => {
         { time: '2024-04-22 10:30', text: 'Átvétel és raktározás befejezve', status: 'done' }
       ]
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    setTimeout(() => setProgressLoaded(true), 200);
+  }, []);
+
+  const handlePlanShipment = () => {
+    if (!newShipmentData.destination || !newShipmentData.items || !newShipmentData.eta) {
+      addToast('Kérjük töltsön ki minden mezőt!', 'warning');
+      return;
+    }
+
+    const newShp = {
+      ...newShipmentData,
+      status: 'Transit',
+      progress: 0,
+      currentLocation: 'Raktár - Előkészítés alatt',
+      events: [
+        { time: 'Most', text: 'Szállítás tervezve', status: 'done' },
+        { time: 'Tervezett', text: 'Berakodás és indítás', status: 'active' }
+      ]
+    };
+
+    setShipmentList([newShp, ...shipmentList]);
+    setIsPlanning(false);
+    addToast('Szállítási terv sikeresen rögzítve', 'success');
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -118,13 +149,80 @@ const Logistics = ({ addToast }) => {
             <p className="text-muted" style={{ fontSize: '0.9rem', marginTop: '4px' }}>Nemzetközi szállításkövetés és valós idejű telematika</p>
           </div>
         </div>
-        <button className="create-btn" style={{ background: '#3498db', boxShadow: '0 4px 15px rgba(52, 152, 219, 0.3)' }} onClick={() => addToast('Új szállítási profil indítása...', 'success')}>
+        <button 
+          className="create-btn" 
+          style={{ background: 'transparent', border: '1px solid #3498db', color: '#3498db', boxShadow: 'none' }} 
+          onClick={() => setIsPlanning(true)}
+        >
           <Navigation size={18} /> Szállítás Tervezése
         </button>
       </div>
 
+      <Modal
+        isOpen={isPlanning}
+        onClose={() => setIsPlanning(false)}
+        title="Új Szállítmány Tervezése"
+        width="500px"
+      >
+        <div className="settings-row" style={{ maxWidth: '100%' }}>
+          <div className="settings-group">
+            <label>Célállomás *</label>
+            <input 
+              type="text" 
+              placeholder="pl. Berlin, Németország" 
+              value={newShipmentData.destination}
+              onChange={(e) => setNewShipmentData({...newShipmentData, destination: e.target.value})}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Szállított Áruk / Tételek *</label>
+            <input 
+              type="text" 
+              placeholder="pl. 200 db Fékbetét" 
+              value={newShipmentData.items}
+              onChange={(e) => setNewShipmentData({...newShipmentData, items: e.target.value})}
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="settings-group">
+              <label>Várható Érkezés *</label>
+              <input 
+                type="date" 
+                value={newShipmentData.eta}
+                onChange={(e) => setNewShipmentData({...newShipmentData, eta: e.target.value})}
+              />
+            </div>
+            <div className="settings-group">
+              <label>Fuvarozó / Jármű</label>
+              <input 
+                type="text" 
+                placeholder="pl. DHL Express" 
+                value={newShipmentData.vessel}
+                onChange={(e) => setNewShipmentData({...newShipmentData, vessel: e.target.value})}
+              />
+            </div>
+          </div>
+          <div className="settings-group">
+            <label>Fuvar Típusa</label>
+            <select 
+              value={newShipmentData.type}
+              onChange={(e) => setNewShipmentData({...newShipmentData, type: e.target.value})}
+            >
+              <option value="Road">Közúti (Truck)</option>
+              <option value="Rail">Vasúti (Train)</option>
+              <option value="Sea">Tengeri (Ship)</option>
+              <option value="Air">Légi (Plane)</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+            <button className="view-btn" style={{ flex: 1 }} onClick={() => setIsPlanning(false)}>Mégse</button>
+            <button className="create-btn" style={{ flex: 1, background: '#3498db' }} onClick={handlePlanShipment}>Terv Mentése</button>
+          </div>
+        </div>
+      </Modal>
+
       <div className="shipment-grid">
-        {shipments.map(shp => (
+        {shipmentList.map(shp => (
           <div key={shp.id} className="shipment-card" onClick={() => openShipment(shp)} style={{ cursor: 'pointer' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
