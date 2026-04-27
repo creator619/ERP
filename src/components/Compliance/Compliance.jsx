@@ -632,7 +632,7 @@ const Compliance = ({ addToast }) => {
               placeholder="pl: TOL-002" 
               value={newTool.id} 
               onChange={(e) => setNewTool({...newTool, id: e.target.value})}
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '12px', borderRadius: '10px', width: '100%' }}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '12px', borderRadius: '10px', width: '100%' }}
             />
           </div>
           <div className="settings-group">
@@ -642,7 +642,7 @@ const Compliance = ({ addToast }) => {
               placeholder="pl: Digitális Mikrométer" 
               value={newTool.name} 
               onChange={(e) => setNewTool({...newTool, name: e.target.value})}
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '12px', borderRadius: '10px', width: '100%' }}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '12px', borderRadius: '10px', width: '100%' }}
             />
           </div>
           <div className="settings-group">
@@ -650,7 +650,7 @@ const Compliance = ({ addToast }) => {
             <select 
               value={newTool.interval} 
               onChange={(e) => setNewTool({...newTool, interval: parseInt(e.target.value)})}
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', padding: '12px', borderRadius: '10px', width: '100%' }}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '12px', borderRadius: '10px', width: '100%' }}
             >
               <option value={90} style={{ background: 'var(--bg-card)' }}>90 nap (Negyedéves)</option>
               <option value={180} style={{ background: 'var(--bg-card)' }}>180 nap (Féléves)</option>
