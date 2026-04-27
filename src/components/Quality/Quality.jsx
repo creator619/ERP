@@ -26,6 +26,20 @@ const Quality = ({ addToast }) => {
   const [isPreviewDrawingOpen, setIsPreviewDrawingOpen] = useState(false);
   const [isCalibrationModalOpen, setIsCalibrationModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isNewInspectionModalOpen, setIsNewInspectionModalOpen] = useState(false);
+  const [isAddToolModalOpen, setIsAddToolModalOpen] = useState(false);
+  const [newTool, setNewTool] = useState({
+    id: '',
+    tool: '',
+    due: ''
+  });
+  const [newInspection, setNewInspection] = useState({
+    item: '',
+    batch: '',
+    inspector: 'Kovács János',
+    status: 'Pending',
+    score: 0
+  });
 
   const handleMainExport = () => {
     setIsExporting(true);
@@ -244,6 +258,70 @@ const Quality = ({ addToast }) => {
     }, 1500);
   };
 
+  const handleSaveInspection = (e) => {
+    e.preventDefault();
+    if (!newInspection.item || !newInspection.batch) {
+      addToast('Kérjük töltsön ki minden mezőt!', 'warning');
+      return;
+    }
+
+    const id = `QC-2024-${String(inspections.length + 1).padStart(3, '0')}`;
+    const date = new Date().toISOString().split('T')[0];
+    
+    const inspectionToAdd = {
+      ...newInspection,
+      id,
+      date
+    };
+
+    setInspections([inspectionToAdd, ...inspections]);
+    setIsNewInspectionModalOpen(false);
+    setNewInspection({
+      item: '',
+      batch: '',
+      inspector: 'Kovács János',
+      status: 'Pending',
+      score: 0
+    });
+
+    auditLogService.log({
+      user: inspectionToAdd.inspector,
+      action: 'Új Ellenőrzés Létrehozva',
+      module: 'Quality',
+      details: `${id} - ${inspectionToAdd.item}`,
+      severity: 'info'
+    });
+
+    addToast(`Új ellenőrzés (${id}) sikeresen létrehozva`, 'success');
+  };
+
+  const handleSaveNewTool = (e) => {
+    e.preventDefault();
+    if (!newTool.id || !newTool.tool || !newTool.due) {
+      addToast('Minden mező kitöltése kötelező!', 'warning');
+      return;
+    }
+
+    const toolToAdd = {
+      ...newTool,
+      status: 'Hiteles'
+    };
+
+    setCalibrations([toolToAdd, ...calibrations]);
+    setIsAddToolModalOpen(false);
+    setNewTool({ id: '', tool: '', due: '' });
+
+    auditLogService.log({
+      user: 'Minőségügyi Technikus',
+      action: 'Új Műszer Regisztrálva',
+      module: 'Quality',
+      details: `${toolToAdd.tool} (${toolToAdd.id}) felvéve a rendszerbe.`,
+      severity: 'success'
+    });
+
+    addToast(`${toolToAdd.tool} regisztrálva`, 'success');
+  };
+
   return (
     <div className="quality-module">
       <div className="invoicing-header" style={{ marginBottom: '30px' }}>
@@ -268,7 +346,7 @@ const Quality = ({ addToast }) => {
               <><Download size={18} /> Export</>
             )}
           </button>
-          <button className="create-btn-premium" onClick={() => addToast('Új ellenőrzési folyamat indítva', 'success')}>
+          <button className="create-btn-premium" onClick={() => setIsNewInspectionModalOpen(true)}>
             <Plus size={18} /> Új Ellenőrzés
           </button>
         </div>
@@ -380,7 +458,12 @@ const Quality = ({ addToast }) => {
                  </div>
                ))}
            </div>
-           <button className="view-btn" style={{ width: '100%', marginTop: '25px', justifyContent: 'center' }} onClick={() => setIsCalibrationModalOpen(true)}>Összes műszer</button>
+           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '25px' }}>
+              <button className="view-btn" style={{ justifyContent: 'center' }} onClick={() => setIsCalibrationModalOpen(true)}>Összes</button>
+              <button className="create-btn" style={{ justifyContent: 'center', padding: '8px' }} onClick={() => setIsAddToolModalOpen(true)}>
+                <Plus size={16} /> Új műszer
+              </button>
+           </div>
         </div>
       </div>
 
@@ -499,11 +582,10 @@ const Quality = ({ addToast }) => {
         }
       >
         <div style={{ background: '#001a33', padding: '20px', borderRadius: '15px', overflow: 'hidden', border: '2px solid rgba(52, 152, 219, 0.3)' }}>
-           <img 
-             src="C:\Users\simone\.gemini\antigravity\brain\10d078fd-7ec1-4834-a811-af67057b264c\technical_rail_drawing_1777286128152.png" 
-             alt="Technical Blueprint" 
-             style={{ width: '100%', height: 'auto', borderRadius: '10px', display: 'block' }} 
-           />
+           <div style={{ width: '100%', height: '400px', background: 'rgba(52, 152, 219, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '15px' }}>
+              <FileText size={48} color="#3498db" />
+              <p style={{ color: '#3498db', fontWeight: 600 }}>DRW-882-V2 Műszaki Rajz Betöltése...</p>
+           </div>
            <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
                  DOKUMENTUM AZONOSÍTÓ: 882-V2-2024-QC | UTOLSÓ MÓDOSÍTÁS: 2024-03-12
@@ -599,6 +681,120 @@ const Quality = ({ addToast }) => {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={isNewInspectionModalOpen}
+        onClose={() => setIsNewInspectionModalOpen(false)}
+        title="Új Ellenőrzési Folyamat Indítása"
+        width="600px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsNewInspectionModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleSaveInspection}>Ellenőrzés Létrehozása</button>
+          </>
+        }
+      >
+        <form onSubmit={handleSaveInspection} className="new-inspection-form">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Alkatrész / Tétel Megnevezése</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                placeholder="Pl: Kocsiablak keret (RW-WIN-043)"
+                value={newInspection.item}
+                onChange={(e) => setNewInspection({...newInspection, item: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Batch / Loth Szám</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                placeholder="Pl: BCH-886"
+                value={newInspection.batch}
+                onChange={(e) => setNewInspection({...newInspection, batch: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Ellenőr</label>
+              <select 
+                className="form-input"
+                value={newInspection.inspector}
+                onChange={(e) => setNewInspection({...newInspection, inspector: e.target.value})}
+              >
+                <option value="Kovács János">Kovács János</option>
+                <option value="Nagy Péter">Nagy Péter</option>
+                <option value="Szabó Anna">Szabó Anna</option>
+                <option value="Horváth Gábor">Horváth Gábor</option>
+              </select>
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <div style={{ padding: '15px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '10px', border: '1px dashed rgba(52, 152, 219, 0.3)' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                  Az új ellenőrzés 'Folyamatban' státusszal jön létre. <br/>
+                  A mérések felvitele a létrehozás után, a jegyzőkönyv megnyitásával lehetséges.
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isAddToolModalOpen}
+        onClose={() => setIsAddToolModalOpen(false)}
+        title="Új Mérőműszer Regisztrálása"
+        width="500px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsAddToolModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleSaveNewTool}>Műszer Mentése</button>
+          </>
+        }
+      >
+        <form onSubmit={handleSaveNewTool} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Műszer Megnevezése</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              placeholder="Pl: Digitális Mikrométer"
+              value={newTool.tool}
+              onChange={(e) => setNewTool({...newTool, tool: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Leltári Szám / ID</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              placeholder="Pl: QC-45"
+              value={newTool.id}
+              onChange={(e) => setNewTool({...newTool, id: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Következő Kalibráció Dátuma</label>
+            <input 
+              type="date" 
+              className="form-input" 
+              value={newTool.due}
+              onChange={(e) => setNewTool({...newTool, due: e.target.value})}
+              required
+            />
+          </div>
+          <div style={{ padding: '15px', background: 'rgba(46, 204, 113, 0.05)', borderRadius: '10px', border: '1px dashed rgba(46, 204, 113, 0.3)' }}>
+             <p style={{ fontSize: '0.8rem', color: '#2ecc71', textAlign: 'center', fontWeight: 600 }}>
+                A műszer alapértelmezetten 'Hiteles' státusszal kerül a rendszerbe.
+             </p>
+          </div>
+        </form>
       </Modal>
     </div>
   );
