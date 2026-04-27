@@ -23,6 +23,18 @@ const Quality = ({ addToast }) => {
   const [activeTab, setActiveTab] = useState('checkpoints');
   const [isCreatingNCR, setIsCreatingNCR] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isPreviewDrawingOpen, setIsPreviewDrawingOpen] = useState(false);
+
+  const handleViewDrawing = () => {
+    setIsPreviewDrawingOpen(true);
+    auditLogService.log({
+      user: 'Minőségügyi Ellenőr',
+      action: 'Műszaki rajz megtekintve',
+      module: 'Quality',
+      details: 'DRW-882-V2.pdf (Blueprint #42)',
+      severity: 'info'
+    });
+  };
 
   const handleExportPDF = (insp) => {
     setIsGeneratingPDF(true);
@@ -398,13 +410,39 @@ const Quality = ({ addToast }) => {
                   <p className="text-muted" style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '4px' }}>Csatolt Műszaki Rajz</p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                      <span style={{ fontWeight: 600 }}>DRW-882-V2.pdf</span>
-                     <button className="view-btn-small">Megtekintés</button>
+                     <button className="view-btn-small" onClick={handleViewDrawing}>Megtekintés</button>
                   </div>
                 </div>
               </div>
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={isPreviewDrawingOpen}
+        onClose={() => setIsPreviewDrawingOpen(false)}
+        title="Műszaki Rajz Előnézet: DRW-882-V2"
+        width="850px"
+        footer={
+          <button className="view-btn" onClick={() => setIsPreviewDrawingOpen(false)}>Bezárás</button>
+        }
+      >
+        <div style={{ background: '#001a33', padding: '20px', borderRadius: '15px', overflow: 'hidden', border: '2px solid rgba(52, 152, 219, 0.3)' }}>
+           <img 
+             src="C:\Users\simone\.gemini\antigravity\brain\10d078fd-7ec1-4834-a811-af67057b264c\technical_rail_drawing_1777286128152.png" 
+             alt="Technical Blueprint" 
+             style={{ width: '100%', height: 'auto', borderRadius: '10px', display: 'block' }} 
+           />
+           <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                 DOKUMENTUM AZONOSÍTÓ: 882-V2-2024-QC | UTOLSÓ MÓDOSÍTÁS: 2024-03-12
+              </div>
+              <div style={{ color: '#3498db', fontSize: '0.8rem', fontWeight: 800 }}>
+                 HITELLESÍTETT BLUEPRINT
+              </div>
+           </div>
+        </div>
       </Modal>
     </div>
   );
