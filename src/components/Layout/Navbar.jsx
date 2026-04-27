@@ -23,9 +23,9 @@ const Navbar = ({ activeModuleLabel, setActiveModule, currency, setCurrency, tog
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
 
   const notifications = [
-    { id: 1, title: 'Új megrendelés', desc: 'A MÁV-START 50db ablakot rendelt.', time: '5 perce', type: 'info', icon: <MessageSquare size={14} /> },
-    { id: 2, title: 'Gyártás kész', desc: 'A PRJ-001 projekt dokumentációja hiányos.', time: '1 órája', type: 'warning', icon: <AlertCircle size={14} /> },
-    { id: 3, title: 'Sikeres mentés', desc: 'A készletszintek frissültek.', time: '3 órája', type: 'success', icon: <CheckCircle2 size={14} /> },
+    { id: 1, title: 'Új megrendelés', desc: 'A MÁV-START 50db ablakot rendelt.', time: '5 perce', type: 'info', icon: <MessageSquare size={14} />, targetModule: 'sales' },
+    { id: 2, title: 'Gyártás kész', desc: 'A PRJ-001 projekt dokumentációja hiányos.', time: '1 órája', type: 'warning', icon: <AlertCircle size={14} />, targetModule: 'projects' },
+    { id: 3, title: 'Sikeres mentés', desc: 'A készletszintek frissültek.', time: '3 órája', type: 'success', icon: <CheckCircle2 size={14} />, targetModule: 'inventory' },
   ];
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +65,11 @@ const Navbar = ({ activeModuleLabel, setActiveModule, currency, setCurrency, tog
     setActiveModule(id);
     setSearchQuery('');
     setShowSearchResults(false);
+  };
+
+  const handleNotificationClick = (module) => {
+    setActiveModule(module);
+    setShowNotifications(false);
   };
 
   return (
@@ -129,7 +134,11 @@ const Navbar = ({ activeModuleLabel, setActiveModule, currency, setCurrency, tog
               </div>
               <div className="dropdown-body">
                 {notifications.map(n => (
-                  <div key={n.id} className="notification-item">
+                  <div 
+                    key={n.id} 
+                    className="notification-item"
+                    onClick={() => handleNotificationClick(n.targetModule)}
+                  >
                     <div className={`notification-icon ${n.type}`}>{n.icon}</div>
                     <div className="notification-info">
                       <p><strong>{n.title}</strong></p>
