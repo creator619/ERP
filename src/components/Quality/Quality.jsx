@@ -24,6 +24,7 @@ const Quality = ({ addToast }) => {
   const [isCreatingNCR, setIsCreatingNCR] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isPreviewDrawingOpen, setIsPreviewDrawingOpen] = useState(false);
+  const [isCalibrationModalOpen, setIsCalibrationModalOpen] = useState(false);
 
   const handleViewDrawing = () => {
     setIsPreviewDrawingOpen(true);
@@ -310,7 +311,7 @@ const Quality = ({ addToast }) => {
                 </div>
               ))}
            </div>
-           <button className="view-btn" style={{ width: '100%', marginTop: '25px', justifyContent: 'center' }}>Összes műszer</button>
+           <button className="view-btn" style={{ width: '100%', marginTop: '25px', justifyContent: 'center' }} onClick={() => setIsCalibrationModalOpen(true)}>Összes műszer</button>
         </div>
       </div>
 
@@ -442,6 +443,51 @@ const Quality = ({ addToast }) => {
                  HITELLESÍTETT BLUEPRINT
               </div>
            </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCalibrationModalOpen}
+        onClose={() => setIsCalibrationModalOpen(false)}
+        title="Műszerpark Kalibrációs Jegyzéke"
+        width="800px"
+        footer={
+          <button className="view-btn" onClick={() => setIsCalibrationModalOpen(false)}>Bezárás</button>
+        }
+      >
+        <div className="list-view" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Műszer Megnevezése</th>
+                <th>Gyári Szám</th>
+                <th>Állapot</th>
+                <th>Következő Felülvizsgálat</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { name: 'Digitális Tolómérő', id: 'QC-01', status: 'Hiteles', due: '2024-12-15' },
+                { name: 'Nyomatékkulcs', id: 'MT-08', status: 'Lejáróban', due: '2024-05-01' },
+                { name: 'Mikrométer', id: 'QC-05', status: 'Hiteles', due: '2024-10-20' },
+                { name: 'Rétegvastagság-mérő', id: 'QC-12', status: 'Hiteles', due: '2024-11-10' },
+                { name: 'Digitális Szögmérő', id: 'QC-22', status: 'Érvénytelen', due: '2024-04-15' },
+                { name: 'Hőmérséklet Kalibrátor', id: 'MT-02', status: 'Hiteles', due: '2025-01-20' },
+                { name: 'Nyomásmérő Műszer', id: 'QC-09', status: 'Hiteles', due: '2024-09-05' }
+              ].map((m, i) => (
+                <tr key={i}>
+                  <td style={{ fontWeight: 700 }}>{m.name}</td>
+                  <td className="text-muted" style={{ fontWeight: 600 }}>{m.id}</td>
+                  <td>
+                    <span className={`status-badge ${m.status === 'Hiteles' ? 'active' : m.status === 'Lejáróban' ? 'warning' : 'danger'}`}>
+                      {m.status}
+                    </span>
+                  </td>
+                  <td style={{ fontWeight: 600 }}>{m.due}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </Modal>
     </div>
