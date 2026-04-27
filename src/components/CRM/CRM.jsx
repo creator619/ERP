@@ -467,12 +467,12 @@ const CRM = ({ addToast }) => {
               <select 
                 value={newInteraction.type} 
                 onChange={(e) => setNewInteraction({...newInteraction, type: e.target.value})}
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white', outline: 'none' }}
               >
-                 <option value="Call">Telefonhívás</option>
-                 <option value="Meeting">Személyes Megbeszélés</option>
-                 <option value="Email">Email váltás</option>
-                 <option value="Note">Belső Megjegyzés</option>
+                 <option value="Call" style={{ background: '#1a1a1a' }}>Telefonhívás</option>
+                 <option value="Meeting" style={{ background: '#1a1a1a' }}>Személyes Megbeszélés</option>
+                 <option value="Email" style={{ background: '#1a1a1a' }}>Email váltás</option>
+                 <option value="Note" style={{ background: '#1a1a1a' }}>Belső Megjegyzés</option>
               </select>
            </div>
            <div className="settings-group">
@@ -525,13 +525,13 @@ const CRM = ({ addToast }) => {
               <select 
                 value={newOpportunity.stage} 
                 onChange={(e) => setNewOpportunity({...newOpportunity, stage: e.target.value})}
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white', outline: 'none' }}
               >
-                 <option value="Prospecting">Felkutatás</option>
-                 <option value="Qualification">Minősítés</option>
-                 <option value="Proposal">Ajánlatadás</option>
-                 <option value="Negotiation">Tárgyalás</option>
-                 <option value="Closed Won">Lezárt - Megnyert</option>
+                 <option value="Prospecting" style={{ background: '#1a1a1a' }}>Felkutatás</option>
+                 <option value="Qualification" style={{ background: '#1a1a1a' }}>Minősítés</option>
+                 <option value="Proposal" style={{ background: '#1a1a1a' }}>Ajánlatadás</option>
+                 <option value="Negotiation" style={{ background: '#1a1a1a' }}>Tárgyalás</option>
+                 <option value="Closed Won" style={{ background: '#1a1a1a' }}>Lezárt - Megnyert</option>
               </select>
            </div>
         </div>
@@ -595,11 +595,11 @@ const CRM = ({ addToast }) => {
               <select 
                 value={newPartnerData.manager} 
                 onChange={(e) => setNewPartnerData({...newPartnerData, manager: e.target.value})}
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white', outline: 'none' }}
               >
-                 <option value="Szabó Anna">Szabó Anna</option>
-                 <option value="Kovács János">Kovács János</option>
-                 <option value="Nagy Péter">Nagy Péter</option>
+                 <option value="Szabó Anna" style={{ background: '#1a1a1a' }}>Szabó Anna</option>
+                 <option value="Kovács János" style={{ background: '#1a1a1a' }}>Kovács János</option>
+                 <option value="Nagy Péter" style={{ background: '#1a1a1a' }}>Nagy Péter</option>
               </select>
            </div>
         </div>
@@ -634,11 +634,11 @@ const CRM = ({ addToast }) => {
                <select 
                  value={selectedTender.status} 
                  onChange={(e) => handleUpdateTenderStatus(e.target.value)}
-                 style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', marginTop: '8px' }}
+                 style={{ width: '100%', padding: '12px', borderRadius: '10px', background: '#1a1a1a', border: '1px solid var(--border-color)', color: 'white', marginTop: '8px', outline: 'none' }}
                >
-                  <option value="Draft">Piszkozat</option>
-                  <option value="In Progress">Folyamatban</option>
-                  <option value="Review">Leadva / Ellenőrzés alatt</option>
+                  <option value="Draft" style={{ background: '#1a1a1a' }}>Piszkozat</option>
+                  <option value="In Progress" style={{ background: '#1a1a1a' }}>Folyamatban</option>
+                  <option value="Review" style={{ background: '#1a1a1a' }}>Leadva / Ellenőrzés alatt</option>
                </select>
             </div>
 
