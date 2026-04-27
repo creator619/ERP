@@ -100,7 +100,6 @@
 
 /* GANTT STYLES */
 .gantt-container {
-    margin-top: 20px;
     border-radius: 24px;
     overflow-x: auto;
     background: rgba(255, 255, 255, 0.01);
@@ -199,10 +198,6 @@
     z-index: 10;
 }
 
-.gantt-bar-wrapper:hover {
-    transform: translateY(-2px);
-}
-
 .gantt-bar {
     width: 100%;
     height: 100%;
@@ -210,7 +205,6 @@
     border-radius: 6px;
     overflow: hidden;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .gantt-bar-progress {
@@ -229,32 +223,93 @@
     color: white;
 }
 
-/* Priority Colors for Gantt Bars */
 .gantt-bar-wrapper.high .gantt-bar-progress { background: #e74c3c; }
 .gantt-bar-wrapper.medium .gantt-bar-progress { background: #3498db; }
 .gantt-bar-wrapper.low .gantt-bar-progress { background: #2ecc71; }
 
-.gantt-tooltip {
-    position: absolute;
-    bottom: 120%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    z-index: 100;
+/* RESOURCE LOADING STYLES */
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 10px;
 }
 
-.gantt-bar-wrapper:hover .gantt-tooltip {
-    opacity: 1;
-    visibility: visible;
+.resource-card {
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+}
+
+.resource-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.resource-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.resource-name {
+    font-weight: 800;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.resource-meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin: 2px 0 0 0;
+}
+
+.resource-percentage {
+    margin-left: auto;
+    font-weight: 900;
+    font-size: 1.1rem;
+}
+
+.resource-load-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.load-progress {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease-out;
+}
+
+.resource-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.resource-alert {
+    color: #e74c3c;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
 }
 
 @keyframes pulse-danger {

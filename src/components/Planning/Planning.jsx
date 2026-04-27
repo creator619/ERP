@@ -15,13 +15,15 @@ import {
   Filter,
   Download,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Monitor,
+  Activity
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import './Planning.css';
 
 const Planning = ({ addToast }) => {
-  const { mrpData, forecast, workOrders, setProcurementRequests } = useData();
+  const { mrpData, forecast, workOrders, resourceLoading, setProcurementRequests } = useData();
   const [activeTab, setActiveTab] = useState('mrp');
 
   const shortagesCount = mrpData.filter(m => m.shortage > 0).length;
@@ -76,10 +78,8 @@ const Planning = ({ addToast }) => {
   const calculatePosition = (start, end) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
-    
     const diffStart = Math.floor((startDate - ganttStartDate) / (1000 * 60 * 60 * 24));
     const duration = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-    
     return {
       left: `${(diffStart / daysToShow) * 100}%`,
       width: `${(duration / daysToShow) * 100}%`
@@ -95,7 +95,7 @@ const Planning = ({ addToast }) => {
           </div>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Tervezés & Anyagszükséglet (MRP)</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>I. FÁZIS: Erőforrás-optimalizálás és GANTT ütemezés</p>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>I. FÁZIS: Erőforrás-allokáció és kapacitás-menedzsment</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -134,7 +134,7 @@ const Planning = ({ addToast }) => {
            <TrendingUp size={16} /> AI Kereslet-előrejelzés
         </div>
         <div className={`comp-tab ${activeTab === 'capacity' ? 'active' : ''}`} onClick={() => setActiveTab('capacity')}>
-           <Clock size={16} /> Kapacitás Tervező (GANTT)
+           <Clock size={16} /> Kapacitás & Leterheltség (GANTT)
         </div>
       </div>
 
@@ -201,10 +201,6 @@ const Planning = ({ addToast }) => {
                    </div>
                  ))}
               </div>
-              <div style={{ display: 'flex', gap: '20px', marginTop: '30px', justifyContent: 'center' }}>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#9b59b6' }}></div> Tervezett Kereslet</div>
-                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: 'rgba(255,255,255,0.1)' }}></div> Elérhető Készlet</div>
-              </div>
            </div>
 
            <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
@@ -213,12 +209,10 @@ const Planning = ({ addToast }) => {
                  <div className="ncr-card" style={{ borderLeft: '4px solid #f1c40f' }}>
                     <p style={{ fontWeight: 800, fontSize: '0.85rem' }}>Május: Alumínium Profil készlethiány várható</p>
                     <p style={{ fontSize: '0.75rem', marginTop: '5px' }}>Az AI 15%-os keresletnövekedést jelez a Stadler projekt miatt.</p>
-                    <button className="view-btn-small" style={{ marginTop: '10px' }}>Ütemezés</button>
                  </div>
                  <div className="ncr-card" style={{ borderLeft: '4px solid #2ecc71' }}>
                     <p style={{ fontWeight: 800, fontSize: '0.85rem' }}>Június: Készletoptimalizálás lehetséges</p>
-                    <p style={{ fontSize: '0.75rem', marginTop: '5px' }}>A PVC keretek készletszintje 20%-kal csökkenthető a biztonság veszélyeztetése nélkül.</p>
-                    <button className="view-btn-small" style={{ marginTop: '10px' }}>Alkalmaz</button>
+                    <p style={{ fontSize: '0.75rem', marginTop: '5px' }}>A PVC keretek készletszintje 20%-kal csökkenthető.</p>
                  </div>
               </div>
            </div>
@@ -226,54 +220,89 @@ const Planning = ({ addToast }) => {
       )}
 
       {activeTab === 'capacity' && (
-        <div className="gantt-container glass">
-           <div className="gantt-header">
-              <div className="gantt-sidebar-header">FELADATOK / PROJEKTEK</div>
-              <div className="gantt-timeline-header">
-                 {ganttDays.map((day, i) => (
-                   <div key={i} className={`gantt-day-header ${day.isWeekend ? 'weekend' : ''}`}>
-                      <span className="day-month">{day.dayNum === 1 || i === 0 ? day.month : ''}</span>
-                      <span className="day-num">{day.dayNum}</span>
-                   </div>
-                 ))}
-              </div>
-           </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+          {/* Gantt Chart */}
+          <div className="gantt-container glass">
+             <div className="gantt-header">
+                <div className="gantt-sidebar-header">FELADATOK / PROJEKTEK</div>
+                <div className="gantt-timeline-header">
+                   {ganttDays.map((day, i) => (
+                     <div key={i} className={`gantt-day-header ${day.isWeekend ? 'weekend' : ''}`}>
+                        <span className="day-month">{day.dayNum === 1 || i === 0 ? day.month : ''}</span>
+                        <span className="day-num">{day.dayNum}</span>
+                     </div>
+                   ))}
+                </div>
+             </div>
+             <div className="gantt-body">
+                {workOrders.map((wo, i) => {
+                   const pos = calculatePosition(wo.startDate, wo.deadline);
+                   return (
+                     <div key={wo.id} className="gantt-row">
+                        <div className="gantt-sidebar-cell">
+                           <div style={{ fontWeight: 800, fontSize: '0.8rem' }}>{wo.id}</div>
+                           <div className="text-muted" style={{ fontSize: '0.65rem' }}>{wo.product}</div>
+                        </div>
+                        <div className="gantt-timeline-cell">
+                           {ganttDays.map((day, j) => (
+                             <div key={j} className={`gantt-grid-line ${day.isWeekend ? 'weekend' : ''}`}></div>
+                           ))}
+                           <div className={`gantt-bar-wrapper ${wo.priority.toLowerCase()}`} style={{ left: pos.left, width: pos.width }}>
+                              <div className="gantt-bar">
+                                 <div className="gantt-bar-progress" style={{ width: `${wo.progress}%` }}></div>
+                                 <span className="gantt-bar-label">{wo.progress}%</span>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                   );
+                })}
+             </div>
+          </div>
 
-           <div className="gantt-body">
-              {workOrders.map((wo, i) => {
-                 const pos = calculatePosition(wo.startDate, wo.deadline);
-                 return (
-                   <div key={wo.id} className="gantt-row">
-                      <div className="gantt-sidebar-cell">
-                         <div style={{ fontWeight: 800, fontSize: '0.8rem' }}>{wo.id}</div>
-                         <div className="text-muted" style={{ fontSize: '0.65rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{wo.product}</div>
-                      </div>
-                      <div className="gantt-timeline-cell">
-                         {/* Grid Lines */}
-                         {ganttDays.map((day, j) => (
-                           <div key={j} className={`gantt-grid-line ${day.isWeekend ? 'weekend' : ''}`}></div>
-                         ))}
-                         
-                         {/* Gantt Bar */}
-                         <div 
-                           className={`gantt-bar-wrapper ${wo.priority.toLowerCase()}`}
-                           style={{ left: pos.left, width: pos.width }}
-                         >
-                            <div className="gantt-bar">
-                               <div className="gantt-bar-progress" style={{ width: `${wo.progress}%` }}></div>
-                               <span className="gantt-bar-label">{wo.progress}%</span>
-                            </div>
-                            <div className="gantt-tooltip">
-                               <strong>{wo.product}</strong><br/>
-                               {wo.startDate} - {wo.deadline}<br/>
-                               Státusz: {wo.status}
-                            </div>
-                         </div>
-                      </div>
-                   </div>
-                 );
-              })}
-           </div>
+          {/* Resource Loading Section */}
+          <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Erőforrás Leterheltség (Machine Load)</h3>
+                <div style={{ display: 'flex', gap: '15px', fontSize: '0.7rem' }}>
+                   <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#2ecc71' }}></div> Szabad</div>
+                   <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#f1c40f' }}></div> Optimális</div>
+                   <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#e74c3c' }}></div> Túlterhelt</div>
+                </div>
+             </div>
+
+             <div className="resource-grid">
+                {resourceLoading.map(resource => (
+                  <div key={resource.id} className="resource-card glass">
+                     <div className="resource-info">
+                        <div className="resource-icon">
+                           <Monitor size={18} />
+                        </div>
+                        <div>
+                           <p className="resource-name">{resource.name}</p>
+                           <p className="resource-meta">{resource.id} • {resource.orderCount} Aktív feladat</p>
+                        </div>
+                        <div className="resource-percentage" style={{ color: resource.percentage > 100 ? '#e74c3c' : resource.percentage > 80 ? '#f1c40f' : '#2ecc71' }}>
+                           {resource.percentage}%
+                        </div>
+                     </div>
+                     <div className="resource-load-bar">
+                        <div 
+                          className="load-progress" 
+                          style={{ 
+                            width: `${Math.min(100, resource.percentage)}%`,
+                            background: resource.percentage > 100 ? '#e74c3c' : resource.percentage > 80 ? '#f1c40f' : '#2ecc71'
+                          }}
+                        ></div>
+                     </div>
+                     <div className="resource-footer">
+                        <span>{resource.loadedHours} / {resource.capacity} Óra</span>
+                        {resource.alert && <span className="resource-alert">SZŰK KERESZTMETSZET!</span>}
+                     </div>
+                  </div>
+                ))}
+             </div>
+          </div>
         </div>
       )}
     </div>
