@@ -50,11 +50,34 @@
 }
 
 /* General Ledger Styles */
-.ledger-type-badge {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.65rem;
-    font-weight: 800;
+.ledger-container {
+    overflow-x: auto;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.finance-wrapper .data-table {
+    width: 100%;
+    min-width: 1100px; /* Force it to be wider for readability */
+}
+
+.finance-wrapper .data-table th:nth-child(4),
+.finance-wrapper .data-table td:nth-child(4) {
+    min-width: 350px; /* More space for descriptions */
+}
+
+.finance-wrapper .data-table th, 
+.finance-wrapper .data-table td {
+    padding: 18px 20px;
+}
+
+.ledger-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.ledger-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
 }
 
 @keyframes slideUp {

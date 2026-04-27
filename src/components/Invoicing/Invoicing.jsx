@@ -166,7 +166,7 @@ const Invoicing = ({ addToast, currency }) => {
             </div>
           </div>
 
-          <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+          <div className="invoicing-table-container glass">
             <table className="data-table">
               <thead>
                 <tr>

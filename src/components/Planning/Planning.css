@@ -317,3 +317,33 @@
     70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
 }
+/* MRP Table specific adjustments */
+.planning-wrapper .data-table {
+    width: 100%;
+    min-width: 1000px; /* Force it to be wider for readability */
+}
+
+.planning-wrapper .data-table th:nth-child(2),
+.planning-wrapper .data-table td:nth-child(2) {
+    min-width: 350px; /* More space for product names */
+}
+
+.planning-wrapper .data-table th, 
+.planning-wrapper .data-table td {
+    padding: 18px 20px;
+}
+
+.mrp-container {
+    overflow-x: auto;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.mrp-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.mrp-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}

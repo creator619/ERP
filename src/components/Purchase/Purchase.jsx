@@ -452,7 +452,7 @@ const Purchase = ({ addToast, currency }) => {
          </div>
       </div>
 
-      <div className="list-view glass" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+      <div className="purchase-table-container glass">
         <table className="data-table">
           <thead>
             <tr>

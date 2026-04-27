@@ -1,355 +1,295 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   FileText, 
   Folder, 
   Search, 
-  Upload, 
+  Plus, 
   Download, 
-  History, 
+  Eye, 
+  Trash2, 
   MoreVertical, 
-  FileImage, 
+  Filter, 
+  Clock, 
+  User, 
+  Tag, 
   FileCode, 
-  ShieldCheck, 
-  Clock,
-  Filter,
-  Eye,
-  Trash2,
+  FileImage, 
+  FileUp,
   ChevronRight,
-  ExternalLink
+  HardDrive
 } from 'lucide-react';
 import Modal from '../UI/Modal';
-import auditLogService from '../../services/AuditLogService';
 import './DMS.css';
 
 const DMS = ({ addToast }) => {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeFolder, setActiveFolder] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDoc, setSelectedDoc] = useState(null);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  const categories = [
-    { id: 'all', label: 'Összes Fájl', count: 124, icon: <Folder size={20} /> },
-    { id: 'drawings', label: 'Műszaki Rajzok', count: 42, icon: <FileCode size={20} /> },
-    { id: 'certs', label: 'Tanúsítványok', count: 18, icon: <ShieldCheck size={20} /> },
-    { id: 'contracts', label: 'Szerződések', count: 64, icon: <FileText size={20} /> },
+  const folders = [
+    { id: 'finance', name: 'Pénzügyi bizonylatok', count: 12, icon: <Folder size={20} color="#f1c40f" /> },
+    { id: 'hr', name: 'Személyügyi akták', count: 45, icon: <Folder size={20} color="#e74c3c" /> },
+    { id: 'engineering', name: 'Műszaki rajzok (CAD)', count: 128, icon: <Folder size={20} color="#3498db" /> },
+    { id: 'legal', name: 'Szerződések & Jog', count: 24, icon: <Folder size={20} color="#9b59b6" /> },
+    { id: 'quality', name: 'Minőségi tanúsítványok', count: 86, icon: <Folder size={20} color="#2ecc71" /> }
   ];
 
-  const [documents, setDocuments] = useState([
-    { 
-      id: 1, 
-      name: 'Vázszerkezet_Összeállítás_A1.pdf', 
-      category: 'drawings', 
-      version: 'v2.4', 
-      updated: '2024-04-20', 
-      author: 'Nagy Péter',
-      size: '4.2 MB',
-      status: 'Érvényes',
-      history: [
-        { version: 'v2.4', date: '2024-04-20', user: 'Nagy Péter', comment: 'Hegesztési varratok pontosítása' },
-        { version: 'v2.3', date: '2024-03-12', user: 'Szabó Anna', comment: 'Méretezési korrekció' }
-      ]
-    },
-    { 
-      id: 2, 
-      name: 'ISO_9001_2024_Certification.pdf', 
-      category: 'certs', 
-      version: 'v1.0', 
-      updated: '2024-01-15', 
-      author: 'Kovács János',
-      size: '1.8 MB',
-      status: 'Érvényes',
-      history: [
-        { version: 'v1.0', date: '2024-01-15', user: 'Kovács János', comment: 'Eredeti tanúsítvány feltöltése' }
-      ]
-    },
-    { 
-      id: 3, 
-      name: 'Knorr_Bremse_Keretszerződés_2024.docx', 
-      category: 'contracts', 
-      version: 'v3.1', 
-      updated: '2024-04-22', 
-      author: 'Dr. Kiss László',
-      size: '850 KB',
-      status: 'Felülvizsgálat alatt',
-      history: [
-        { version: 'v3.1', date: '2024-04-22', user: 'Dr. Kiss László', comment: 'Fizetési határidők módosítása' },
-        { version: 'v3.0', date: '2024-04-10', user: 'Admin', comment: 'Éves megújítás' }
-      ]
-    },
-    { 
-      id: 4, 
-      name: 'Szerelési_Útmutató_S-Line.pdf', 
-      category: 'drawings', 
-      version: 'v1.2', 
-      updated: '2024-03-05', 
-      author: 'Nagy Péter',
-      size: '12.5 MB',
-      status: 'Archivált',
-      history: [
-        { version: 'v1.2', date: '2024-03-05', user: 'Nagy Péter', comment: 'Képek frissítése' }
-      ]
-    }
-  ]);
+  const initialDocuments = [
+    { id: 1, name: 'RW-WIN-042_Technical_Spec.pdf', type: 'PDF', size: '2.4 MB', author: 'Kovács János', date: '2024-04-12', folder: 'engineering', version: 'v2.1' },
+    { id: 2, name: 'Májusi_Bérjegyzékek_Összesített.xlsx', type: 'EXCEL', size: '1.1 MB', author: 'Szabó Anna', date: '2024-04-25', folder: 'hr', version: 'v1.0' },
+    { id: 3, name: 'Szállítói_Szerződés_Knorr.pdf', type: 'PDF', size: '4.8 MB', author: 'Nagy Péter', date: '2024-03-28', folder: 'legal', version: 'v3.0' },
+    { id: 4, name: 'Üzemcsarnok_Alaprajz_V3.dwg', type: 'CAD', size: '15.2 MB', author: 'Kovács János', date: '2024-04-05', folder: 'engineering', version: 'v3.2' },
+    { id: 5, name: 'ISO_9001_Audit_Report.pdf', type: 'PDF', size: '1.2 MB', author: 'Tóth Béla', date: '2024-04-18', folder: 'quality', version: 'v1.0' }
+  ];
+
+  const [documents, setDocuments] = useState(initialDocuments);
 
   const filteredDocs = documents.filter(doc => {
-    const matchesCategory = activeCategory === 'all' || doc.category === activeCategory;
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesFolder = activeFolder === 'all' || doc.folder === activeFolder;
+    return matchesSearch && matchesFolder;
   });
 
-  const handleDownload = (doc) => {
-    addToast(`${doc.name} letöltése megkezdődött`, 'info');
-    
-    // Simulating a file download
-    const dummyContent = `RailParts ERP - Dokumentum Tartalom\n\nFájlnév: ${doc.name}\nVerzió: ${doc.version}\nSzerző: ${doc.author}\nDátum: ${doc.updated}\n\nEz egy generált prototípus fájl.`;
-    const blob = new Blob([dummyContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = doc.name.includes('.') ? doc.name : `${doc.name}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-
-    auditLogService.log({
-      user: 'Simon Ernő',
-      action: 'Dokumentum letöltve',
-      module: 'DMS',
-      details: `${doc.name} (Verzió: ${doc.version})`,
-      severity: 'info'
-    });
-  };
-
-  const openHistory = (doc) => {
-    setSelectedDoc(doc);
-    setIsHistoryOpen(true);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Érvényes': return '#2ecc71';
-      case 'Felülvizsgálat alatt': return '#f1c40f';
-      case 'Archivált': return '#95a5a6';
-      default: return 'var(--text-muted)';
+  const getFileIcon = (type) => {
+    switch (type) {
+      case 'PDF': return <FileText size={24} color="#e74c3c" />;
+      case 'EXCEL': return <FileText size={24} color="#2ecc71" />;
+      case 'CAD': return <FileCode size={24} color="#3498db" />;
+      case 'IMAGE': return <FileImage size={24} color="#9b59b6" />;
+      default: return <FileText size={24} />;
     }
   };
 
-  const fileInputRef = useRef(null);
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const newDoc = {
-      id: documents.length + 1,
-      name: file.name,
-      category: activeCategory === 'all' ? 'contracts' : activeCategory,
-      version: 'v1.0',
-      updated: new Date().toISOString().split('T')[0],
-      author: 'Simon Ernő',
-      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-      status: 'Érvényes',
-      history: [
-        { version: 'v1.0', date: new Date().toISOString().split('T')[0], user: 'Simon Ernő', comment: 'Kezdeti feltöltés' }
-      ]
-    };
-
-    setDocuments([newDoc, ...documents]);
-    addToast(`${file.name} sikeresen feltöltve`, 'success');
-    
-    auditLogService.log({
-      user: 'Simon Ernő',
-      action: 'Dokumentum feltöltve',
-      module: 'DMS',
-      details: `${file.name}`,
-      severity: 'success'
-    });
+  const handleUpload = (e) => {
+    e.preventDefault();
+    addToast('Fájl feltöltése folyamatban...', 'info');
+    setTimeout(() => {
+      addToast('Dokumentum sikeresen archiválva', 'success');
+      setIsUploadModalOpen(false);
+    }, 1500);
   };
-
-  const [activeDropdown, setActiveDropdown] = useState(null);
-
-  const handleDelete = (id) => {
-    const docToDelete = documents.find(d => d.id === id);
-    setDocuments(documents.filter(doc => doc.id !== id));
-    addToast(`${docToDelete.name} törölve`, 'warning');
-    setActiveDropdown(null);
-    
-    auditLogService.log({
-      user: 'Simon Ernő',
-      action: 'Dokumentum törölve',
-      module: 'DMS',
-      details: `${docToDelete.name}`,
-      severity: 'warning'
-    });
-  };
-
-  const toggleDropdown = (e, id) => {
-    e.stopPropagation();
-    setActiveDropdown(activeDropdown === id ? null : id);
-  };
-
-  // Close dropdown when clicking elsewhere
-  React.useEffect(() => {
-    const close = () => setActiveDropdown(null);
-    window.addEventListener('click', close);
-    return () => window.removeEventListener('click', close);
-  }, []);
 
   return (
-    <div className="dms-wrapper">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
-        onChange={handleFileUpload}
-      />
-      <div className="dms-header">
-        <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Dokumentumkezelő (DMS)</h2>
-          <p className="text-muted" style={{ fontSize: '0.85rem' }}>Műszaki rajzok és tanúsítványok központi tára</p>
-        </div>
-        <button className="create-btn" onClick={() => fileInputRef.current.click()}>
-          <Upload size={20} /> Fájl Feltöltése
-        </button>
-      </div>
-
-      <div className="category-grid">
-        {categories.map(cat => (
-          <div 
-            key={cat.id} 
-            className={`category-card glass ${activeCategory === cat.id ? 'active' : ''}`}
-            onClick={() => setActiveCategory(cat.id)}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-               <div style={{ padding: '10px', background: activeCategory === cat.id ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-                  {cat.icon}
-               </div>
-               <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{cat.count}</span>
-            </div>
-            <div>
-              <h4 style={{ fontWeight: 700 }}>{cat.label}</h4>
-              <p className="text-muted" style={{ fontSize: '0.7rem' }}>Kategória kezelése</p>
-            </div>
+    <div className="dms-module">
+      <div className="invoicing-header" style={{ marginBottom: '25px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="module-icon-container" style={{ background: 'rgba(52, 152, 219, 0.1)', color: '#3498db', padding: '12px', borderRadius: '12px' }}>
+            <HardDrive size={24} />
           </div>
-        ))}
-      </div>
-
-      <div className="file-list-container glass">
-        <div className="dms-search-bar">
-          <div className="search-input-wrapper">
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Dokumentumtár & DMS</h2>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>V. FÁZIS: Központi fájlkezelő és digitális archívum</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '15px' }}>
+          <div className="search-wrapper glass">
             <Search size={18} />
             <input 
               type="text" 
-              placeholder="Keresés a dokumentumok között..." 
-              className="glass-input"
+              placeholder="Fájl keresése..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button className="view-btn"><Filter size={18} /> Szűrők</button>
-        </div>
-
-        <div className="file-list">
-          <div className="file-row" style={{ fontWeight: 700, fontSize: '0.75rem', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>
-            <div></div>
-            <div>Fájlnév</div>
-            <div>Frissítve</div>
-            <div>Szerző</div>
-            <div>Státusz</div>
-            <div style={{ textAlign: 'right', paddingRight: '10px' }}>Műveletek</div>
-          </div>
-          {filteredDocs.map(doc => (
-            <div key={doc.id} className="file-row">
-              <div className="file-icon">
-                {doc.category === 'drawings' ? <FileCode size={18} color="#3498db" /> : <FileText size={18} color="#e67e22" />}
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{doc.name}</div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
-                  <span className="version-badge">{doc.version}</span>
-                  <span className="text-muted" style={{ fontSize: '0.7rem' }}>{doc.size}</span>
-                </div>
-              </div>
-              <div style={{ fontSize: '0.85rem' }}>{doc.updated}</div>
-              <div style={{ fontSize: '0.85rem' }}>{doc.author}</div>
-              <div>
-                <span className="status-badge" style={{ background: 'transparent', border: `1px solid ${getStatusColor(doc.status)}`, color: getStatusColor(doc.status) }}>
-                  {doc.status}
-                </span>
-              </div>
-              <div className="file-actions-wrapper">
-                <button className="view-btn-small" onClick={() => handleDownload(doc)} title="Letöltés"><Download size={16} /></button>
-                <button className="view-btn-small" onClick={() => openHistory(doc)} title="Előzmények"><History size={16} /></button>
-                <div style={{ position: 'relative' }}>
-                  <button 
-                    className="view-btn-small" 
-                    onClick={(e) => toggleDropdown(e, doc.id)}
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                  {activeDropdown === doc.id && (
-                    <div className="file-dropdown glass">
-                      <button className="dropdown-action-item"><Eye size={14} /> Megnyitás</button>
-                      <button className="dropdown-action-item"><ExternalLink size={14} /> Megosztás</button>
-                      <div className="dropdown-divider" style={{ margin: '4px 0' }}></div>
-                      <button 
-                        className="dropdown-action-item danger" 
-                        onClick={() => handleDelete(doc.id)}
-                      >
-                        <Trash2 size={14} /> Törlés
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+          <button className="create-btn" onClick={() => setIsUploadModalOpen(true)}>
+            <FileUp size={20} /> Feltöltés
+          </button>
         </div>
       </div>
 
+      <div className="dms-layout">
+        {/* Sidebar / Folders */}
+        <div className="dms-sidebar glass">
+          <h3 className="sidebar-title">KATEGÓRIÁK</h3>
+          <div className="folder-list">
+            <div 
+              className={`folder-item ${activeFolder === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveFolder('all')}
+            >
+              <Folder size={20} />
+              <span>Minden dokumentum</span>
+              <span className="doc-count">{documents.length}</span>
+            </div>
+            <div className="sidebar-divider"></div>
+            {folders.map(folder => (
+              <div 
+                key={folder.id}
+                className={`folder-item ${activeFolder === folder.id ? 'active' : ''}`}
+                onClick={() => setActiveFolder(folder.id)}
+              >
+                {folder.icon}
+                <span>{folder.name}</span>
+                <span className="doc-count">{folder.count}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="storage-info glass">
+             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '8px' }}>
+                <span className="text-muted">Tárhely használat</span>
+                <span style={{ fontWeight: 800 }}>72%</span>
+             </div>
+             <div className="progress-bar-small">
+                <div className="progress-fill" style={{ width: '72%', background: 'var(--primary-color)' }}></div>
+             </div>
+             <p className="text-muted" style={{ fontSize: '0.65rem', marginTop: '10px' }}>
+                4.2 GB szabad az 5 GB-ból
+             </p>
+          </div>
+        </div>
+
+        {/* File List */}
+        <div className="dms-content glass">
+          <div className="content-header">
+             <div className="breadcrumb">
+                <Folder size={16} /> 
+                <ChevronRight size={14} /> 
+                <span>{activeFolder === 'all' ? 'Minden fájl' : folders.find(f => f.id === activeFolder)?.name}</span>
+             </div>
+             <div className="view-mode-btns">
+                <button className="view-btn-small active"><FileText size={16} /></button>
+                <button className="view-btn-small"><Plus size={16} /></button>
+             </div>
+          </div>
+
+          <div className="dms-table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Név</th>
+                  <th>Verzió</th>
+                  <th>Méret</th>
+                  <th>Szerző</th>
+                  <th>Dátum</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredDocs.map(doc => (
+                  <tr key={doc.id} onClick={() => setSelectedDoc(doc)}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {getFileIcon(doc.type)}
+                        <div>
+                          <p style={{ fontWeight: 700, fontSize: '0.9rem' }}>{doc.name}</p>
+                          <p className="text-muted" style={{ fontSize: '0.7rem' }}>{doc.type} fájl</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className="version-badge">{doc.version}</span></td>
+                    <td className="text-muted">{doc.size}</td>
+                    <td>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div className="avatar-small">{doc.author.charAt(0)}</div>
+                          <span style={{ fontSize: '0.85rem' }}>{doc.author}</span>
+                       </div>
+                    </td>
+                    <td className="text-muted">{doc.date}</td>
+                    <td>
+                      <div className="file-actions">
+                        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); addToast('Letöltés indítása...', 'info'); }}><Download size={18} /></button>
+                        <button className="icon-btn"><MoreVertical size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredDocs.length === 0 && (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '100px', opacity: 0.3 }}>
+                       <Search size={48} style={{ margin: '0 auto 15px' }} />
+                       <p>Nem található a keresésnek megfelelő dokumentum.</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Upload Modal */}
       <Modal
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        title={`Verzióelőzmények: ${selectedDoc?.name}`}
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        title="Dokumentum Feltöltése"
+        width="500px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsUploadModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleUpload}>Feltöltés indítása</button>
+          </>
+        }
+      >
+        <div className="upload-dropzone">
+           <FileUp size={48} color="var(--primary-color)" />
+           <h4>Kattintson vagy húzza ide a fájlt</h4>
+           <p className="text-muted">PDF, EXCEL, PNG vagy CAD fájlok (Max 50MB)</p>
+           <div className="settings-group" style={{ marginTop: '20px', textAlign: 'left', width: '100%' }}>
+              <label>Célmappa</label>
+              <select className="glass-input">
+                 {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+           </div>
+        </div>
+      </Modal>
+
+      {/* Detail View Modal */}
+      <Modal
+        isOpen={!!selectedDoc}
+        onClose={() => setSelectedDoc(null)}
+        title={selectedDoc?.name}
         width="600px"
       >
         {selectedDoc && (
-          <div className="history-list">
-            {selectedDoc.history.map((h, i) => (
-              <div key={i} className="history-item">
-                <div style={{ display: 'flex', gap: '15px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Clock size={20} />
-                    </div>
-                    {i < selectedDoc.history.length - 1 && <div style={{ width: '2px', flex: 1, background: 'rgba(255,255,255,0.05)', margin: '5px 0' }}></div>}
-                  </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontWeight: 800 }}>{h.version}</span>
-                      <span className="text-muted" style={{ fontSize: '0.75rem' }}>{h.date}</span>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>{h.comment}</p>
-                    <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '5px' }}>Szerkesztette: {h.user}</p>
-                  </div>
+          <div className="doc-details-view">
+             <div className="preview-placeholder glass">
+                {getFileIcon(selectedDoc.type)}
+                <p style={{ marginTop: '10px', fontSize: '0.9rem', fontWeight: 600 }}>Előnézet nem elérhető</p>
+                <p className="text-muted" style={{ fontSize: '0.75rem' }}>Töltse le a fájlt a megtekintéshez</p>
+             </div>
+             <div className="doc-info-grid">
+                <div className="info-item">
+                   <span className="text-muted">Létrehozva:</span>
+                   <span>{selectedDoc.date}</span>
                 </div>
-                <button className="view-btn-small" title="Visszaállítás"><RotateCcw size={14} /></button>
-              </div>
-            ))}
+                <div className="info-item">
+                   <span className="text-muted">Tulajdonos:</span>
+                   <span>{selectedDoc.author}</span>
+                </div>
+                <div className="info-item">
+                   <span className="text-muted">Mappája:</span>
+                   <span style={{ textTransform: 'capitalize' }}>{selectedDoc.folder}</span>
+                </div>
+                <div className="info-item">
+                   <span className="text-muted">Fájlméret:</span>
+                   <span>{selectedDoc.size}</span>
+                </div>
+             </div>
+             <div className="doc-history-mini">
+                <h4 style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '15px' }}>VERZIÓTÖRTÉNET</h4>
+                <div className="history-line">
+                   <div className="line-node active">
+                      <div className="dot"></div>
+                      <div className="info">
+                         <p><strong>{selectedDoc.version}</strong> - Aktuális</p>
+                         <p className="text-muted">{selectedDoc.date} | {selectedDoc.author}</p>
+                      </div>
+                   </div>
+                   <div className="line-node">
+                      <div className="dot"></div>
+                      <div className="info">
+                         <p><strong>v1.0</strong> - Archivált</p>
+                         <p className="text-muted">2024.01.12 | Rendszer</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
           </div>
         )}
       </Modal>
     </div>
   );
 };
-
-// Simple RotateCcw icon replacement if not imported
-const RotateCcw = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-    <path d="M3 3v5h5"/>
-  </svg>
-);
 
 export default DMS;

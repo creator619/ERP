@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Package, 
-  ShoppingCart, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Users,
+  Package,
+  ShoppingCart,
+  FileText,
   Settings,
   Menu,
   X,
@@ -38,6 +38,7 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
     { id: 'manufacturing', label: t('menu.manufacturing'), icon: <Settings size={20} /> },
     { id: 'quality', label: t('menu.quality'), icon: <ShieldCheck size={20} /> },
     { id: 'maintenance', label: t('menu.maintenance'), icon: <Wrench size={20} /> },
+    { id: 'dms', label: t('menu.dms'), icon: <Folder size={20} /> },
     { id: 'purchase', label: t('menu.purchase'), icon: <ShoppingCart size={20} /> },
     { id: 'crm', label: t('menu.crm'), icon: <Users size={20} /> },
     { id: 'inventory', label: t('menu.inventory'), icon: <Package size={20} /> },
@@ -45,7 +46,6 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
     { id: 'sales', label: t('menu.sales'), icon: <ShoppingCart size={20} /> },
     { id: 'invoicing', label: t('menu.invoicing'), icon: <FileText size={20} /> },
     { id: 'hr', label: t('menu.hr'), icon: <Users size={20} /> },
-    { id: 'dms', label: t('menu.dms'), icon: <Folder size={20} /> },
     { id: 'messenger', label: t('menu.messenger'), icon: <MessageSquare size={20} /> },
     { id: 'settings', label: t('menu.settings'), icon: <Settings size={20} /> },
   ];
@@ -61,7 +61,7 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
-      
+
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
           <button
@@ -83,9 +83,9 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
             <p className="user-role">{t('nav.userRole')}</p>
           </div>}
         </div>
-        <button 
-          onClick={onLogout} 
-          className="nav-item" 
+        <button
+          onClick={onLogout}
+          className="nav-item"
           style={{ marginTop: '10px', padding: '8px 15px', background: 'rgba(220, 53, 69, 0.1)', color: '#ff6b6b' }}
         >
           <span className="nav-icon"><X size={18} /></span>

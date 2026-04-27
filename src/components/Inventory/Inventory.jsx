@@ -139,7 +139,8 @@ const Inventory = ({ addToast }) => {
 
   // Dinamikus statisztikák
   const totalValueNum = products.reduce((sum, p) => {
-     const priceNum = parseInt(p.price.replace(/,/g, '').replace(' Ft', '')) || 0;
+     const priceStr = String(p.price || '0');
+     const priceNum = parseInt(priceStr.replace(/,/g, '').replace(' Ft', '')) || 0;
      return sum + (priceNum * p.stock);
   }, 0);
   const totalValueStr = totalValueNum > 1000000 

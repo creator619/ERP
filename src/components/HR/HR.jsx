@@ -154,7 +154,7 @@ const HR = ({ addToast }) => {
       </div>
 
       {activeMainView === 'employees' && (
-        <div className="glass" style={{ padding: '0', borderRadius: '24px', overflow: 'hidden' }}>
+        <div className="hr-table-container glass">
           <table className="data-table">
             <thead>
               <tr>
@@ -193,7 +193,7 @@ const HR = ({ addToast }) => {
       )}
 
       {activeMainView === 'payroll' && (
-        <div className="glass" style={{ padding: '0', borderRadius: '24px', overflow: 'hidden' }}>
+        <div className="hr-table-container glass">
           <table className="data-table">
             <thead>
               <tr>
@@ -228,7 +228,7 @@ const HR = ({ addToast }) => {
       )}
 
       {activeMainView === 'matrix' && (
-        <div className="glass" style={{ padding: '30px', borderRadius: '24px' }}>
+        <div className="hr-table-container glass">
           <table className="data-table">
             <thead>
               <tr>

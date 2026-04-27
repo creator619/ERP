@@ -139,7 +139,7 @@ const Planning = ({ addToast }) => {
       </div>
 
       {activeTab === 'mrp' && (
-        <div className="glass" style={{ padding: '0', borderRadius: '24px', overflow: 'hidden' }}>
+        <div className="glass mrp-container">
            <table className="data-table">
               <thead>
                  <tr>

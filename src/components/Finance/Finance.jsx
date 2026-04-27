@@ -18,14 +18,57 @@ import {
   Calculator
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import Modal from '../UI/Modal';
 import './Finance.css';
 
 const Finance = ({ addToast }) => {
-  const { transactions, balances, fixedAssets, addTransaction } = useData();
+  const { transactions, balances, fixedAssets, setTransactions, setBalances } = useData();
   const [activeTab, setActiveTab] = useState('ledger');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  
+  // Form State
+  const [newTx, setNewTx] = useState({
+    date: new Date().toISOString().split('T')[0],
+    account: '',
+    details: '',
+    type: 'Debit',
+    amount: ''
+  });
 
   const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
+
+  const handleAddTransaction = () => {
+    if (!newTx.account || !newTx.details || !newTx.amount) {
+      addToast('Kérem töltsön ki minden mezőt!', 'warning');
+      return;
+    }
+
+    const txAmount = parseFloat(newTx.amount);
+    const tx = {
+      id: `TRX-${Math.floor(Math.random() * 9000) + 1000}`,
+      ...newTx,
+      amount: txAmount
+    };
+
+    setTransactions(prev => [tx, ...prev]);
+    
+    // Update balances (simplified)
+    if (newTx.type === 'Debit') {
+      setBalances(prev => ({ ...prev, cash: prev.cash + txAmount }));
+    } else {
+      setBalances(prev => ({ ...prev, cash: prev.cash - txAmount }));
+    }
+
+    addToast('Könyvelési tétel rögzítve', 'success');
+    setIsAddModalOpen(false);
+    setNewTx({
+      date: new Date().toISOString().split('T')[0],
+      account: '',
+      details: '',
+      type: 'Debit',
+      amount: ''
+    });
+  };
 
   return (
     <div className="finance-wrapper">
@@ -43,7 +86,7 @@ const Finance = ({ addToast }) => {
           <button className="view-btn">
             <Download size={18} /> Export (XLSX)
           </button>
-          <button className="create-btn">
+          <button className="create-btn" onClick={() => setIsAddModalOpen(true)}>
             <Plus size={20} /> Új Könyvelési Tétel
           </button>
         </div>
@@ -82,7 +125,7 @@ const Finance = ({ addToast }) => {
       </div>
 
       {activeTab === 'ledger' && (
-        <div className="glass" style={{ padding: '0', borderRadius: '24px', overflow: 'hidden' }}>
+        <div className="glass ledger-container">
            <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)' }}>
               <div className="search-bar" style={{ width: '350px' }}>
                  <Search size={18} />
@@ -125,7 +168,7 @@ const Finance = ({ addToast }) => {
 
       {activeTab === 'assets' && (
         <div className="assets-view">
-           <div className="glass" style={{ padding: '0', borderRadius: '24px', overflow: 'hidden' }}>
+           <div className="glass ledger-container">
               <div style={{ padding: '20px', borderBottom: '1px solid var(--border-color)' }}>
                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Tárgyi Eszközök és Értékcsökkenés</h3>
               </div>
@@ -161,49 +204,48 @@ const Finance = ({ addToast }) => {
                  </tbody>
               </table>
            </div>
-           
-           <div className="asset-summary-grid" style={{ marginTop: '30px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
-              <div className="glass" style={{ padding: '25px', borderRadius: '20px', borderLeft: '4px solid #3498db' }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                    <Calculator size={20} color="#3498db" />
-                    <h4 style={{ fontWeight: 800 }}>Havi Amortizációs Költség</h4>
-                 </div>
-                 <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>
-                    {formatHUF(fixedAssets.reduce((acc, curr) => acc + curr.monthlyDepreciation, 0))}
-                 </div>
-                 <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '5px' }}>Ez az összeg automatikusan lekönyvelődik minden hónap végén.</p>
-              </div>
-              <div className="glass" style={{ padding: '25px', borderRadius: '20px' }}>
-                 <h4 style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '20px' }}>ESZKÖZÖSSZETÉTEL</h4>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {fixedAssets.map((a, i) => (
-                       <div key={i}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '5px' }}>
-                             <span>{a.name}</span>
-                             <span style={{ fontWeight: 800 }}>{Math.round((a.netValue / 65000000) * 100)}%</span>
-                          </div>
-                          <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
-                             <div style={{ height: '100%', background: 'var(--primary-color)', width: `${(a.netValue / 65000000) * 100}%` }}></div>
-                          </div>
-                       </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
         </div>
       )}
 
-      {activeTab === 'tax' && (
-        <div className="glass" style={{ padding: '40px', borderRadius: '24px', textAlign: 'center' }}>
-           <Scale size={48} style={{ opacity: 0.1, marginBottom: '20px' }} />
-           <h3 style={{ fontWeight: 800, marginBottom: '10px' }}>ÁFA & Adókezelő Modul</h3>
-           <p className="text-muted" style={{ maxWidth: '400px', margin: '0 auto' }}>
-              Az automatikus ÁFA bevallás és NAV interfész modul fejlesztés alatt áll. 
-              A rendszer jelenleg a háttérben gyűjti az adatokat a főkönyvből.
-           </p>
-           <div className="pulse-info" style={{ margin: '20px auto' }}></div>
+      {/* Add Transaction Modal */}
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Új Könyvelési Tétel Rögzítése"
+        width="500px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsAddModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleAddTransaction}>Tétel Mentése</button>
+          </>
+        }
+      >
+        <div className="add-tx-form">
+           <div className="settings-group">
+              <label>Dátum</label>
+              <input type="date" className="glass-input" value={newTx.date} onChange={e => setNewTx({...newTx, date: e.target.value})} />
+           </div>
+           <div className="settings-group">
+              <label>Főkönyvi Számla</label>
+              <input type="text" className="glass-input" placeholder="pl. 381 (Pénztár)" value={newTx.account} onChange={e => setNewTx({...newTx, account: e.target.value})} />
+           </div>
+           <div className="settings-group">
+              <label>Leírás / Megjegyzés</label>
+              <input type="text" className="glass-input" placeholder="Tranzakció részletei..." value={newTx.details} onChange={e => setNewTx({...newTx, details: e.target.value})} />
+           </div>
+           <div className="settings-group">
+              <label>Típus</label>
+              <select className="glass-input" value={newTx.type} onChange={e => setNewTx({...newTx, type: e.target.value})}>
+                 <option value="Debit">TARTOZIK (Debit)</option>
+                 <option value="Credit">KÖVETEL (Credit)</option>
+              </select>
+           </div>
+           <div className="settings-group">
+              <label>Összeg (HUF)</label>
+              <input type="number" className="glass-input" placeholder="0" value={newTx.amount} onChange={e => setNewTx({...newTx, amount: e.target.value})} />
+           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

@@ -82,3 +82,27 @@
     display: none !important;
   }
 }
+.invoicing-table-container {
+    overflow-x: auto;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.invoicing-module .data-table {
+    width: 100%;
+    min-width: 1100px; /* Force it to be wider */
+}
+
+.invoicing-module .data-table th, 
+.invoicing-module .data-table td {
+    padding: 18px 20px;
+}
+
+.invoicing-table-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.invoicing-table-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
