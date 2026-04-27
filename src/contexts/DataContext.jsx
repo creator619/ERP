@@ -21,16 +21,6 @@ export const DataProvider = ({ children }) => {
         { title: 'Ultrahangos Vizsgálat', date: '2024-04-15 09:45', actor: 'Minőségügy - Ügyvezető Igazgató', hash: '0x9a55...e8f9', details: 'Repedésmentes, Megfelelő' },
         { title: 'Blockchain Lezárás', date: '2024-04-24 14:00', actor: 'Rendszer AI', hash: '0x0f66...b1a2', details: 'Digitális Termék Útlevél generálva' }
       ]
-    },
-    'RW/MO/003': {
-      name: 'Válaszfal elem (tűzgátló)',
-      status: 'Blockchain Verified',
-      finalHash: 'SHA256: e8f9c6d72b449a55...',
-      steps: [
-        { title: 'Alapanyag Beérkezés', date: '2024-04-17 08:30', actor: 'ERP Rendszer', hash: '0x1a2b...3c4d', details: 'Felhasznált: Tűzgátló panel' },
-        { title: 'Gyártási Folyamat (MES)', date: '2024-04-18 14:15', actor: 'Minőségellenőrzés', hash: '0x5e6f...7a8b', details: 'Munkalap sorszám: RW/MO/003' },
-        { title: 'Blockchain Lezárás', date: '2024-04-18 16:00', actor: 'RailParts Core', hash: '0x9c0d...1e2f', details: 'Útlevél Létrehozva (142 db)' }
-      ]
     }
   });
 
@@ -46,7 +36,7 @@ export const DataProvider = ({ children }) => {
     { id: 8, name: 'PVC keret profil', category: 'Nyersanyag', price: 4500, stock: 500, minStock: 200, sku: 'RAW-PVC-01' }
   ]);
 
-  // 2. Initial Work Orders State (Manufacturing)
+  // 2. Initial Work Orders State (Manufacturing with Timing for GANTT)
   const [workOrders, setWorkOrders] = useState([
     { 
       id: 'RW/MO/001', 
@@ -55,7 +45,8 @@ export const DataProvider = ({ children }) => {
       progress: 40, 
       currentStage: 1,
       status: 'In Progress', 
-      deadline: '2024-04-28', 
+      startDate: '2024-04-20',
+      deadline: '2024-05-10', 
       priority: 'High', 
       bom: [
         { item: 'Alumínium profil (2m)', sku: 'RAW-ALU-02', required: 20 },
@@ -69,12 +60,39 @@ export const DataProvider = ({ children }) => {
       progress: 75, 
       currentStage: 3,
       status: 'In Progress', 
-      deadline: '2024-04-22', 
+      startDate: '2024-04-15',
+      deadline: '2024-04-30', 
       priority: 'Medium', 
       bom: [
         { item: 'Edzett üveg (4mm)', sku: 'RAW-GLS-04', required: 24 },
         { item: 'PVC keret profil', sku: 'RAW-PVC-01', required: 48 }
       ]
+    },
+    { 
+      id: 'RW/MO/003', 
+      product: 'Válaszfal elem (tűzgátló)', 
+      quantity: 12, 
+      progress: 10, 
+      currentStage: 0,
+      status: 'Pending', 
+      startDate: '2024-05-02',
+      deadline: '2024-05-20', 
+      priority: 'Low', 
+      bom: [
+        { item: 'Alumínium profil (2m)', sku: 'RAW-ALU-02', required: 12 }
+      ]
+    },
+    { 
+      id: 'RW/MO/004', 
+      product: 'Egyedi Világítás Modul', 
+      quantity: 50, 
+      progress: 0, 
+      currentStage: 0,
+      status: 'Pending', 
+      startDate: '2024-05-15',
+      deadline: '2024-06-05', 
+      priority: 'Medium', 
+      bom: []
     }
   ]);
 
@@ -96,73 +114,42 @@ export const DataProvider = ({ children }) => {
   const [procurementRequests, setProcurementRequests] = useState([]);
 
   // 5. Collaboration State
-  const [comments, setComments] = useState({
-    'NCR-2024-042': [{ id: 1, user: 'Kovács János', text: 'A beszállító jelezte, hogy a következő tétel már ellenőrizve lesz.', time: '10:15', role: 'Quality' }]
-  });
+  const [comments, setComments] = useState({});
+  const [notifications, setNotifications] = useState([]);
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'comment', entityId: 'NCR-2024-042', text: 'Új hozzászólás érkezett az NCR-042-höz', read: false, time: '1 órája' }
-  ]);
-
-  // --- NEW: MRP & Planning Logic ---
+  // MRP & Planning Logic
   const calculateMRP = () => {
     const aggregateRequirements = {};
-    
-    // Sum up all requirements from active work orders
     workOrders.filter(wo => wo.status !== 'Completed').forEach(wo => {
       wo.bom.forEach(item => {
         if (!aggregateRequirements[item.sku]) {
-          aggregateRequirements[item.sku] = { 
-            sku: item.sku, 
-            name: item.item, 
-            required: 0,
-            orders: []
-          };
+          aggregateRequirements[item.sku] = { sku: item.sku, name: item.item, required: 0, orders: [] };
         }
         aggregateRequirements[item.sku].required += item.required;
         aggregateRequirements[item.sku].orders.push(wo.id);
       });
     });
 
-    // Compare with current stock
     return Object.values(aggregateRequirements).map(req => {
       const product = products.find(p => p.sku === req.sku);
       const stock = product ? product.stock : 0;
       const shortage = Math.max(0, req.required - stock);
-      
-      return {
-        ...req,
-        stock,
-        shortage,
-        status: shortage > 0 ? 'Shortage' : 'Available',
-        recommendation: shortage > 0 ? `Beszerzés javasolt: ${shortage} db` : 'Készlet rendben'
-      };
+      return { ...req, stock, shortage, status: shortage > 0 ? 'Shortage' : 'Available', recommendation: shortage > 0 ? `Beszerzés javasolt: ${shortage} db` : 'Készlet rendben' };
     });
   };
 
   const [mrpData, setMrpData] = useState([]);
+  useEffect(() => { setMrpData(calculateMRP()); }, [workOrders, products]);
 
-  useEffect(() => {
-    setMrpData(calculateMRP());
-  }, [workOrders, products]);
-
-  // AI Forecast Simulation
-  const getForecast = () => {
-    return [
-      { month: 'Május', demand: 450, stock: 400, alert: true },
-      { month: 'Június', demand: 380, stock: 520, alert: false },
-      { month: 'Július', demand: 520, stock: 480, alert: true },
-      { month: 'Augusztus', demand: 410, stock: 600, alert: false }
-    ];
-  };
+  const getForecast = () => [
+    { month: 'Május', demand: 450, stock: 400, alert: true },
+    { month: 'Június', demand: 380, stock: 520, alert: false },
+    { month: 'Július', demand: 520, stock: 480, alert: true },
+    { month: 'Augusztus', demand: 410, stock: 600, alert: false }
+  ];
 
   const addComment = (entityId, text, user = 'Simon Ernő', role = 'Management') => {
-    const newComment = {
-      id: Date.now(),
-      user, text,
-      time: new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }),
-      role
-    };
+    const newComment = { id: Date.now(), user, text, time: new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), role };
     setComments(prev => ({ ...prev, [entityId]: [...(prev[entityId] || []), newComment] }));
   };
 
@@ -181,21 +168,16 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
-  const executeAIAction = (insight) => {
-    // Shared AI logic
-  };
-
   return (
     <DataContext.Provider value={{
       products, setProducts, 
       workOrders, setWorkOrders,
       advanceWorkOrderStage,
-      ledgers: {},
+      ledgers,
       machines, setMachines,
       maintenanceTasks, setMaintenanceTasks,
       procurementOrders, setProcurementOrders,
       procurementRequests, setProcurementRequests,
-      executeAIAction,
       comments, addComment,
       notifications, markNotificationAsRead,
       mrpData,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Calendar, 
   Layers, 
@@ -13,13 +13,15 @@ import {
   BarChart3,
   Search,
   Filter,
-  Download
+  Download,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import './Planning.css';
 
 const Planning = ({ addToast }) => {
-  const { mrpData, forecast, setProcurementRequests } = useData();
+  const { mrpData, forecast, workOrders, setProcurementRequests } = useData();
   const [activeTab, setActiveTab] = useState('mrp');
 
   const shortagesCount = mrpData.filter(m => m.shortage > 0).length;
@@ -50,6 +52,40 @@ const Planning = ({ addToast }) => {
     addToast('Beszerzési igények legenerálva', 'success', `${shortages.length} tétel továbbítva a Beszerzés modulba.`);
   };
 
+  // --- GANTT Logic ---
+  const ganttStartDate = useMemo(() => new Date('2024-04-01'), []);
+  const daysToShow = 60;
+  
+  const generateGanttDays = () => {
+    const days = [];
+    for (let i = 0; i < daysToShow; i++) {
+      const date = new Date(ganttStartDate);
+      date.setDate(date.getDate() + i);
+      days.push({
+        date,
+        isWeekend: date.getDay() === 0 || date.getDay() === 6,
+        dayNum: date.getDate(),
+        month: date.toLocaleDateString('hu-HU', { month: 'short' })
+      });
+    }
+    return days;
+  };
+
+  const ganttDays = useMemo(generateGanttDays, [ganttStartDate]);
+
+  const calculatePosition = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    
+    const diffStart = Math.floor((startDate - ganttStartDate) / (1000 * 60 * 60 * 24));
+    const duration = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    
+    return {
+      left: `${(diffStart / daysToShow) * 100}%`,
+      width: `${(duration / daysToShow) * 100}%`
+    };
+  };
+
   return (
     <div className="planning-wrapper">
       <div className="invoicing-header" style={{ marginBottom: '30px' }}>
@@ -59,7 +95,7 @@ const Planning = ({ addToast }) => {
           </div>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Tervezés & Anyagszükséglet (MRP)</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>I. FÁZIS: Intelligens erőforrás-allokáció és kereslet-előrejelzés</p>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>I. FÁZIS: Erőforrás-optimalizálás és GANTT ütemezés</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -98,7 +134,7 @@ const Planning = ({ addToast }) => {
            <TrendingUp size={16} /> AI Kereslet-előrejelzés
         </div>
         <div className={`comp-tab ${activeTab === 'capacity' ? 'active' : ''}`} onClick={() => setActiveTab('capacity')}>
-           <Clock size={16} /> Kapacitás Tervező
+           <Clock size={16} /> Kapacitás Tervező (GANTT)
         </div>
       </div>
 
@@ -190,14 +226,54 @@ const Planning = ({ addToast }) => {
       )}
 
       {activeTab === 'capacity' && (
-        <div className="glass" style={{ padding: '40px', borderRadius: '24px', textAlign: 'center' }}>
-           <Clock size={48} style={{ opacity: 0.1, marginBottom: '20px' }} />
-           <h3 style={{ fontWeight: 800, marginBottom: '10px' }}>Kapacitás Tervező Modul</h3>
-           <p className="text-muted" style={{ maxWidth: '400px', margin: '0 auto' }}>
-              A II. Fázis keretében itt fog megjelenni a GANTT-diagram és az erőforrás-allokációs felület. 
-              Jelenleg az adatgyűjtés és a modellezés folyik.
-           </p>
-           <div className="pulse-info" style={{ margin: '20px auto' }}></div>
+        <div className="gantt-container glass">
+           <div className="gantt-header">
+              <div className="gantt-sidebar-header">FELADATOK / PROJEKTEK</div>
+              <div className="gantt-timeline-header">
+                 {ganttDays.map((day, i) => (
+                   <div key={i} className={`gantt-day-header ${day.isWeekend ? 'weekend' : ''}`}>
+                      <span className="day-month">{day.dayNum === 1 || i === 0 ? day.month : ''}</span>
+                      <span className="day-num">{day.dayNum}</span>
+                   </div>
+                 ))}
+              </div>
+           </div>
+
+           <div className="gantt-body">
+              {workOrders.map((wo, i) => {
+                 const pos = calculatePosition(wo.startDate, wo.deadline);
+                 return (
+                   <div key={wo.id} className="gantt-row">
+                      <div className="gantt-sidebar-cell">
+                         <div style={{ fontWeight: 800, fontSize: '0.8rem' }}>{wo.id}</div>
+                         <div className="text-muted" style={{ fontSize: '0.65rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{wo.product}</div>
+                      </div>
+                      <div className="gantt-timeline-cell">
+                         {/* Grid Lines */}
+                         {ganttDays.map((day, j) => (
+                           <div key={j} className={`gantt-grid-line ${day.isWeekend ? 'weekend' : ''}`}></div>
+                         ))}
+                         
+                         {/* Gantt Bar */}
+                         <div 
+                           className={`gantt-bar-wrapper ${wo.priority.toLowerCase()}`}
+                           style={{ left: pos.left, width: pos.width }}
+                         >
+                            <div className="gantt-bar">
+                               <div className="gantt-bar-progress" style={{ width: `${wo.progress}%` }}></div>
+                               <span className="gantt-bar-label">{wo.progress}%</span>
+                            </div>
+                            <div className="gantt-tooltip">
+                               <strong>{wo.product}</strong><br/>
+                               {wo.startDate} - {wo.deadline}<br/>
+                               Státusz: {wo.status}
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                 );
+              })}
+           </div>
         </div>
       )}
     </div>
