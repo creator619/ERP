@@ -34,7 +34,9 @@ const CRM = ({ addToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+  const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
   const [newInteraction, setNewInteraction] = useState({ type: 'Call', desc: '' });
+  const [newOpportunity, setNewOpportunity] = useState({ name: '', value: '', stage: 'Prospecting' });
 
   const [partners, setPartners] = useState([
     { id: 1, name: 'MÁV-START Zrt.', email: 'beszerzes@mav-start.hu', phone: '+36 1 511 1111', city: 'Budapest', tags: ['Vevő', 'Kiemelt'], status: 'Aktív', manager: 'Szabó Anna',
@@ -132,6 +134,39 @@ const CRM = ({ addToast }) => {
     setIsInteractionModalOpen(false);
     setNewInteraction({ type: 'Call', desc: '' });
     addToast('Interakció rögzítve', 'success');
+  };
+
+  const handleAddOpportunity = () => {
+    if (!newOpportunity.name || !newOpportunity.value) return;
+
+    const opp = {
+      ...newOpportunity,
+      value: parseInt(newOpportunity.value)
+    };
+
+    setPartners(prev => prev.map(p => {
+      if (p.id === selectedPartner.id) {
+        const updatedPartner = {
+          ...p,
+          opportunities: [...p.opportunities, opp]
+        };
+        setSelectedPartner(updatedPartner);
+        return updatedPartner;
+      }
+      return p;
+    }));
+
+    auditLogService.log({
+      user: 'Sales Manager',
+      action: 'Új lehetőség',
+      module: 'CRM',
+      details: `${selectedPartner.name}: ${opp.name} (${opp.value} HUF) rögzítve`,
+      severity: 'success'
+    });
+
+    setIsOpportunityModalOpen(false);
+    setNewOpportunity({ name: '', value: '', stage: 'Prospecting' });
+    addToast('Értékesítési lehetőség rögzítve', 'success');
   };
 
   const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
@@ -346,7 +381,7 @@ const CRM = ({ addToast }) => {
                       </div>
                     </div>
                   ))}
-                  <button className="create-btn" style={{ width: '100%' }}>
+                  <button className="create-btn" style={{ width: '100%' }} onClick={() => setIsOpportunityModalOpen(true)}>
                     <Plus size={16} /> Új Értékesítési Lehetőség
                   </button>
                 </div>
@@ -390,6 +425,56 @@ const CRM = ({ addToast }) => {
                 placeholder="Miről volt szó? Mik a következő lépések?"
                 style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', minHeight: '120px', outline: 'none' }}
               />
+           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isOpportunityModalOpen}
+        onClose={() => setIsOpportunityModalOpen(false)}
+        title="Új Értékesítési Lehetőség"
+        width="500px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsOpportunityModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleAddOpportunity}>Mentés</button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+           <div className="settings-group">
+              <label>Projekt / Lehetőség Neve</label>
+              <input 
+                type="text"
+                value={newOpportunity.name}
+                onChange={(e) => setNewOpportunity({...newOpportunity, name: e.target.value})}
+                placeholder="pl. 12db Vagon felújítása"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              />
+           </div>
+           <div className="settings-group">
+              <label>Becsült Érték (HUF)</label>
+              <input 
+                type="number"
+                value={newOpportunity.value}
+                onChange={(e) => setNewOpportunity({...newOpportunity, value: e.target.value})}
+                placeholder="Érték forintban"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              />
+           </div>
+           <div className="settings-group">
+              <label>Értékesítési Fázis</label>
+              <select 
+                value={newOpportunity.stage} 
+                onChange={(e) => setNewOpportunity({...newOpportunity, stage: e.target.value})}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              >
+                 <option value="Prospecting">Felkutatás</option>
+                 <option value="Qualification">Minősítés</option>
+                 <option value="Proposal">Ajánlatadás</option>
+                 <option value="Negotiation">Tárgyalás</option>
+                 <option value="Closed Won">Lezárt - Megnyert</option>
+              </select>
            </div>
         </div>
       </Modal>
