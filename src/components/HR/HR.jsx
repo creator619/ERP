@@ -83,6 +83,61 @@ const HR = ({ addToast }) => {
         { name: 'PMP Certification', expiry: '2026-01-10', status: 'valid' }
       ],
       matrix: { welding: 0, cnc: 1, quality: 3, logistics: 3, electrical: 1, cad: 2 }
+    },
+    { 
+      id: 4, 
+      name: 'Horváth Béla', 
+      role: 'Targoncavezető', 
+      dept: 'Logisztika', 
+      status: 'Aktív', 
+      kpi: 76,
+      shifts: ['DU', 'DU', 'DU', 'DU', 'DU', 'PIH', 'PIH'],
+      certifications: [
+        { name: 'Emelőgépkezelő (OKJ)', expiry: '2024-04-20', status: 'expired' },
+        { name: 'GKI kártya', expiry: '2025-08-15', status: 'valid' }
+      ],
+      matrix: { welding: 0, cnc: 0, quality: 1, logistics: 3, electrical: 0, cad: 0 }
+    },
+    { 
+      id: 5, 
+      name: 'Molnár Zsófia', 
+      role: 'Minőségellenőr', 
+      dept: 'Minőségügy', 
+      status: 'Aktív', 
+      kpi: 94,
+      shifts: ['DE', 'DE', 'DE', 'DE', 'DE', 'PIH', 'PIH'],
+      certifications: [
+        { name: 'ISO 9001 Auditor', expiry: '2025-02-12', status: 'valid' },
+        { name: 'NDT Level 2', expiry: '2024-05-30', status: 'warning' }
+      ],
+      matrix: { welding: 1, cnc: 1, quality: 3, logistics: 0, electrical: 1, cad: 2 }
+    },
+    { 
+      id: 6, 
+      name: 'Takács Ervin', 
+      role: 'CNC Gépkezelő', 
+      dept: 'Gyártás', 
+      status: 'Aktív', 
+      kpi: 82,
+      shifts: ['ÉJS', 'ÉJS', 'ÉJS', 'ÉJS', 'ÉJS', 'PIH', 'PIH'],
+      certifications: [
+        { name: 'Siemens Sinumerik', expiry: '2026-11-01', status: 'valid' }
+      ],
+      matrix: { welding: 1, cnc: 3, quality: 2, logistics: 1, electrical: 1, cad: 1 }
+    },
+    { 
+      id: 7, 
+      name: 'Varga László', 
+      role: 'Villamosmérnök', 
+      dept: 'Karbantartás', 
+      status: 'Aktív', 
+      kpi: 90,
+      shifts: ['DE', 'DE', 'DE', 'DE', 'DE', 'PIH', 'PIH'],
+      certifications: [
+        { name: 'Feszültség alatti munkavégzés', expiry: '2025-06-20', status: 'valid' },
+        { name: 'PLC Programozó (L2)', expiry: '2024-05-10', status: 'warning' }
+      ],
+      matrix: { welding: 0, cnc: 0, quality: 2, logistics: 1, electrical: 3, cad: 2 }
     }
   ]);
 
