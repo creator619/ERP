@@ -33,6 +33,8 @@ const Sales = ({ addToast }) => {
     priority: 'Medium'
   });
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [selectedOpp, setSelectedOpp] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [opportunities, setOpportunities] = useState([
     { id: 'OPP-101', title: 'MÁV Ablak Csere', customer: 'MÁV-START', value: 12500000, probability: 70, stage: 'Minősítés', priority: 'High' },
     { id: 'OPP-102', title: 'GYSEV Ajtó modernizáció', customer: 'GYSEV', value: 8400000, probability: 40, stage: 'Tárgyalás', priority: 'Medium' },
@@ -54,6 +56,21 @@ const Sales = ({ addToast }) => {
       module: 'Sales',
       details: `${id} - ${opp?.title}`,
       severity: 'warning'
+    });
+  };
+
+  const handleUpdateOpportunity = (updatedOpp) => {
+    setOpportunities(prev => prev.map(o => o.id === updatedOpp.id ? updatedOpp : o));
+    setSelectedOpp(null);
+    setIsEditing(false);
+    addToast('Lehetőség sikeresen frissítve', 'success');
+
+    auditLogService.log({
+      user: 'Sales Manager',
+      action: 'Lehetőség módosítva',
+      module: 'Sales',
+      details: `${updatedOpp.id} - ${updatedOpp.title}`,
+      severity: 'info'
     });
   };
 
@@ -326,10 +343,10 @@ const Sales = ({ addToast }) => {
                     </button>
                     {activeDropdown === opp.id && (
                       <div className="dropdown-menu glass show" style={{ right: 0, top: '40px', minWidth: '150px' }}>
-                         <button className="dropdown-item" onClick={() => setActiveDropdown(null)}>
+                         <button className="dropdown-item" onClick={() => { setSelectedOpp(opp); setIsEditing(false); setActiveDropdown(null); }}>
                            <Search size={14} /> Megtekintés
                          </button>
-                         <button className="dropdown-item" onClick={() => setActiveDropdown(null)}>
+                         <button className="dropdown-item" onClick={() => { setSelectedOpp(opp); setIsEditing(true); setActiveDropdown(null); }}>
                            <Plus size={14} style={{ transform: 'rotate(45deg)' }} /> Szerkesztés
                          </button>
                          <div style={{ height: '1px', background: 'var(--border-color)', margin: '5px 0' }}></div>
@@ -345,6 +362,85 @@ const Sales = ({ addToast }) => {
           </table>
         </div>
       )}
+
+      <Modal
+        isOpen={!!selectedOpp}
+        onClose={() => { setSelectedOpp(null); setIsEditing(false); }}
+        title={isEditing ? `Szerkesztés: ${selectedOpp?.id}` : `Részletek: ${selectedOpp?.id}`}
+        width="500px"
+      >
+        {selectedOpp && (
+          <div className="settings-row" style={{ maxWidth: '100%' }}>
+            <div className="settings-group">
+              <label>Projekt Megnevezése</label>
+              <input 
+                type="text" 
+                value={selectedOpp.title}
+                readOnly={!isEditing}
+                onChange={(e) => setSelectedOpp({...selectedOpp, title: e.target.value})}
+              />
+            </div>
+            <div className="settings-group">
+              <label>Ügyfél</label>
+              <input 
+                type="text" 
+                value={selectedOpp.customer}
+                readOnly={!isEditing}
+                onChange={(e) => setSelectedOpp({...selectedOpp, customer: e.target.value})}
+              />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="settings-group">
+                <label>Becsült Érték (HUF)</label>
+                <input 
+                  type="number" 
+                  value={selectedOpp.value}
+                  readOnly={!isEditing}
+                  onChange={(e) => setSelectedOpp({...selectedOpp, value: parseInt(e.target.value)})}
+                />
+              </div>
+              <div className="settings-group">
+                <label>Prioritás</label>
+                {isEditing ? (
+                  <select 
+                    value={selectedOpp.priority}
+                    onChange={(e) => setSelectedOpp({...selectedOpp, priority: e.target.value})}
+                  >
+                    <option value="Low">Alacsony</option>
+                    <option value="Medium">Közepes</option>
+                    <option value="High">Magas</option>
+                  </select>
+                ) : (
+                  <input type="text" value={selectedOpp.priority === 'High' ? 'Magas' : selectedOpp.priority === 'Medium' ? 'Közepes' : 'Alacsony'} readOnly />
+                )}
+              </div>
+            </div>
+            <div className="settings-group">
+              <label>Értékesítési Fázis</label>
+              {isEditing ? (
+                <select 
+                  value={selectedOpp.stage}
+                  onChange={(e) => {
+                    const newStage = e.target.value;
+                    const newProb = (stages.indexOf(newStage) + 1) * 25;
+                    setSelectedOpp({...selectedOpp, stage: newStage, probability: newProb});
+                  }}
+                >
+                  {stages.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              ) : (
+                <input type="text" value={selectedOpp.stage} readOnly />
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+              <button className="view-btn" style={{ flex: 1 }} onClick={() => { setSelectedOpp(null); setIsEditing(false); }}>Bezárás</button>
+              {isEditing && (
+                <button className="create-btn" style={{ flex: 1, background: '#3498db' }} onClick={() => handleUpdateOpportunity(selectedOpp)}>Mentés</button>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
