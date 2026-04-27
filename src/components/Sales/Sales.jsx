@@ -32,6 +32,7 @@ const Sales = ({ addToast }) => {
     stage: 'Felkutatás',
     priority: 'Medium'
   });
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const [opportunities, setOpportunities] = useState([
     { id: 'OPP-101', title: 'MÁV Ablak Csere', customer: 'MÁV-START', value: 12500000, probability: 70, stage: 'Minősítés', priority: 'High' },
     { id: 'OPP-102', title: 'GYSEV Ajtó modernizáció', customer: 'GYSEV', value: 8400000, probability: 40, stage: 'Tárgyalás', priority: 'Medium' },
@@ -40,6 +41,21 @@ const Sales = ({ addToast }) => {
   ]);
 
   const stages = ['Felkutatás', 'Minősítés', 'Tárgyalás', 'Lezárás'];
+
+  const handleDeleteOpportunity = (id) => {
+    const opp = opportunities.find(o => o.id === id);
+    setOpportunities(prev => prev.filter(o => o.id !== id));
+    setActiveDropdown(null);
+    addToast('Lehetőség törölve', 'info');
+
+    auditLogService.log({
+      user: 'Sales Manager',
+      action: 'Lehetőség törölve',
+      module: 'Sales',
+      details: `${id} - ${opp?.title}`,
+      severity: 'warning'
+    });
+  };
 
   const handleAddOpportunity = () => {
     if (!newOppData.title || !newOppData.customer || !newOppData.value) {
@@ -298,8 +314,30 @@ const Sales = ({ addToast }) => {
                       {opp.priority === 'High' ? 'Magas' : opp.priority === 'Medium' ? 'Közepes' : 'Alacsony'}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <button className="view-btn-small"><MoreVertical size={16} /></button>
+                  <td style={{ textAlign: 'right', position: 'relative' }}>
+                    <button 
+                      className="view-btn-small" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveDropdown(activeDropdown === opp.id ? null : opp.id);
+                      }}
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+                    {activeDropdown === opp.id && (
+                      <div className="dropdown-menu glass show" style={{ right: 0, top: '40px', minWidth: '150px' }}>
+                         <button className="dropdown-item" onClick={() => setActiveDropdown(null)}>
+                           <Search size={14} /> Megtekintés
+                         </button>
+                         <button className="dropdown-item" onClick={() => setActiveDropdown(null)}>
+                           <Plus size={14} style={{ transform: 'rotate(45deg)' }} /> Szerkesztés
+                         </button>
+                         <div style={{ height: '1px', background: 'var(--border-color)', margin: '5px 0' }}></div>
+                         <button className="dropdown-item" style={{ color: '#e74c3c' }} onClick={() => handleDeleteOpportunity(opp.id)}>
+                           <AlertCircle size={14} /> Törlés
+                         </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
