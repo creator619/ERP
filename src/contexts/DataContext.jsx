@@ -45,7 +45,6 @@ export const DataProvider = ({ children }) => {
   });
 
   // 1. Initial Products State (Inventory)
-  const [products, setProducts] = useState([
     { 
       id: 1, 
       name: 'Poggyásztartó modul (Alumínium)', 
@@ -55,7 +54,7 @@ export const DataProvider = ({ children }) => {
       minStock: 10,
       sku: 'RW-INT-001',
       abc: 'B',
-      location: 'A-szektor, 04-B polc',
+      location: 'ZÓNA A1, 04-B polc',
       trend: [10, 12, 11, 15, 14, 18, 15],
       batches: [
         { id: 'B-8821', qty: 10, expiry: '2025-12-01', status: 'Passed' },
@@ -75,7 +74,7 @@ export const DataProvider = ({ children }) => {
       minStock: 20,
       sku: 'RW-WIN-042',
       abc: 'A',
-      location: 'W-szektor, 10-C polc',
+      location: 'ZÓNA B2, 10-C polc',
       trend: [30, 35, 42, 40, 45, 42, 42],
       batches: [
         { id: 'B-9901', qty: 42, expiry: '2027-06-10', status: 'Passed' }
@@ -91,7 +90,7 @@ export const DataProvider = ({ children }) => {
       minStock: 8,
       sku: 'RW-DOR-015',
       abc: 'A',
-      location: 'W-szektor, 02-A polc',
+      location: 'ZÓNA C3, 02-A polc',
       trend: [12, 10, 8, 7, 6, 5, 5],
       batches: [
         { id: 'B-7712', qty: 5, expiry: '2026-03-20', status: 'Passed' }
@@ -107,23 +106,23 @@ export const DataProvider = ({ children }) => {
       minStock: 5,
       sku: 'RW-PAR-012',
       abc: 'C',
-      location: 'P-szektor, 01-D polc',
+      location: 'ZÓNA D1, 01-D polc',
       trend: [15, 12, 10, 8, 5, 2, 0],
       batches: [],
       history: [{ date: '2024-04-15', type: 'OUT', qty: 10, reason: 'Készlet kimerült' }]
     },
-    { id: 9, name: 'Sinterelt Fékbetét (Szett)', category: 'Fékrendszer', price: '28,500 Ft', stock: 124, minStock: 50, sku: 'RW-BRK-102', abc: 'A', location: 'B-szektor, 02-A', trend: [100, 110, 115, 124, 124, 124, 124], batches: [{ id: 'B-5501', qty: 124, expiry: '2026-10-10', status: 'Passed' }], history: [] },
-    { id: 10, name: 'Pantográf Kar (V5)', category: 'Áramszedő', price: '1,250,000 Ft', stock: 2, minStock: 3, sku: 'RW-PWR-005', abc: 'A', location: 'E-szektor, 01-A', trend: [4, 4, 3, 3, 2, 2, 2], batches: [{ id: 'B-2201', qty: 2, expiry: 'N/A', status: 'Passed' }], history: [] },
-    { id: 11, name: 'Utastéri LED Kijelző (Matrix)', category: 'Elektronika', price: '72,000 Ft', stock: 85, minStock: 20, sku: 'RW-ELC-085', abc: 'B', location: 'E-szektor, 05-C', trend: [50, 60, 70, 85, 85, 85, 85], batches: [{ id: 'B-1122', qty: 85, expiry: '2027-01-01', status: 'Passed' }], history: [] },
-    { id: 12, name: 'Légkondicionáló Kompresszor', category: 'Gépészet', price: '890,000 Ft', stock: 4, minStock: 2, sku: 'RW-MEC-441', abc: 'B', location: 'M-szektor, 04-A', trend: [2, 3, 4, 4, 4, 4, 4], batches: [{ id: 'B-4410', qty: 4, expiry: '2026-05-15', status: 'Passed' }], history: [] },
-    { id: 13, name: 'Ülésváz (Ergonomikus)', category: 'Beltér', price: '35,000 Ft', stock: 12, minStock: 40, sku: 'RW-INT-055', abc: 'C', location: 'A-szektor, 12-D', trend: [60, 50, 40, 30, 20, 15, 12], batches: [{ id: 'B-3321', qty: 12, expiry: 'N/A', status: 'Passed' }], history: [] },
-    { id: 14, name: 'Sínkenő Berendezés', category: 'Karbantartás', price: '210,000 Ft', stock: 8, minStock: 5, sku: 'RW-MNT-009', abc: 'B', location: 'M-szektor, 01-B', trend: [5, 6, 7, 8, 8, 8, 8], batches: [{ id: 'B-9908', qty: 8, expiry: '2028-12-01', status: 'Passed' }], history: [] },
-    { id: 15, name: 'Tengelyvég Jeladó', category: 'Elektronika', price: '48,000 Ft', stock: 150, minStock: 200, sku: 'RW-ELC-150', abc: 'A', location: 'E-szektor, 08-F', trend: [300, 250, 200, 180, 160, 155, 150], batches: [{ id: 'B-6677', qty: 150, expiry: '2025-08-30', status: 'Passed' }], history: [] },
-    { id: 16, name: 'Hidraulikus Olaj (20L)', category: 'Nyersanyag', price: '18,500 Ft', stock: 45, minStock: 20, sku: 'RAW-OIL-020', abc: 'C', location: 'R-szektor, 08-A', trend: [20, 25, 30, 45, 45, 45, 45], batches: [{ id: 'B-1020', qty: 45, expiry: '2025-01-01', status: 'Passed' }], history: [] },
-    { id: 5, name: 'Alumínium profil (2m)', category: 'Nyersanyag', price: '12,000 Ft', stock: 5, minStock: 50, sku: 'RAW-ALU-02', abc: 'C', location: 'R-szektor, 01-A', trend: [150,150,150,150,150,150,150], batches: [], history: [] },
-    { id: 6, name: 'Ajtómotor (DC-42)', category: 'Elektronika', price: '89,000 Ft', stock: 12, minStock: 10, sku: 'RAW-MOT-42', abc: 'A', location: 'E-szektor, 02-B', trend: [12,12,12,12,12,12,12], batches: [], history: [] },
-    { id: 7, name: 'Edzett üveg (4mm)', category: 'Nyersanyag', price: '25,000 Ft', stock: 5, minStock: 100, sku: 'RAW-GLS-04', abc: 'B', location: 'R-szektor, 05-A', trend: [200,200,200,200,200,200,200], batches: [], history: [] },
-    { id: 8, name: 'PVC keret profil', category: 'Nyersanyag', price: '4,500 Ft', stock: 500, minStock: 200, sku: 'RAW-PVC-01', abc: 'C', location: 'R-szektor, 05-B', trend: [500,500,500,500,500,500,500], batches: [], history: [] }
+    { id: 9, name: 'Sinterelt Fékbetét (Szett)', category: 'Fékrendszer', price: '28,500 Ft', stock: 124, minStock: 50, sku: 'RW-BRK-102', abc: 'A', location: 'ZÓNA A2, 02-A', trend: [100, 110, 115, 124, 124, 124, 124], batches: [{ id: 'B-5501', qty: 124, expiry: '2026-10-10', status: 'Passed' }], history: [] },
+    { id: 10, name: 'Pantográf Kar (V5)', category: 'Áramszedő', price: '1,250,000 Ft', stock: 2, minStock: 3, sku: 'RW-PWR-005', abc: 'A', location: 'ZÓNA E1, 01-A', trend: [4, 4, 3, 3, 2, 2, 2], batches: [{ id: 'B-2201', qty: 2, expiry: 'N/A', status: 'Passed' }], history: [] },
+    { id: 11, name: 'Utastéri LED Kijelző (Matrix)', category: 'Elektronika', price: '72,000 Ft', stock: 85, minStock: 20, sku: 'RW-ELC-085', abc: 'B', location: 'ZÓNA B1, 05-C', trend: [50, 60, 70, 85, 85, 85, 85], batches: [{ id: 'B-1122', qty: 85, expiry: '2027-01-01', status: 'Passed' }], history: [] },
+    { id: 12, name: 'Légkondicionáló Kompresszor', category: 'Gépészet', price: '890,000 Ft', stock: 4, minStock: 2, sku: 'RW-MEC-441', abc: 'B', location: 'ZÓNA D2, 04-A', trend: [2, 3, 4, 4, 4, 4, 4], batches: [{ id: 'B-4410', qty: 4, expiry: '2026-05-15', status: 'Passed' }], history: [] },
+    { id: 13, name: 'Ülésváz (Ergonomikus)', category: 'Beltér', price: '35,000 Ft', stock: 12, minStock: 40, sku: 'RW-INT-055', abc: 'C', location: 'ZÓNA A3, 12-D', trend: [60, 50, 40, 30, 20, 15, 12], batches: [{ id: 'B-3321', qty: 12, expiry: 'N/A', status: 'Passed' }], history: [] },
+    { id: 14, name: 'Sínkenő Berendezés', category: 'Karbantartás', price: '210,000 Ft', stock: 8, minStock: 5, sku: 'RW-MNT-009', abc: 'B', location: 'ZÓNA C1, 01-B', trend: [5, 6, 7, 8, 8, 8, 8], batches: [{ id: 'B-9908', qty: 8, expiry: '2028-12-01', status: 'Passed' }], history: [] },
+    { id: 15, name: 'Tengelyvég Jeladó', category: 'Elektronika', price: '48,000 Ft', stock: 150, minStock: 200, sku: 'RW-ELC-150', abc: 'A', location: 'ZÓNA E2, 08-F', trend: [300, 250, 200, 180, 160, 155, 150], batches: [{ id: 'B-6677', qty: 150, expiry: '2025-08-30', status: 'Passed' }], history: [] },
+    { id: 16, name: 'Hidraulikus Olaj (20L)', category: 'Nyersanyag', price: '18,500 Ft', stock: 45, minStock: 20, sku: 'RAW-OIL-020', abc: 'C', location: 'ZÓNA B3, 08-A', trend: [20, 25, 30, 45, 45, 45, 45], batches: [{ id: 'B-1020', qty: 45, expiry: '2025-01-01', status: 'Passed' }], history: [] },
+    { id: 5, name: 'Alumínium profil (2m)', category: 'Nyersanyag', price: '12,000 Ft', stock: 5, minStock: 50, sku: 'RAW-ALU-02', abc: 'C', location: 'ZÓNA D3, 01-A', trend: [150,150,150,150,150,150,150], batches: [], history: [] },
+    { id: 6, name: 'Ajtómotor (DC-42)', category: 'Elektronika', price: '89,000 Ft', stock: 12, minStock: 10, sku: 'RAW-MOT-42', abc: 'A', location: 'ZÓNA E3, 02-B', trend: [12,12,12,12,12,12,12], batches: [], history: [] },
+    { id: 7, name: 'Edzett üveg (4mm)', category: 'Nyersanyag', price: '25,000 Ft', stock: 5, minStock: 100, sku: 'RAW-GLS-04', abc: 'B', location: 'ZÓNA A4, 05-A', trend: [200,200,200,200,200,200,200], batches: [], history: [] },
+    { id: 8, name: 'PVC keret profil', category: 'Nyersanyag', price: '4,500 Ft', stock: 500, minStock: 200, sku: 'RAW-PVC-01', abc: 'C', location: 'ZÓNA B4, 05-B', trend: [500,500,500,500,500,500,500], batches: [], history: [] }
   ]);
 
   // 2. Initial Work Orders State (Manufacturing)
