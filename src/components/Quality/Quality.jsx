@@ -25,6 +25,37 @@ const Quality = ({ addToast }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isPreviewDrawingOpen, setIsPreviewDrawingOpen] = useState(false);
   const [isCalibrationModalOpen, setIsCalibrationModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleMainExport = () => {
+    setIsExporting(true);
+    addToast('Havi minőségi riport generálása folyamatban...', 'info');
+    
+    setTimeout(() => {
+      const reportId = `REP-QM-${Math.floor(Math.random() * 9000) + 1000}`;
+      
+      auditLogService.log({
+        user: 'Minőségügyi Vezető',
+        action: 'Havi Riport Generálva',
+        module: 'Quality',
+        details: `Azonosító: ${reportId}. Tartalom: Teljes SPC és NCR statisztika.`,
+        severity: 'info'
+      });
+
+      // Add to central Document Engine
+      const newDoc = {
+        id: reportId,
+        name: `Havi Minőségi Riport: 2024. Április`,
+        date: new Date().toISOString().split('T')[0],
+        status: 'Generated'
+      };
+      const existingDocs = JSON.parse(localStorage.getItem('generated_documents') || '[]');
+      localStorage.setItem('generated_documents', JSON.stringify([newDoc, ...existingDocs]));
+
+      addToast(`Riport (${reportId}) elkészült és archiválva`, 'success');
+      setIsExporting(false);
+    }, 2000);
+  };
 
   const [calibrations, setCalibrations] = useState([
     { id: 'QC-01', tool: 'Digitális Tolómérő', status: 'Hiteles', due: '2024-12-15' },
@@ -226,8 +257,16 @@ const Quality = ({ addToast }) => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="view-btn" onClick={() => addToast('Havi minőségi riport generálása...', 'info')}>
-            <Download size={18} /> Export
+          <button 
+            className="view-btn" 
+            onClick={handleMainExport}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <><Loader2 size={18} className="spin-animation" /> Generálás...</>
+            ) : (
+              <><Download size={18} /> Export</>
+            )}
           </button>
           <button className="create-btn" style={{ background: '#2ecc71', boxShadow: '0 4px 15px rgba(46, 204, 113, 0.3)' }} onClick={() => addToast('Új ellenőrzési folyamat indítva', 'success')}>
             <Plus size={18} /> Új Ellenőrzés
