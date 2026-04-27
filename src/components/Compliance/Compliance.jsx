@@ -46,9 +46,42 @@ const Compliance = ({ addToast }) => {
   const uniqueModules = ['all', ...new Set(logs.map(log => log.module))];
 
   const ncrList = [
-    { id: 'NCR-2024-042', project: 'Stadler EuroDual', issue: 'Anyaghiba: Alumínium profil vetemedés', status: 'In Review', severity: 'High', date: '2024-04-20' },
-    { id: 'NCR-2024-039', project: 'Siemens Vectron', issue: 'Mérethiba: Hegesztési varrat (A-oldal)', status: 'Resolved', severity: 'Medium', date: '2024-04-15' },
-    { id: 'NCR-2024-045', project: 'ÖBB Railjet', issue: 'Dokumentációs hiány: Certifikáció elmaradt', status: 'Draft', severity: 'Low', date: '2024-04-23' },
+    { 
+      id: 'NCR-2024-042', 
+      project: 'Stadler EuroDual', 
+      issue: 'Anyaghiba: Alumínium profil vetemedés', 
+      status: 'In Review', 
+      severity: 'High', 
+      date: '2024-04-20',
+      inspector: 'Nagy Péter',
+      description: 'A beszállított 12 méteres profiloknál 5mm-nél nagyobb vetemedést mértünk a QC-10-es állomáson.',
+      rootCause: 'Beszállítói hőkezelési hiba a gyártási folyamat során.',
+      containment: 'A teljes BCH-882 tétel zárolva, 100%-os ellenőrzés elrendelve.'
+    },
+    { 
+      id: 'NCR-2024-039', 
+      project: 'Siemens Vectron', 
+      issue: 'Mérethiba: Hegesztési varrat (A-oldal)', 
+      status: 'Resolved', 
+      severity: 'Medium', 
+      date: '2024-04-15',
+      inspector: 'Kovács János',
+      description: 'A varrat szélessége nem felel meg a rajzi előírásnak (DRW-771).',
+      rootCause: 'Hegesztő robot pisztoly kalibrációs eltolódása.',
+      containment: 'Robot újrakalibrálva, érintett darabok újramunkálva.'
+    },
+    { 
+      id: 'NCR-2024-045', 
+      project: 'ÖBB Railjet', 
+      issue: 'Dokumentációs hiány: Certifikáció elmaradt', 
+      status: 'Draft', 
+      severity: 'Low', 
+      date: '2024-04-23',
+      inspector: 'Szabó Anna',
+      description: 'A 3.1-es műbizonylat hiányzik a beérkezett rögzítőelemekhez.',
+      rootCause: 'Adminisztrációs hiba a beszállítónál.',
+      containment: 'Pótlólagos bekérés folyamatban, beépítés felfüggesztve.'
+    }
   ];
 
   const supplierScorecards = [
@@ -68,6 +101,11 @@ const Compliance = ({ addToast }) => {
     { name: 'D7: Prevention', status: 'pending' },
     { name: 'D8: Recognition', status: 'pending' },
   ];
+
+  const openNCRDetails = (ncr) => {
+    setSelectedNCR(ncr);
+    setIsNCRModalOpen(true);
+  };
 
   return (
     <div className="compliance-wrapper">
@@ -185,7 +223,7 @@ const Compliance = ({ addToast }) => {
                       <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '15px' }}>Projekt: {ncr.project}</p>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                          <span style={{ fontSize: '0.7rem' }}>Bejelentve: {ncr.date}</span>
-                         <button className="view-btn-small">Részletek</button>
+                         <button className="view-btn-small" onClick={() => openNCRDetails(ncr)}>Részletek</button>
                       </div>
                    </div>
                  ))}
@@ -522,6 +560,74 @@ const Compliance = ({ addToast }) => {
            </div>
         </div>
       )}
+
+      {/* NCR Details Modal */}
+      <Modal
+        isOpen={isNCRModalOpen}
+        onClose={() => setIsNCRModalOpen(false)}
+        title={selectedNCR ? `Nem-megfelelőségi Jegyzőkönyv: ${selectedNCR.id}` : ''}
+        width="700px"
+        footer={
+          <button className="view-btn" onClick={() => setIsNCRModalOpen(false)}>Bezárás</button>
+        }
+      >
+        {selectedNCR && (
+          <div className="ncr-details-content">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
+              <div className="stat-card" style={{ padding: '15px' }}>
+                <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>STÁTUSZ</p>
+                <span className={`status-badge ${selectedNCR.status === 'Resolved' ? 'success' : 'warning'}`}>{selectedNCR.status}</span>
+              </div>
+              <div className="stat-card" style={{ padding: '15px' }}>
+                <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>SÚLYOSSÁG</p>
+                <span className="status-badge danger" style={{ background: selectedNCR.severity === 'High' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(230, 126, 34, 0.1)', color: selectedNCR.severity === 'High' ? '#e74c3c' : '#e67e22' }}>
+                  {selectedNCR.severity}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="settings-group">
+                <label>Hiba Leírása</label>
+                <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                  {selectedNCR.description}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="settings-group">
+                  <label>Gyökérok (Root Cause)</label>
+                  <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.85rem', color: '#f1c40f' }}>
+                    {selectedNCR.rootCause}
+                  </div>
+                </div>
+                <div className="settings-group">
+                  <label>Azonnali Intézkedés</label>
+                  <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.85rem', color: '#2ecc71' }}>
+                    {selectedNCR.containment}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.7rem' }}>
+                    {selectedNCR.inspector.split(' ')[0][0]}{selectedNCR.inspector.split(' ')[1][0]}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '0.8rem', fontWeight: 700 }}>{selectedNCR.inspector}</p>
+                    <p className="text-muted" style={{ fontSize: '0.65rem' }}>Minőségellenőr</p>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p className="text-muted" style={{ fontSize: '0.65rem' }}>BEJELENTÉS DÁTUMA</p>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 700 }}>{selectedNCR.date}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
