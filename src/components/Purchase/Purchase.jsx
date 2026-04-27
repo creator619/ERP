@@ -326,9 +326,9 @@ const Purchase = ({ addToast, currency }) => {
               <label>Rendelt Tételek</label>
               <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr', gap: '10px', padding: '0 5px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 900, textTransform: 'uppercase' }}>Megnevezés</span>
-                    <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 900, textTransform: 'uppercase' }}>Menny.</span>
-                    <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 900, textTransform: 'uppercase' }}>Egységár</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Megnevezés</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Menny.</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Egységár</span>
                  </div>
                  {newPOData.items.map((item, index) => (
                    <div key={index} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr', gap: '10px' }}>
