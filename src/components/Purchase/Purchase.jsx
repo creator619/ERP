@@ -345,10 +345,10 @@ const Purchase = ({ addToast, currency }) => {
       >
         {selectedPO && (
           <div className="po-detail-view">
-            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', borderBottom: '1px solid var(--border-color)', borderRadius: 0, padding: 0 }}>
-              <div className={`settings-nav-item ${activeTab === 'items' ? 'active' : ''}`} onClick={() => setActiveTab('items')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Rendelt Tételek</div>
-              <div className={`settings-nav-item ${activeTab === 'sourcing' ? 'active' : ''}`} onClick={() => setActiveTab('sourcing')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>AI Sourcing</div>
-              <div className={`settings-nav-item ${activeTab === 'scorecard' ? 'active' : ''}`} onClick={() => setActiveTab('scorecard')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Beszállító Profil</div>
+            <div className="settings-nav">
+              <div className={`settings-nav-item ${activeTab === 'items' ? 'active' : ''}`} onClick={() => setActiveTab('items')}>Rendelt Tételek</div>
+              <div className={`settings-nav-item ${activeTab === 'sourcing' ? 'active' : ''}`} onClick={() => setActiveTab('sourcing')}>AI Sourcing</div>
+              <div className={`settings-nav-item ${activeTab === 'scorecard' ? 'active' : ''}`} onClick={() => setActiveTab('scorecard')}>Beszállító Profil</div>
             </div>
 
             {activeTab === 'items' && (
