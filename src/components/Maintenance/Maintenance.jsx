@@ -28,7 +28,11 @@ import { useData } from '../../contexts/DataContext';
 import './Maintenance.css';
 
 const Maintenance = ({ addToast }) => {
-  const { machines, setMachines, maintenanceTasks: workOrders, setMaintenanceTasks: setWorkOrders } = useData();
+  const { 
+    machines, setMachines, 
+    maintenanceTasks: workOrders, setMaintenanceTasks: setWorkOrders,
+    setProcurementRequests: setRequisitions 
+  } = useData();
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'kanban'
 
   const [selectedMachine, setSelectedMachine] = useState(null);
@@ -67,9 +71,8 @@ const Maintenance = ({ addToast }) => {
 
   const handleOrderPart = (customName) => {
     const finalName = customName || partNameInput || 'Általános alkatrész';
-    const pendingRequests = JSON.parse(localStorage.getItem('pending_purchase_requests') || '[]');
     const newRequest = {
-      id: `REQ-${Math.floor(Math.random() * 1000)}`,
+      id: `REQ-MNT-${Math.floor(Math.random() * 1000)}`,
       supplier: 'Karbantartási Igény',
       date: new Date().toISOString().split('T')[0],
       total: 0,
@@ -80,7 +83,8 @@ const Maintenance = ({ addToast }) => {
       scores: { quality: 90, delivery: 90, price: 90, responsiveness: 90, innovation: 90 },
       items: [{ name: finalName, qty: 1, price: 0 }]
     };
-    localStorage.setItem('pending_purchase_requests', JSON.stringify([...pendingRequests, newRequest]));
+    
+    setRequisitions(prev => [newRequest, ...prev]);
     auditLogService.log({
       user: 'Maintenance Manager',
       action: 'Egyedi alkatrész igény leadva',
