@@ -402,7 +402,15 @@ const Maintenance = ({ addToast }) => {
                            placeholder="Alkatrész pontos neve..." 
                            value={partNameInput}
                            onChange={(e) => setPartNameInput(e.target.value)}
-                           style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', color: 'white' }}
+                           style={{ 
+                             flex: 1, 
+                             padding: '12px', 
+                             borderRadius: '10px', 
+                             background: 'rgba(255,255,255,0.03)', 
+                             border: '1px solid var(--border-color)', 
+                             color: 'rgba(255,255,255,0.7)',
+                             outline: 'none'
+                           }}
                         />
                         <button 
                            className="create-btn" 
