@@ -100,9 +100,26 @@ const MOCK_DATA = {
 
 const ExecutiveBI = ({ currency }) => {
   const [period, setPeriod] = useState('YTD');
+  const [showFilter, setShowFilter] = useState(false);
+  const [selectedRegions, setSelectedRegions] = useState(['Összes']);
+  
   const formatCurrency = (val) => currencyService.format(val, currency);
   
   const currentData = MOCK_DATA[period];
+
+  const toggleRegion = (reg) => {
+    if (reg === 'Összes') {
+      setSelectedRegions(['Összes']);
+    } else {
+      const newRegs = selectedRegions.includes('Összes') ? [] : [...selectedRegions];
+      if (newRegs.includes(reg)) {
+        const filtered = newRegs.filter(r => r !== reg);
+        setSelectedRegions(filtered.length === 0 ? ['Összes'] : filtered);
+      } else {
+        setSelectedRegions([...newRegs, reg]);
+      }
+    }
+  };
 
   const BarChart = ({ data }) => {
     const max = Math.max(...data.map(d => d.value)) * 1.1; // 10% headroom
@@ -160,7 +177,7 @@ const ExecutiveBI = ({ currency }) => {
             ))}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-             <button className="view-btn"><Filter size={16}/> Részletes Szűrő</button>
+             <button className="view-btn" onClick={() => setShowFilter(true)}><Filter size={16}/> Részletes Szűrő</button>
              <button className="create-btn" style={{ background: 'linear-gradient(45deg, #9b59b6, #8e44ad)', border: 'none', boxShadow: '0 5px 15px rgba(155,89,182,0.3)' }}><Zap size={18} /> Prezentációs Mód</button>
           </div>
         </div>
@@ -196,7 +213,7 @@ const ExecutiveBI = ({ currency }) => {
         <div className="bi-chart-box">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
              <h4 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Bevétel vs. Előrejelzés</h4>
-             <span className="text-muted" style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '12px' }}>Szűrés: {period}</span>
+             <span className="text-muted" style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '12px' }}>Szűrés: {period} {selectedRegions.length > 0 && `• ${selectedRegions.join(', ')}`}</span>
           </div>
           <BarChart data={currentData.chart} />
         </div>
@@ -250,6 +267,57 @@ const ExecutiveBI = ({ currency }) => {
             </div>
          </div>
       </div>
+
+      {/* Detailed Filter Sidebar */}
+      {showFilter && (
+        <div className="filter-overlay" onClick={() => setShowFilter(false)}>
+          <div className="filter-sidebar" onClick={e => e.stopPropagation()}>
+            <button className="close-filter" onClick={() => setShowFilter(false)}>
+               <Zap size={18} style={{ transform: 'rotate(180deg)' }} /> {/* Placeholder for X or similar */}
+            </button>
+            
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '40px' }}>Részletes Szűrés</h3>
+            
+            <div className="filter-group">
+              <label>Időszak</label>
+              <div className="filter-options">
+                {['2025 Q1', '2024 Q4', '2024 Q3', 'Egyéni'].map(o => (
+                  <div key={o} className={`filter-option ${o === '2025 Q1' ? 'active' : ''}`}>{o}</div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="filter-group">
+              <label>Régiók</label>
+              <div className="filter-options">
+                {['Összes', 'DACH', 'Közép-EU', 'USA', 'Ázsia'].map(r => (
+                  <div 
+                    key={r} 
+                    className={`filter-option ${selectedRegions.includes(r) ? 'active' : ''}`}
+                    onClick={() => toggleRegion(r)}
+                  >
+                    {r}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="filter-group">
+              <label>Adatforrás</label>
+              <div className="filter-options">
+                {['Valós Adatok', 'Előrejelzés', 'Költségvetés'].map(s => (
+                  <div key={s} className={`filter-option ${s === 'Valós Adatok' ? 'active' : ''}`}>{s}</div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="filter-actions">
+               <button className="view-btn" style={{ flex: 1 }} onClick={() => setShowFilter(false)}>Alaphelyzet</button>
+               <button className="create-btn" style={{ flex: 1 }} onClick={() => setShowFilter(false)}>Alkalmazás</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
