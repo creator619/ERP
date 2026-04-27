@@ -35,8 +35,12 @@ const CRM = ({ addToast }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
   const [isOpportunityModalOpen, setIsOpportunityModalOpen] = useState(false);
+  const [isCreatePartnerModalOpen, setIsCreatePartnerModalOpen] = useState(false);
   const [newInteraction, setNewInteraction] = useState({ type: 'Call', desc: '' });
   const [newOpportunity, setNewOpportunity] = useState({ name: '', value: '', stage: 'Prospecting' });
+  const [newPartnerData, setNewPartnerData] = useState({ 
+    name: '', email: '', phone: '', city: '', manager: 'Szabó Anna', tags: ['Vevő'] 
+  });
 
   const [partners, setPartners] = useState([
     { id: 1, name: 'MÁV-START Zrt.', email: 'beszerzes@mav-start.hu', phone: '+36 1 511 1111', city: 'Budapest', tags: ['Vevő', 'Kiemelt'], status: 'Aktív', manager: 'Szabó Anna',
@@ -169,6 +173,32 @@ const CRM = ({ addToast }) => {
     addToast('Értékesítési lehetőség rögzítve', 'success');
   };
 
+  const handleAddPartner = () => {
+    if (!newPartnerData.name) return;
+
+    const partner = {
+      ...newPartnerData,
+      id: partners.length + 1,
+      status: 'Aktív',
+      interactions: [],
+      opportunities: []
+    };
+
+    setPartners(prev => [partner, ...prev]);
+
+    auditLogService.log({
+      user: 'Sales Manager',
+      action: 'Új partner felvétele',
+      module: 'CRM',
+      details: `${partner.name} hozzáadva a rendszerhez`,
+      severity: 'success'
+    });
+
+    setIsCreatePartnerModalOpen(false);
+    setNewPartnerData({ name: '', email: '', phone: '', city: '', manager: 'Szabó Anna', tags: ['Vevő'] });
+    addToast('Új partner sikeresen létrehozva', 'success');
+  };
+
   const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
 
   return (
@@ -193,7 +223,7 @@ const CRM = ({ addToast }) => {
               Tender Monitor
             </button>
           </div>
-          <button className="create-btn" onClick={() => addToast('Új partner felvétele', 'info')}>
+          <button className="create-btn" onClick={() => setIsCreatePartnerModalOpen(true)}>
             <Plus size={20} /> Új Partner
           </button>
         </div>
@@ -474,6 +504,72 @@ const CRM = ({ addToast }) => {
                  <option value="Proposal">Ajánlatadás</option>
                  <option value="Negotiation">Tárgyalás</option>
                  <option value="Closed Won">Lezárt - Megnyert</option>
+              </select>
+           </div>
+        </div>
+      <Modal
+        isOpen={isCreatePartnerModalOpen}
+        onClose={() => setIsCreatePartnerModalOpen(false)}
+        title="Új Partner Felvétele"
+        width="600px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsCreatePartnerModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleAddPartner}>Partner Létrehozása</button>
+          </>
+        }
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+           <div className="settings-group" style={{ gridColumn: 'span 2' }}>
+              <label>Cégnév / Partner Neve</label>
+              <input 
+                type="text"
+                value={newPartnerData.name}
+                onChange={(e) => setNewPartnerData({...newPartnerData, name: e.target.value})}
+                placeholder="pl. Magyar Államvasutak"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              />
+           </div>
+           <div className="settings-group">
+              <label>Email Cím</label>
+              <input 
+                type="email"
+                value={newPartnerData.email}
+                onChange={(e) => setNewPartnerData({...newPartnerData, email: e.target.value})}
+                placeholder="info@partner.hu"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              />
+           </div>
+           <div className="settings-group">
+              <label>Telefonszám</label>
+              <input 
+                type="text"
+                value={newPartnerData.phone}
+                onChange={(e) => setNewPartnerData({...newPartnerData, phone: e.target.value})}
+                placeholder="+36 30 123 4567"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              />
+           </div>
+           <div className="settings-group">
+              <label>Város</label>
+              <input 
+                type="text"
+                value={newPartnerData.city}
+                onChange={(e) => setNewPartnerData({...newPartnerData, city: e.target.value})}
+                placeholder="pl. Budapest"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              />
+           </div>
+           <div className="settings-group">
+              <label>Account Manager</label>
+              <select 
+                value={newPartnerData.manager} 
+                onChange={(e) => setNewPartnerData({...newPartnerData, manager: e.target.value})}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
+              >
+                 <option value="Szabó Anna">Szabó Anna</option>
+                 <option value="Kovács János">Kovács János</option>
+                 <option value="Nagy Péter">Nagy Péter</option>
               </select>
            </div>
         </div>
