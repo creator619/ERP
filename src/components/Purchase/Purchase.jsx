@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShoppingCart, 
   Plus, 
@@ -24,7 +24,8 @@ import {
   Zap,
   ArrowRight,
   ChevronRight,
-  Info
+  Info,
+  CheckCircle // Added missing icon for some parts
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
@@ -32,6 +33,48 @@ import currencyService from '../../services/CurrencyService';
 import './Purchase.css';
 
 const Purchase = ({ addToast, currency }) => {
+  const [orders, setOrders] = useState([
+    { 
+      id: 'PO/2024/001', 
+      supplier: 'Knorr-Bremse Vasúti Kft.', 
+      date: '2024-04-10', 
+      total: 4500000, 
+      status: 'Delivered', 
+      category: 'Alkatrész',
+      approvalStep: 3, 
+      rating: 4.8,
+      scores: { quality: 98, delivery: 95, price: 90, responsiveness: 88, innovation: 85 },
+      items: [
+        { name: 'Féktárcsa szett (S-Line)', qty: 20, price: 150000 },
+        { name: 'Szerelőkészlet', qty: 20, price: 75000 }
+      ]
+    },
+    { 
+      id: 'PO/2024/002', 
+      supplier: 'Alu-Tech Hungary', 
+      date: '2024-04-12', 
+      total: 1200000, 
+      status: 'Ordered', 
+      category: 'Nyersanyag',
+      approvalStep: 1, 
+      rating: 4.2,
+      scores: { quality: 92, delivery: 88, price: 95, responsiveness: 82, innovation: 75 },
+      items: [{ name: 'Alu-profil 12m', qty: 50, price: 24000 }]
+    },
+    { 
+      id: 'PO/2024/004', 
+      supplier: 'SteelWorks Kft.', 
+      date: '2024-03-20', 
+      total: 12450000, 
+      status: 'Late', 
+      category: 'Nyersanyag',
+      approvalStep: 0, 
+      rating: 3.5,
+      scores: { quality: 85, delivery: 65, price: 98, responsiveness: 70, innovation: 60 },
+      items: [{ name: 'Vázszerkezet acél', qty: 5, price: 2490000 }]
+    }
+  ]);
+
   const [selectedPO, setSelectedPO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
@@ -99,48 +142,6 @@ const Purchase = ({ addToast, currency }) => {
     window.addEventListener('focus', checkPendingRequests);
     return () => window.removeEventListener('focus', checkPendingRequests);
   }, [addToast]);
-
-  const [orders, setOrders] = useState([
-    { 
-      id: 'PO/2024/001', 
-      supplier: 'Knorr-Bremse Vasúti Kft.', 
-      date: '2024-04-10', 
-      total: 4500000, 
-      status: 'Delivered', 
-      category: 'Alkatrész',
-      approvalStep: 3, 
-      rating: 4.8,
-      scores: { quality: 98, delivery: 95, price: 90, responsiveness: 88, innovation: 85 },
-      items: [
-        { name: 'Féktárcsa szett (S-Line)', qty: 20, price: 150000 },
-        { name: 'Szerelőkészlet', qty: 20, price: 75000 }
-      ]
-    },
-    { 
-      id: 'PO/2024/002', 
-      supplier: 'Alu-Tech Hungary', 
-      date: '2024-04-12', 
-      total: 1200000, 
-      status: 'Ordered', 
-      category: 'Nyersanyag',
-      approvalStep: 1, 
-      rating: 4.2,
-      scores: { quality: 92, delivery: 88, price: 95, responsiveness: 82, innovation: 75 },
-      items: [{ name: 'Alu-profil 12m', qty: 50, price: 24000 }]
-    },
-    { 
-      id: 'PO/2024/004', 
-      supplier: 'SteelWorks Kft.', 
-      date: '2024-03-20', 
-      total: 12450000, 
-      status: 'Late', 
-      category: 'Nyersanyag',
-      approvalStep: 0, 
-      rating: 3.5,
-      scores: { quality: 85, delivery: 65, price: 98, responsiveness: 70, innovation: 60 },
-      items: [{ name: 'Vázszerkezet acél', qty: 5, price: 2490000 }]
-    }
-  ]);
 
   const spendCategories = [
     { name: 'Nyersanyag', value: 45, color: '#3498db' },
