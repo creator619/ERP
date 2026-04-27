@@ -43,6 +43,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
         <Navbar 
           activeModuleLabel={getModuleLabel(activeModule)} 
           setActiveModule={setActiveModule}
+          onLogout={onLogout}
           currency={currency}
           setCurrency={setCurrency}
           toggleSidebar={toggleSidebar}

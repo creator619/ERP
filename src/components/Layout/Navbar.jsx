@@ -15,7 +15,7 @@ import {
 import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
 
-const Navbar = ({ activeModuleLabel, setActiveModule, currency, setCurrency, toggleSidebar }) => {
+const Navbar = ({ activeModuleLabel, setActiveModule, onLogout, currency, setCurrency, toggleSidebar }) => {
   const { language, setLanguage, t } = useLanguage();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -197,10 +197,10 @@ const Navbar = ({ activeModuleLabel, setActiveModule, currency, setCurrency, tog
                 </div>
               </div>
               <div className="dropdown-divider"></div>
-              <div className="dropdown-item"><User size={16} /> {t('nav.profile')}</div>
-              <div className="dropdown-item"><Settings size={16} /> {t('nav.settings')}</div>
+              <div className="dropdown-item" onClick={() => { setActiveModule('settings'); setShowUserMenu(false); }}><User size={16} /> {t('nav.profile')}</div>
+              <div className="dropdown-item" onClick={() => { setActiveModule('settings'); setShowUserMenu(false); }}><Settings size={16} /> {t('nav.settings')}</div>
               <div className="dropdown-divider"></div>
-              <div className="dropdown-item text-error"><LogOut size={16} /> {t('nav.logout')}</div>
+              <div className="dropdown-item text-error" onClick={() => { onLogout(); setShowUserMenu(false); }}><LogOut size={16} /> {t('nav.logout')}</div>
             </div>
           )}
         </div>
