@@ -31,13 +31,15 @@ const Compliance = ({ addToast }) => {
   const [logs] = useState(auditLogService.getLogs());
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('all');
+  const [selectedNCR, setSelectedNCR] = useState(null);
+  const [isNCRModalOpen, setIsNCRModalOpen] = useState(false);
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
       log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.details.toLowerCase().includes(searchTerm.toLowerCase());
+      (log.details || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesModule = moduleFilter === 'all' || log.module === moduleFilter;
     
