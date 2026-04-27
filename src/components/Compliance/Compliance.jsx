@@ -106,6 +106,27 @@ const Compliance = ({ addToast }) => {
     { name: 'D8: Recognition', status: 'pending' },
   ];
 
+  const [isoDocuments, setIsoDocuments] = useState([
+    { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
+    { name: 'Munkavédelmi Kézikönyv', ref: 'SAFE-HS-001', version: 'v1.1', status: 'Review' },
+    { name: 'Minőségirányítási Kézikönyv', ref: 'QM-ISO-9001', version: 'v4.0', status: 'Approved' }
+  ]);
+
+  const uploadISODocument = () => {
+    addToast('Dokumentum feltöltése...', 'info', 'Titkosított csatorna megnyitása...');
+    
+    setTimeout(() => {
+      const newDoc = {
+        name: 'ISO Audit Bizonyítvány (2024)',
+        ref: 'AUD-ISO-2024',
+        version: 'v1.0',
+        status: 'Review'
+      };
+      setIsoDocuments(prev => [newDoc, ...prev]);
+      addToast('Dokumentum sikeresen feltöltve', 'success', 'ISO Audit Bizonyítvány (2024) rögzítve.');
+    }, 1500);
+  };
+
   const openNCRDetails = (ncr) => {
     setSelectedNCR(ncr);
     setIsNCRModalOpen(true);
@@ -274,13 +295,9 @@ const Compliance = ({ addToast }) => {
            <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>ISO Dokumentum Tár</h3>
-                 <button className="view-btn-small"><Plus size={14} /> Új Feltöltése</button>
+                 <button className="view-btn-small" onClick={uploadISODocument}><Plus size={14} /> Új Feltöltése</button>
               </div>
-              {[
-                { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
-                { name: 'Munkavédelmi Kézikönyv', ref: 'SAFE-HS-001', version: 'v1.1', status: 'Review' },
-                { name: 'Minőségirányítási Kézikönyv', ref: 'QM-ISO-9001', version: 'v4.0', status: 'Approved' }
-              ].map((doc, i) => (
+              {isoDocuments.map((doc, i) => (
                 <div key={i} className="doc-list-item">
                    <div style={{ padding: '10px', background: 'rgba(52, 152, 219, 0.1)', color: 'var(--primary-color)', borderRadius: '10px' }}>
                       <FileText size={20} />
