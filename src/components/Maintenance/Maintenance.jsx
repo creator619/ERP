@@ -7,24 +7,26 @@ import {
   Clock, 
   Plus, 
   Calendar, 
-  Activity,
-  Zap,
-  RotateCcw,
-  History,
-  FileText,
-  Thermometer,
-  Gauge,
-  LifeBuoy,
-  TrendingUp,
-  DollarSign,
-  Package,
-  Layers,
-  ArrowRight,
-  Monitor
+  Activity, 
+  Zap, 
+  RotateCcw, 
+  History, 
+  FileText, 
+  Thermometer, 
+  Gauge, 
+  LifeBuoy, 
+  TrendingUp, 
+  DollarSign, 
+  Package, 
+  Layers, 
+  ArrowRight, 
+  Monitor,
+  MessageSquare
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
 import { useData } from '../../contexts/DataContext';
+import CollaborationPanel from '../UI/CollaborationPanel';
 import './Maintenance.css';
 
 const Maintenance = ({ addToast }) => {
@@ -258,7 +260,7 @@ const Maintenance = ({ addToast }) => {
                                  else addToast('Gép nem található', 'warning');
                                }}
                              >
-                               <ArrowRight size={14} />
+                                <ArrowRight size={14} />
                              </button>
                           </div>
                        </div>
@@ -291,6 +293,7 @@ const Maintenance = ({ addToast }) => {
               <div className={`settings-nav-item ${activeTab === 'telemetry' ? 'active' : ''}`} onClick={() => setActiveTab('telemetry')}>Telemetria & AI</div>
               <div className={`settings-nav-item ${activeTab === 'parts' ? 'active' : ''}`} onClick={() => setActiveTab('parts')}>Alkatrészek</div>
               <div className={`settings-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>Szerviznapló</div>
+              <div className={`settings-nav-item ${activeTab === 'collab' ? 'active' : ''}`} onClick={() => setActiveTab('collab')}>Belső Egyeztetés</div>
             </div>
 
             {activeTab === 'telemetry' && (
@@ -413,6 +416,10 @@ const Maintenance = ({ addToast }) => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {activeTab === 'collab' && (
+              <CollaborationPanel entityId={selectedMachine.id} />
             )}
           </div>
         )}

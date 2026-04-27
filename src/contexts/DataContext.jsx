@@ -278,6 +278,50 @@ export const DataProvider = ({ children }) => {
 
   const [procurementRequests, setProcurementRequests] = useState([]);
 
+  // 5. Collaboration State (NEW)
+  const [comments, setComments] = useState({
+    'NCR-2024-042': [
+      { id: 1, user: 'Kovács János', text: 'A beszállító jelezte, hogy a következő tétel már ellenőrizve lesz.', time: '2024-04-26 10:15', role: 'Quality' },
+      { id: 2, user: 'Simon Ernő', text: 'Rendben, kérlek csatold a jegyzőkönyvet is!', time: '2024-04-26 11:30', role: 'Management' }
+    ],
+    'PO/2024/001': [
+      { id: 1, user: 'Varga László', text: 'Az árakat sikerült 5%-kal lejjebb alkudni.', time: '2024-04-10 09:00', role: 'Procurement' }
+    ]
+  });
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'comment', entityId: 'NCR-2024-042', text: 'Új hozzászólás érkezett az NCR-042-höz', read: false, time: '1 órája' },
+    { id: 2, type: 'alert', entityId: 'MC-102', text: 'Prediktív riasztás: MC-102 hiba várható', read: false, time: '2 órája' }
+  ]);
+
+  const addComment = (entityId, text, user = 'Simon Ernő', role = 'Management') => {
+    const newComment = {
+      id: Date.now(),
+      user,
+      text,
+      time: new Date().toLocaleString('hu-HU', { hour: '2-digit', minute: '2-digit' }),
+      role
+    };
+
+    setComments(prev => ({
+      ...prev,
+      [entityId]: [...(prev[entityId] || []), newComment]
+    }));
+
+    // Add to audit log implicitly
+    auditLogService.log({
+      user,
+      action: 'Megjegyzés hozzáadva',
+      module: 'Collaboration',
+      details: `${entityId}: ${text.substring(0, 30)}...`,
+      severity: 'info'
+    });
+  };
+
+  const markNotificationAsRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
   // BOM Availability Check Hook
   const getBomStatus = (wo) => {
     return wo.bom.map(b => {
@@ -323,12 +367,10 @@ export const DataProvider = ({ children }) => {
       return wo;
     }));
 
-    // Ha befejeztük a gyártást, levonjuk a BOM-ot és hozzáadjuk a végterméket
     if (completed) {
       setProducts(prevProducts => {
         let updatedProducts = [...prevProducts];
 
-        // Anyagleadás
         requiredBom.forEach(item => {
           let pIdx = updatedProducts.findIndex(p => p.sku === item.sku);
           if (pIdx > -1) {
@@ -340,7 +382,6 @@ export const DataProvider = ({ children }) => {
           }
         });
 
-        // Késztermék bevételezés
         let endIdx = updatedProducts.findIndex(p => p.name === endProduct);
         if (endIdx > -1) {
            updatedProducts[endIdx] = {
@@ -358,7 +399,6 @@ export const DataProvider = ({ children }) => {
           severity: 'success'
         });
 
-        // Blockchain Főkönyvi bejegyzés generálása
         const now = new Date().toLocaleString('hu-HU');
         setLedgers(prev => ({
           ...prev,
@@ -381,14 +421,12 @@ export const DataProvider = ({ children }) => {
     return completed;
   };
 
-  // 5. AI Action Handler (Cross-module execution)
   const executeAIAction = (insight) => {
     const now = new Date().toISOString().split('T')[0];
     
     switch (insight.type) {
       case 'inventory':
       case 'logistics':
-        // Add to Procurement REQUESTS instead of Orders
         const newReq = {
           id: `REQ-AI-${Math.floor(Math.random() * 1000)}`,
           supplier: 'Prediktív Javaslat (AI)',
@@ -412,10 +450,9 @@ export const DataProvider = ({ children }) => {
         break;
 
       case 'maintenance':
-        // Create a critical maintenance work order
         const newMaint = {
           id: `WO-AI-${Math.floor(Math.random() * 1000)}`,
-          machine: 'MC-102', // Defaulting to the one in warning
+          machine: 'MC-102',
           task: insight.recommendation,
           priority: 'Kritikus',
           status: 'Várólista'
@@ -446,7 +483,9 @@ export const DataProvider = ({ children }) => {
       maintenanceTasks, setMaintenanceTasks,
       procurementOrders, setProcurementOrders,
       procurementRequests, setProcurementRequests,
-      executeAIAction
+      executeAIAction,
+      comments, addComment,
+      notifications, markNotificationAsRead
     }}>
       {children}
     </DataContext.Provider>

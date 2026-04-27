@@ -20,10 +20,12 @@ import {
   Download,
   Server,
   UserCheck,
-  Eye
+  Eye,
+  MessageSquare
 } from 'lucide-react';
 import auditLogService from '../../services/AuditLogService';
 import Modal from '../UI/Modal';
+import CollaborationPanel from '../UI/CollaborationPanel';
 import './Compliance.css';
 
 const Compliance = ({ addToast }) => {
@@ -36,6 +38,7 @@ const Compliance = ({ addToast }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isAddToolModalOpen, setIsAddToolModalOpen] = useState(false);
   const [isAddAuditModalOpen, setIsAddAuditModalOpen] = useState(false);
+  const [ncrActiveTab, setNcrActiveTab] = useState('details');
 
   const [isoDocuments, setIsoDocuments] = useState([
     { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
@@ -132,6 +135,7 @@ const Compliance = ({ addToast }) => {
   const openNCRDetails = (ncr) => {
     setSelectedNCR(ncr);
     setIsNCRModalOpen(true);
+    setNcrActiveTab('details');
   };
 
   const generatePDFReport = () => {
@@ -773,65 +777,76 @@ const Compliance = ({ addToast }) => {
         isOpen={isNCRModalOpen}
         onClose={() => setIsNCRModalOpen(false)}
         title={selectedNCR ? `Nem-megfelelőségi Jegyzőkönyv: ${selectedNCR.id}` : ''}
-        width="700px"
+        width="950px"
         footer={
           <button className="view-btn" onClick={() => setIsNCRModalOpen(false)}>Bezárás</button>
         }
       >
         {selectedNCR && (
           <div className="ncr-details-content">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
-              <div className="stat-card" style={{ padding: '15px' }}>
-                <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>STÁTUSZ</p>
-                <span className={`status-badge ${selectedNCR.status === 'Resolved' ? 'success' : 'warning'}`}>{selectedNCR.status}</span>
-              </div>
-              <div className="stat-card" style={{ padding: '15px' }}>
-                <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>SÚLYOSSÁG</p>
-                <span className="status-badge danger" style={{ background: selectedNCR.severity === 'High' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(230, 126, 34, 0.1)', color: selectedNCR.severity === 'High' ? '#e74c3c' : '#e67e22' }}>
-                  {selectedNCR.severity}
-                </span>
-              </div>
+             <div className="settings-nav" style={{ marginBottom: '25px' }}>
+              <div className={`settings-nav-item ${ncrActiveTab === 'details' ? 'active' : ''}`} onClick={() => setNcrActiveTab('details')}>Jegyzőkönyv</div>
+              <div className={`settings-nav-item ${ncrActiveTab === 'collab' ? 'active' : ''}`} onClick={() => setNcrActiveTab('collab')}>Belső Egyeztetés</div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div className="settings-group">
-                <label>Hiba Leírása</label>
-                <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                  {selectedNCR.description}
+            {ncrActiveTab === 'details' ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
+                  <div className="stat-card" style={{ padding: '15px' }}>
+                    <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>STÁTUSZ</p>
+                    <span className={`status-badge ${selectedNCR.status === 'Resolved' ? 'success' : 'warning'}`}>{selectedNCR.status}</span>
+                  </div>
+                  <div className="stat-card" style={{ padding: '15px' }}>
+                    <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>SÚLYOSSÁG</p>
+                    <span className="status-badge danger" style={{ background: selectedNCR.severity === 'High' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(230, 126, 34, 0.1)', color: selectedNCR.severity === 'High' ? '#e74c3c' : '#e67e22' }}>
+                      {selectedNCR.severity}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="settings-group">
-                  <label>Gyökérok (Root Cause)</label>
-                  <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.85rem', color: '#f1c40f' }}>
-                    {selectedNCR.rootCause}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="settings-group">
+                    <label>Hiba Leírása</label>
+                    <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                      {selectedNCR.description}
+                    </div>
                   </div>
-                </div>
-                <div className="settings-group">
-                  <label>Azonnali Intézkedés</label>
-                  <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.85rem', color: '#2ecc71' }}>
-                    {selectedNCR.containment}
-                  </div>
-                </div>
-              </div>
 
-              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.7rem' }}>
-                    {selectedNCR.inspector.split(' ')[0][0]}{selectedNCR.inspector.split(' ')[1][0]}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    <div className="settings-group">
+                      <label>Gyökérok (Root Cause)</label>
+                      <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.85rem', color: '#f1c40f' }}>
+                        {selectedNCR.rootCause}
+                      </div>
+                    </div>
+                    <div className="settings-group">
+                      <label>Azonnali Intézkedés</label>
+                      <div className="glass" style={{ padding: '15px', borderRadius: '12px', fontSize: '0.85rem', color: '#2ecc71' }}>
+                        {selectedNCR.containment}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ fontSize: '0.8rem', fontWeight: 700 }}>{selectedNCR.inspector}</p>
-                    <p className="text-muted" style={{ fontSize: '0.65rem' }}>Minőségellenőr</p>
+
+                  <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.7rem' }}>
+                        {selectedNCR.inspector.split(' ')[0][0]}{selectedNCR.inspector.split(' ')[1][0]}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '0.8rem', fontWeight: 700 }}>{selectedNCR.inspector}</p>
+                        <p className="text-muted" style={{ fontSize: '0.65rem' }}>Minőségellenőr</p>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p className="text-muted" style={{ fontSize: '0.65rem' }}>BEJELENTÉS DÁTUMA</p>
+                      <p style={{ fontSize: '0.85rem', fontWeight: 700 }}>{selectedNCR.date}</p>
+                    </div>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p className="text-muted" style={{ fontSize: '0.65rem' }}>BEJELENTÉS DÁTUMA</p>
-                  <p style={{ fontSize: '0.85rem', fontWeight: 700 }}>{selectedNCR.date}</p>
-                </div>
-              </div>
-            </div>
+              </>
+            ) : (
+              <CollaborationPanel entityId={selectedNCR.id} />
+            )}
           </div>
         )}
       </Modal>

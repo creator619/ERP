@@ -13,23 +13,21 @@ import {
   Menu
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useData } from '../../contexts/DataContext';
 import './Layout.css';
 
 const Navbar = ({ activeModuleLabel, setActiveModule, onLogout, currency, setCurrency, toggleSidebar }) => {
   const { language, setLanguage, t } = useLanguage();
+  const { notifications, markNotificationAsRead } = useData();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
 
-  const notifications = [
-    { id: 1, title: 'Új megrendelés', desc: 'A MÁV-START 50db ablakot rendelt.', time: '5 perce', type: 'info', icon: <MessageSquare size={14} />, targetModule: 'sales' },
-    { id: 2, title: 'Gyártás kész', desc: 'A PRJ-001 projekt dokumentációja hiányos.', time: '1 órája', type: 'warning', icon: <AlertCircle size={14} />, targetModule: 'projects' },
-    { id: 3, title: 'Sikeres mentés', desc: 'A készletszintek frissültek.', time: '3 órája', type: 'success', icon: <CheckCircle2 size={14} />, targetModule: 'inventory' },
-  ];
-
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const searchableItems = [
     { id: 'dashboard', label: t('menu.dashboard'), category: 'Modul', icon: <Grid size={16} /> },
@@ -67,9 +65,24 @@ const Navbar = ({ activeModuleLabel, setActiveModule, onLogout, currency, setCur
     setShowSearchResults(false);
   };
 
-  const handleNotificationClick = (module) => {
-    setActiveModule(module);
+  const handleNotificationClick = (n) => {
+    markNotificationAsRead(n.id);
+    
+    // Simple routing logic based on entityId prefix
+    if (n.entityId.startsWith('NCR-')) setActiveModule('compliance');
+    else if (n.entityId.startsWith('PO/')) setActiveModule('purchase');
+    else if (n.entityId.startsWith('MC-')) setActiveModule('maintenance');
+    
     setShowNotifications(false);
+  };
+
+  const getNotificationIcon = (type) => {
+    switch(type) {
+      case 'comment': return <MessageSquare size={14} />;
+      case 'alert': return <AlertCircle size={14} />;
+      case 'success': return <CheckCircle2 size={14} />;
+      default: return <Bell size={14} />;
+    }
   };
 
   return (
@@ -123,30 +136,34 @@ const Navbar = ({ activeModuleLabel, setActiveModule, onLogout, currency, setCur
         <div className="nav-action-wrapper">
           <button className="nav-action-btn" onClick={() => { setShowNotifications(!showNotifications); setShowUserMenu(false); }}>
             <Bell size={20} />
-            <span className="notification-dot"></span>
+            {unreadCount > 0 && <span className="notification-dot"></span>}
           </button>
           
           {showNotifications && (
             <div className="dropdown-menu glass notifications-dropdown">
               <div className="dropdown-header">
-                <h4>{t('nav.notifications')}</h4>
-                <span>{t('nav.markAllRead')}</span>
+                <h4>{t('nav.notifications')} ({unreadCount})</h4>
+                <span onClick={() => notifications.forEach(n => markNotificationAsRead(n.id))} style={{ cursor: 'pointer' }}>{t('nav.markAllRead')}</span>
               </div>
               <div className="dropdown-body">
-                {notifications.map(n => (
+                {notifications.length > 0 ? notifications.map(n => (
                   <div 
                     key={n.id} 
-                    className="notification-item"
-                    onClick={() => handleNotificationClick(n.targetModule)}
+                    className={`notification-item ${n.read ? 'read' : ''}`}
+                    onClick={() => handleNotificationClick(n)}
                   >
-                    <div className={`notification-icon ${n.type}`}>{n.icon}</div>
+                    <div className={`notification-icon ${n.type}`}>{getNotificationIcon(n.type)}</div>
                     <div className="notification-info">
-                      <p><strong>{n.title}</strong></p>
-                      <p className="text-muted">{n.desc}</p>
-                      <span>{n.time}</span>
+                      <p><strong>{n.text}</strong></p>
+                      <span className="text-muted" style={{ fontSize: '0.7rem' }}>{n.time}</span>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>
+                    <Bell size={32} style={{ marginBottom: '10px' }} />
+                    <p>Nincsenek értesítések</p>
+                  </div>
+                )}
               </div>
               <div className="dropdown-footer">{t('nav.viewAll')}</div>
             </div>

@@ -25,12 +25,14 @@ import {
   ArrowRight,
   ChevronRight,
   Info,
-  CheckCircle // Added missing icon for some parts
+  CheckCircle, // Added missing icon for some parts
+  MessageSquare
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
 import currencyService from '../../services/CurrencyService';
 import { useData } from '../../contexts/DataContext';
+import CollaborationPanel from '../UI/CollaborationPanel';
 import './Purchase.css';
 
 const Purchase = ({ addToast, currency }) => {
@@ -547,6 +549,7 @@ const Purchase = ({ addToast, currency }) => {
               <div className={`settings-nav-item ${activeTab === 'items' ? 'active' : ''}`} onClick={() => setActiveTab('items')}>Rendelt Tételek</div>
               <div className={`settings-nav-item ${activeTab === 'sourcing' ? 'active' : ''}`} onClick={() => setActiveTab('sourcing')}>AI Sourcing</div>
               <div className={`settings-nav-item ${activeTab === 'scorecard' ? 'active' : ''}`} onClick={() => setActiveTab('scorecard')}>Beszállító Profil</div>
+              <div className={`settings-nav-item ${activeTab === 'collab' ? 'active' : ''}`} onClick={() => setActiveTab('collab')}>Belső Egyeztetés</div>
             </div>
 
             {activeTab === 'items' && (
@@ -634,6 +637,10 @@ const Purchase = ({ addToast, currency }) => {
                    </div>
                 </div>
               </div>
+            )}
+
+            {activeTab === 'collab' && (
+              <CollaborationPanel entityId={selectedPO.id} />
             )}
           </div>
         )}
