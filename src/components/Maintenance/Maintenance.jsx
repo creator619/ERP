@@ -106,6 +106,13 @@ const Maintenance = ({ addToast }) => {
   const [activeTab, setActiveTab] = useState('telemetry');
   const [downtimeTicker, setDowntimeTicker] = useState(0);
 
+  const [isCreateWOModalOpen, setIsCreateWOModalOpen] = useState(false);
+  const [newWOData, setNewWOData] = useState({
+    machineId: '',
+    task: '',
+    priority: 'Közepes'
+  });
+
   useEffect(() => {
     const interval = setInterval(() => {
       setSimulatedTemp(prev => Math.max(30, Math.min(85, prev + (Math.random() - 0.5) * 2)));
@@ -128,8 +135,6 @@ const Maintenance = ({ addToast }) => {
 
   const handleOrderPart = (customName) => {
     const finalName = customName || partNameInput || 'Általános alkatrész';
-    
-    // Save to global pending requests for Purchase module
     const pendingRequests = JSON.parse(localStorage.getItem('pending_purchase_requests') || '[]');
     const newRequest = {
       id: `REQ-${Math.floor(Math.random() * 1000)}`,
@@ -143,9 +148,7 @@ const Maintenance = ({ addToast }) => {
       scores: { quality: 90, delivery: 90, price: 90, responsiveness: 90, innovation: 90 },
       items: [{ name: finalName, qty: 1, price: 0 }]
     };
-    
     localStorage.setItem('pending_purchase_requests', JSON.stringify([...pendingRequests, newRequest]));
-
     auditLogService.log({
       user: 'Maintenance Manager',
       action: 'Egyedi alkatrész igény leadva',
@@ -153,10 +156,38 @@ const Maintenance = ({ addToast }) => {
       details: `${finalName} - Igény továbbítva a Beszerzés felé`,
       severity: 'warning'
     });
-
     addToast(`Rendelési igény leadva: ${finalName}`, 'success');
     setPartNameInput('');
     setIsModalOpen(false);
+  };
+
+  const handleCreateWO = () => {
+    if (!newWOData.machineId || !newWOData.task) {
+      addToast('Kérjük töltsön ki minden mezőt!', 'warning');
+      return;
+    }
+
+    const newWO = {
+      id: `WO-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+      machine: newWOData.machineId,
+      task: newWOData.task,
+      priority: newWOData.priority,
+      status: 'Várólista'
+    };
+
+    setWorkOrders(prev => [newWO, ...prev]);
+    
+    auditLogService.log({
+      user: 'Maintenance Manager',
+      action: 'Új munkalap rögzítve',
+      module: 'Maintenance',
+      details: `${newWO.id} - ${newWO.machine}: ${newWO.task}`,
+      severity: 'info'
+    });
+
+    addToast('Új munkalap sikeresen rögzítve', 'success');
+    setIsCreateWOModalOpen(false);
+    setNewWOData({ machineId: '', task: '', priority: 'Közepes' });
   };
 
   const TelemetryChart = ({ data, color = 'var(--primary-color)' }) => {
@@ -198,7 +229,7 @@ const Maintenance = ({ addToast }) => {
             <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`} onClick={() => setViewMode('grid')}>Dashboard</button>
             <button className={`view-btn ${viewMode === 'kanban' ? 'active' : ''}`} onClick={() => setViewMode('kanban')}>Szerviz Tábla</button>
           </div>
-          <button className="create-btn" onClick={() => addToast('Új szerviz feladat', 'success')}>
+          <button className="create-btn" onClick={() => setIsCreateWOModalOpen(true)}>
             <Plus size={20} /> Új Munkalap
           </button>
         </div>
@@ -450,6 +481,63 @@ const Maintenance = ({ addToast }) => {
           </div>
         )}
       </Modal>
+      <Modal
+        isOpen={isCreateWOModalOpen}
+        onClose={() => setIsCreateWOModalOpen(false)}
+        title="Új Munkalap Létrehozása"
+        width="600px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsCreateWOModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleCreateWO}>Munkalap Rögzítése</button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="settings-group">
+            <label>Érintett Gép / Eszköz</label>
+            <select 
+              className="maintenance-input" 
+              style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--text-main)' }}
+              value={newWOData.machineId}
+              onChange={(e) => setNewWOData({...newWOData, machineId: e.target.value})}
+            >
+              <option value="" style={{ background: '#1a1a1a' }}>Válasszon gépet...</option>
+              {machines.map(m => (
+                <option key={m.id} value={m.id} style={{ background: '#1a1a1a' }}>{m.id} - {m.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="settings-group">
+            <label>Feladat Leírása</label>
+            <textarea 
+              className="maintenance-input"
+              style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'var(--text-main)', minHeight: '100px', resize: 'vertical' }}
+              placeholder="Írja le a szerviz feladatot..."
+              value={newWOData.task}
+              onChange={(e) => setNewWOData({...newWOData, task: e.target.value})}
+            />
+          </div>
+
+          <div className="settings-group">
+            <label>Prioritás</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {['Közepes', 'Magas', 'Kritikus'].map(p => (
+                <button 
+                  key={p}
+                  className={`view-btn ${newWOData.priority === p ? 'active' : ''}`}
+                  style={{ flex: 1 }}
+                  onClick={() => setNewWOData({...newWOData, priority: p})}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 };
