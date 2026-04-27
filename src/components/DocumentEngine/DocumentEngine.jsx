@@ -19,6 +19,7 @@ import './DocumentEngine.css';
 const DocumentEngine = ({ addToast }) => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const reportTemplates = [
     { id: 'INV-TEMP', title: 'Hivatalos Számla Sablon', type: 'Finance', icon: <FileText size={20} />, color: '#3498db' },
@@ -73,6 +74,11 @@ const DocumentEngine = ({ addToast }) => {
     };
   }, []);
 
+  const filteredDocs = recentDocs.filter(doc => 
+    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    doc.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const openPreview = (doc) => {
     setSelectedDoc(doc);
     setIsPreviewOpen(true);
@@ -99,10 +105,16 @@ const DocumentEngine = ({ addToast }) => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-           <div className="search-box glass" style={{ display: 'flex', alignItems: 'center', padding: '0 15px', borderRadius: '10px', height: '45px' }}>
-             <Search size={18} className="text-muted" />
-             <input type="text" placeholder="Dokumentum keresése..." style={{ background: 'transparent', border: 'none', color: 'white', paddingLeft: '10px', outline: 'none' }} />
-           </div>
+            <div className="search-box glass" style={{ display: 'flex', alignItems: 'center', padding: '0 15px', borderRadius: '10px', height: '45px' }}>
+              <Search size={18} className="text-muted" />
+              <input 
+                type="text" 
+                placeholder="Dokumentum keresése..." 
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', paddingLeft: '10px', outline: 'none' }} 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
         </div>
       </div>
 
@@ -127,7 +139,7 @@ const DocumentEngine = ({ addToast }) => {
           <div className="recent-docs-section glass" style={{ marginTop: '30px', padding: '25px', borderRadius: '24px' }}>
              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '20px' }}>Legutóbb Generált Iratok</h3>
              <div className="docs-list">
-                {recentDocs.map(doc => (
+                {filteredDocs.length > 0 ? filteredDocs.map(doc => (
                   <div key={doc.id} className="doc-list-item">
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                        <div className="doc-type-icon"><FileText size={16} /></div>
@@ -141,7 +153,9 @@ const DocumentEngine = ({ addToast }) => {
                        <button className="icon-btn-small" onClick={() => handleExport('PDF')}><Download size={14} /></button>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-muted" style={{ textAlign: 'center', padding: '20px', fontSize: '0.85rem' }}>Nincs a keresésnek megfelelő dokumentum.</p>
+                )}
              </div>
           </div>
         </div>
