@@ -206,6 +206,27 @@ const CRM = ({ addToast }) => {
     setIsTenderModalOpen(true);
   };
 
+  const handleUpdateTenderStatus = (newStatus) => {
+    setTenders(prev => prev.map(t => {
+      if (t.id === selectedTender.id) {
+        const updated = { ...t, status: newStatus };
+        setSelectedTender(updated);
+        return updated;
+      }
+      return t;
+    }));
+
+    auditLogService.log({
+      user: 'Sales Manager',
+      action: 'Tender státusz módosítás',
+      module: 'CRM',
+      details: `${selectedTender.id}: Új státusz: ${newStatus}`,
+      severity: 'info'
+    });
+
+    addToast('Tender státusz frissítve', 'success');
+  };
+
   const formatHUF = (val) => new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(val);
 
   return (
@@ -592,7 +613,6 @@ const CRM = ({ addToast }) => {
         footer={
           <>
             <button className="view-btn" onClick={() => setIsTenderModalOpen(false)}>Bezárás</button>
-            <button className="create-btn" onClick={() => addToast('Státusz frissítve', 'success')}>Státusz Módosítása</button>
           </>
         }
       >
@@ -607,6 +627,19 @@ const CRM = ({ addToast }) => {
                   <p className="text-muted" style={{ fontSize: '0.75rem' }}>Várható Érték</p>
                   <p style={{ fontWeight: 900, color: 'var(--primary-color)' }}>{formatHUF(selectedTender.value)}</p>
                </div>
+            </div>
+
+            <div className="settings-group">
+               <label>Státusz Módosítása</label>
+               <select 
+                 value={selectedTender.status} 
+                 onChange={(e) => handleUpdateTenderStatus(e.target.value)}
+                 style={{ width: '100%', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white', marginTop: '8px' }}
+               >
+                  <option value="Draft">Piszkozat</option>
+                  <option value="In Progress">Folyamatban</option>
+                  <option value="Review">Leadva / Ellenőrzés alatt</option>
+               </select>
             </div>
 
             <div className="settings-group">
