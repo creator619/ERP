@@ -33,6 +33,7 @@ const Compliance = ({ addToast }) => {
   const [moduleFilter, setModuleFilter] = useState('all');
   const [selectedNCR, setSelectedNCR] = useState(null);
   const [isNCRModalOpen, setIsNCRModalOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
@@ -108,6 +109,16 @@ const Compliance = ({ addToast }) => {
   const openNCRDetails = (ncr) => {
     setSelectedNCR(ncr);
     setIsNCRModalOpen(true);
+  };
+
+  const generatePDFReport = () => {
+    setIsGeneratingPDF(true);
+    addToast('8D Riport generálása folyamatban...', 'info', 'A rendszer összeállítja a minőségügyi dokumentációt.');
+    
+    setTimeout(() => {
+      setIsGeneratingPDF(false);
+      addToast('Riport sikeresen legenerálva', 'success', 'A dokumentumot megtalálja a Riportközpontban.');
+    }, 2500);
   };
 
   return (
@@ -245,8 +256,13 @@ const Compliance = ({ addToast }) => {
                       {step.status === 'active' && <span className="pulse-success" style={{ marginLeft: 'auto' }}></span>}
                    </div>
                  ))}
-                 <button className="create-btn" style={{ marginTop: '15px', width: '100%' }}>
-                    <FileText size={18} /> PDF Riport Generálása
+                 <button 
+                   className="create-btn" 
+                   style={{ marginTop: '15px', width: '100%', opacity: isGeneratingPDF ? 0.7 : 1 }}
+                   onClick={generatePDFReport}
+                   disabled={isGeneratingPDF}
+                 >
+                    <FileText size={18} /> {isGeneratingPDF ? 'Generálás...' : 'PDF Riport Generálása'}
                  </button>
               </div>
            </div>
