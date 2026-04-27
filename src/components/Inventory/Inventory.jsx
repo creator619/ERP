@@ -38,6 +38,7 @@ const Inventory = ({ addToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedZone, setSelectedZone] = useState(null);
 
   const [newProduct, setNewProduct] = useState({
     name: '', category: '', price: '', stock: 0, minStock: 0, sku: '', abc: 'C', location: ''
@@ -209,15 +210,60 @@ const Inventory = ({ addToast }) => {
       {viewType === 'map' && (
         <div className="glass" style={{ padding: '30px', borderRadius: '24px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Raktár Alaprajz (Hőtérkép)</h3>
-              <div className="status-badge active">TELÍRETTÉG: 72%</div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Raktár Alaprajz (Interaktív Hőtérkép)</h3>
+              <div className="status-badge active">RAKTÁR TELÍTETTSÉG: 72%</div>
            </div>
-           <div className="warehouse-map">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <div key={i} className={`map-zone ${i === 3 || i === 8 ? 'active' : i === 12 || i === 18 ? 'warning' : ''}`}>
-                   ZÓNA {String.fromCharCode(65 + (i % 5))}{Math.floor(i / 5) + 1}
+           
+           <div style={{ display: 'grid', gridTemplateColumns: selectedZone ? '1.5fr 1fr' : '1fr', gap: '30px', transition: 'all 0.5s ease' }}>
+              <div className="warehouse-map">
+                 {Array.from({ length: 20 }).map((_, i) => {
+                   const zoneName = `ZÓNA ${String.fromCharCode(65 + (i % 5))}${Math.floor(i / 5) + 1}`;
+                   const isSelected = selectedZone === zoneName;
+                   return (
+                     <div 
+                       key={i} 
+                       className={`map-zone ${i === 3 || i === 8 ? 'active' : i === 12 || i === 18 ? 'warning' : ''} ${isSelected ? 'selected' : ''}`}
+                       onClick={() => setSelectedZone(zoneName)}
+                       style={{ cursor: 'pointer', border: isSelected ? '2px solid var(--primary-color)' : '1px solid rgba(255,255,255,0.05)', transform: isSelected ? 'scale(1.05)' : 'scale(1)', zIndex: isSelected ? 10 : 1 }}
+                     >
+                        {zoneName}
+                     </div>
+                   );
+                 })}
+              </div>
+
+              {selectedZone && (
+                <div className="glass" style={{ padding: '25px', borderRadius: '20px', animation: 'fadeIn 0.3s ease-out' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                      <h4 style={{ fontWeight: 800 }}>{selectedZone} Tartalma</h4>
+                      <button className="view-btn-small" onClick={() => setSelectedZone(null)}>Bezárás</button>
+                   </div>
+                   
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {products.filter(p => p.location.includes(selectedZone.split(' ')[1])).length > 0 ? (
+                        products.filter(p => p.location.includes(selectedZone.split(' ')[1])).map(product => (
+                          <div key={product.id} className="glass" style={{ padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)' }}>
+                             <div>
+                                <p style={{ fontSize: '0.85rem', fontWeight: 700 }}>{product.name}</p>
+                                <p className="text-muted" style={{ fontSize: '0.7rem' }}>{product.sku}</p>
+                             </div>
+                             <div style={{ textAlign: 'right' }}>
+                                <p style={{ fontSize: '0.9rem', fontWeight: 900 }}>{product.stock} db</p>
+                                <span className={`status-badge-small ${product.stock > product.minStock ? 'active' : 'warning'}`} style={{ fontSize: '0.6rem' }}>
+                                   {product.stock > product.minStock ? 'OK' : 'ALACSONY'}
+                                </span>
+                             </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ textAlign: 'center', padding: '40px', opacity: 0.5 }}>
+                           <Package size={32} style={{ marginBottom: '10px' }} />
+                           <p style={{ fontSize: '0.85rem' }}>Ez a zóna jelenleg üres.</p>
+                        </div>
+                      )}
+                   </div>
                 </div>
-              ))}
+              )}
            </div>
         </div>
       )}
