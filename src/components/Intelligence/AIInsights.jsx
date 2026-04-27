@@ -42,8 +42,7 @@ const AIInsights = ({ addToast }) => {
     { role: 'ai', text: 'Üdvözlöm Simon Ernő! Én vagyok a RailParts Oracle. Miben segíthetek ma?' }
   ]);
   const [isThinking, setIsThinking] = useState(false);
-
-  const insights = aiService.getInsights();
+  const [insightData, setInsightData] = useState(aiService.getInsights());
 
   const handleSendMessage = (e) => {
     if (e) e.preventDefault();
@@ -65,6 +64,17 @@ const AIInsights = ({ addToast }) => {
       const aiMsg = { role: 'ai', text: responses[Math.floor(Math.random() * responses.length)] };
       setChatHistory(prev => [...prev, aiMsg]);
       setIsThinking(false);
+    }, 1500);
+  };
+
+  const handleExecuteInsight = (id) => {
+    addToast(`AI művelet indítása (${id})...`, 'info');
+    
+    setTimeout(() => {
+      setInsightData(prev => prev.map(insight => 
+        insight.id === id ? { ...insight, executed: true } : insight
+      ));
+      addToast('A javaslat sikeresen végrehajtva!', 'success');
     }, 1500);
   };
 
@@ -123,7 +133,7 @@ const AIInsights = ({ addToast }) => {
       {activeView === 'ai' && (
         <div className="ai-grid-wrapper">
           <div className="ai-grid">
-            {insights.map(insight => (
+            {insightData.map(insight => (
               <div key={insight.id} className={`ai-card glass ${insight.severity}`}>
                 <div className="scan-line"></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -162,8 +172,13 @@ const AIInsights = ({ addToast }) => {
                       <p style={{ fontWeight: 700, fontSize: '0.85rem' }}>{insight.impact}</p>
                    </div>
                    <div style={{ textAlign: 'right' }}>
-                      <button className="view-btn-small" style={{ gap: '5px' }}>
-                        Végrehajtás <ArrowRight size={14} />
+                      <button 
+                        className={`view-btn-small ${insight.executed ? 'success' : ''}`} 
+                        style={{ gap: '5px' }}
+                        onClick={() => handleExecuteInsight(insight.id)}
+                        disabled={insight.executed}
+                      >
+                        {insight.executed ? <><CheckCircle2 size={14} /> Végrehajtva</> : <>Végrehajtás <ArrowRight size={14} /></>}
                       </button>
                    </div>
                 </div>
