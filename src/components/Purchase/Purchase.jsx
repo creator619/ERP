@@ -560,7 +560,16 @@ const Purchase = ({ addToast, currency }) => {
             {selectedPO?.status === 'Request' && (
               <button 
                 className="create-btn" 
-                style={{ background: 'var(--primary-color)' }}
+                style={{ 
+                  background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+                  boxShadow: '0 4px 15px rgba(155, 89, 182, 0.3)',
+                  border: 'none',
+                  padding: '10px 25px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontWeight: 700
+                }}
                 onClick={() => handleConvertRequest(selectedPO.id)}
               >
                 <Zap size={18} /> Rendelés Kiküldése

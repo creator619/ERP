@@ -283,7 +283,16 @@ const Maintenance = ({ addToast }) => {
                           <p style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px' }}>{wo.task}</p>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                              <span className="status-badge" style={{ fontSize: '0.6rem', padding: '2px 6px' }}>{wo.priority}</span>
-                             <button className="view-btn-small"><ArrowRight size={14} /></button>
+                             <button 
+                               className="view-btn-small" 
+                               onClick={() => {
+                                 const machine = machines.find(m => m.id === wo.machine);
+                                 if (machine) openMachineDetails(machine);
+                                 else addToast('Gép nem található', 'warning');
+                               }}
+                             >
+                               <ArrowRight size={14} />
+                             </button>
                           </div>
                        </div>
                     ))}
