@@ -154,7 +154,7 @@ const Logistics = ({ addToast }) => {
         </div>
         <button 
           className="create-btn" 
-          style={{ background: 'transparent', border: '1px solid #3498db', color: '#3498db', boxShadow: 'none' }} 
+          style={{ background: 'rgba(52, 152, 219, 0.1)', color: '#3498db', border: 'none', boxShadow: 'none' }} 
           onClick={() => setIsPlanning(true)}
         >
           <Navigation size={18} /> Szállítás Tervezése
