@@ -35,6 +35,7 @@ const Compliance = ({ addToast }) => {
   const [isNCRModalOpen, setIsNCRModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isAddToolModalOpen, setIsAddToolModalOpen] = useState(false);
+  const [isAddAuditModalOpen, setIsAddAuditModalOpen] = useState(false);
 
   const [isoDocuments, setIsoDocuments] = useState([
     { name: 'Hegesztési Szabályzat', ref: 'ISO-WLD-042', version: 'v3.2', status: 'Approved' },
@@ -48,11 +49,14 @@ const Compliance = ({ addToast }) => {
     { id: 'MIV-009', name: 'Mikrométer (Mahr)', lastDate: '2023-10-20', nextDate: '2024-04-20', status: 'warning' }
   ]);
 
-  const [newTool, setNewTool] = useState({
-    id: '',
-    name: '',
-    interval: 180
-  });
+  const [auditPlans, setAuditPlans] = useState([
+    { day: '14', month: 'MÁJ', title: 'ISO 9001:2015 Belső Audit', area: 'Gyártás & Logisztika', auditor: 'Dr. Szabó Péter', status: 'Planned' },
+    { day: '28', month: 'MÁJ', title: 'IRIS Vasúti Tanúsítás', area: 'Mérnökség & Design', auditor: 'TÜV Rheinland', status: 'External' },
+    { day: '12', month: 'JÚN', title: 'Munkavédelmi Ellenőrzés', area: 'Üzemcsarnok B', auditor: 'Varga László', status: 'Planned' }
+  ]);
+
+  const [newTool, setNewTool] = useState({ id: '', name: '', interval: 180 });
+  const [newAudit, setNewAudit] = useState({ title: '', area: '', auditor: '', date: '' });
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
@@ -172,6 +176,30 @@ const Compliance = ({ addToast }) => {
     setIsAddToolModalOpen(false);
     setNewTool({ id: '', name: '', interval: 180 });
     addToast('Eszköz regisztrálva', 'success', `${toolEntry.name} hozzáadva a nyilvántartáshoz.`);
+  };
+
+  const handleSaveAudit = () => {
+    if (!newAudit.title || !newAudit.area || !newAudit.date) {
+      addToast('Hiba', 'warning', 'Minden mezőt ki kell tölteni!');
+      return;
+    }
+
+    const d = new Date(newAudit.date);
+    const months = ['JAN', 'FEB', 'MÁR', 'ÁPR', 'MÁJ', 'JÚN', 'JÚL', 'AUG', 'SZEP', 'OKT', 'NOV', 'DEC'];
+    
+    const auditEntry = {
+      day: d.getDate().toString(),
+      month: months[d.getMonth()],
+      title: newAudit.title,
+      area: newAudit.area,
+      auditor: newAudit.auditor || 'Kijelölés alatt',
+      status: 'Planned'
+    };
+
+    setAuditPlans(prev => [auditEntry, ...prev]);
+    setIsAddAuditModalOpen(false);
+    setNewAudit({ title: '', area: '', auditor: '', date: '' });
+    addToast('Audit ütemezve', 'success', `${auditEntry.title} rögzítve az ütemtervben.`);
   };
 
   return (
@@ -455,14 +483,10 @@ const Compliance = ({ addToast }) => {
         <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>Vállalati Audit Tervező</h3>
-              <button className="create-btn"><Plus size={18} /> Új Audit Ütemezése</button>
+              <button className="create-btn" onClick={() => setIsAddAuditModalOpen(true)}><Plus size={18} /> Új Audit Ütemezése</button>
            </div>
            
-           {[
-             { day: '14', month: 'MÁJ', title: 'ISO 9001:2015 Belső Audit', area: 'Gyártás & Logisztika', auditor: 'Dr. Szabó Péter', status: 'Planned' },
-             { day: '28', month: 'MÁJ', title: 'IRIS Vasúti Tanúsítás', area: 'Mérnökség & Design', auditor: 'TÜV Rheinland', status: 'External' },
-             { day: '12', month: 'JÚN', title: 'Munkavédelmi Ellenőrzés', area: 'Üzemcsarnok B', auditor: 'Varga László', status: 'Planned' }
-           ].map((audit, i) => (
+           {auditPlans.map((audit, i) => (
              <div key={i} className="audit-plan-card">
                 <div className="audit-date-box">
                    <span className="day">{audit.day}</span>
@@ -481,6 +505,20 @@ const Compliance = ({ addToast }) => {
                 </div>
              </div>
            ))}
+           
+           <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '15px' }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: '10px' }}>Audit Eredményesség (YTD)</h4>
+              <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
+                 <div style={{ width: '85%', height: '100%', background: '#2ecc71' }} title="Lezárva"></div>
+                 <div style={{ width: '10%', height: '100%', background: '#f1c40f' }} title="Folyamatban"></div>
+                 <div style={{ width: '5%', height: '100%', background: '#e74c3c' }} title="Kritikus hiba"></div>
+              </div>
+              <div style={{ display: 'flex', gap: '20px', marginTop: '10px', fontSize: '0.7rem' }}>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#2ecc71' }}></div> 85% Sikeres</div>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#f1c40f' }}></div> 10% Javító intézkedés</div>
+                 <div className="bi-legend-item"><div className="bi-legend-dot" style={{ background: '#e74c3c' }}></div> 5% Eltérés</div>
+              </div>
+           </div>
         </div>
       )}
 
@@ -656,6 +694,62 @@ const Compliance = ({ addToast }) => {
               <option value={180} style={{ background: 'var(--bg-card)' }}>180 nap (Féléves)</option>
               <option value={365} style={{ background: 'var(--bg-card)' }}>365 nap (Éves)</option>
             </select>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Add Audit Modal */}
+      <Modal
+        isOpen={isAddAuditModalOpen}
+        onClose={() => setIsAddAuditModalOpen(false)}
+        title="Új Audit Ütemezése"
+        width="500px"
+        footer={
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <button className="view-btn" onClick={() => setIsAddAuditModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleSaveAudit}>Ütemezés Mentése</button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
+          <div className="settings-group">
+            <label>Audit Megnevezése</label>
+            <input 
+              type="text" 
+              placeholder="pl: ISO 14001 Környezeti Audit" 
+              value={newAudit.title} 
+              onChange={(e) => setNewAudit({...newAudit, title: e.target.value})}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '12px', borderRadius: '10px', width: '100%' }}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Vizsgált Terület</label>
+            <input 
+              type="text" 
+              placeholder="pl: Raktár és Logisztika" 
+              value={newAudit.area} 
+              onChange={(e) => setNewAudit({...newAudit, area: e.target.value})}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '12px', borderRadius: '10px', width: '100%' }}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Kijelölt Auditor</label>
+            <input 
+              type="text" 
+              placeholder="pl: Kovács Antal" 
+              value={newAudit.auditor} 
+              onChange={(e) => setNewAudit({...newAudit, auditor: e.target.value})}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '12px', borderRadius: '10px', width: '100%' }}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Tervezett Dátum</label>
+            <input 
+              type="date" 
+              value={newAudit.date} 
+              onChange={(e) => setNewAudit({...newAudit, date: e.target.value})}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '12px', borderRadius: '10px', width: '100%' }}
+            />
           </div>
         </div>
       </Modal>
