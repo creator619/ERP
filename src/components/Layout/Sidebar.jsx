@@ -16,7 +16,8 @@ import {
   Brain,
   FileCheck,
   ShieldCheck,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Calendar
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
@@ -28,6 +29,7 @@ const Sidebar = ({ isOpen, toggleSidebar, activeModule, setActiveModule, onLogou
     { id: 'bi', label: t('menu.bi'), icon: <BarChart3 size={20} /> },
     { id: 'compliance', label: t('menu.compliance'), icon: <ShieldCheck size={20} /> },
     { id: 'intelligence', label: t('menu.intelligence'), icon: <Brain size={20} /> },
+    { id: 'planning', label: t('menu.planning'), icon: <Calendar size={20} /> },
     { id: 'documents', label: t('menu.documents'), icon: <FileCheck size={20} /> },
     { id: 'traceability', label: t('menu.traceability'), icon: <LinkIcon size={20} /> },
     { id: 'projects', label: t('menu.projects'), icon: <Folder size={20} /> },

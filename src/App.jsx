@@ -21,6 +21,7 @@ import Logistics from './components/Logistics/Logistics';
 import ExecutiveBI from './components/ExecutiveBI/ExecutiveBI';
 import AIInsights from './components/Intelligence/AIInsights';
 import Compliance from './components/Compliance/Compliance';
+import Planning from './components/Planning/Planning';
 import { ToastContainer } from './components/UI/Toast';
 
 function App() {
@@ -68,6 +69,8 @@ function App() {
         return <BlockchainTraceability {...props} />;
       case 'compliance':
         return <Compliance {...props} />;
+      case 'planning':
+        return <Planning {...props} />;
       case 'projects':
         return <Projects {...props} />;
       case 'manufacturing':
