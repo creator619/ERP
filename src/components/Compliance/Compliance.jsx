@@ -209,6 +209,13 @@ const Compliance = ({ addToast }) => {
     }, 2000);
   };
 
+  const handleExport = () => {
+    addToast('Adatok exportálása...', 'info', 'Megfelelőségi riport összeállítása (Audit, NCR, Kalibrálás)...');
+    setTimeout(() => {
+      addToast('Export sikeres', 'success', 'A teljes modul jelentése legenerálva és letöltve (XLSX).');
+    }, 2000);
+  };
+
   return (
     <div className="compliance-wrapper">
       <div className="invoicing-header" style={{ marginBottom: '30px' }}>
@@ -222,7 +229,7 @@ const Compliance = ({ addToast }) => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button className="view-btn" onClick={() => addToast('Audit riport letöltése...', 'success')}>
+          <button className="view-btn" onClick={handleExport}>
             <Download size={18} /> Exportálás
           </button>
         </div>
@@ -549,7 +556,7 @@ const Compliance = ({ addToast }) => {
                    <div key={i} className="data-record-item">
                       <div>
                          <p style={{ fontWeight: 700, fontSize: '0.8rem' }}>{rec.name}</p>
-                         <p className="text-muted" style={{ fontSize: '0.6rem' }}>Jogalap: {rec.legal}</p>
+                         <p className="text-muted" style={{ fontSize: '0.65rem' }}>Jogalap: {rec.legal}</p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                          <span className="status-badge" style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.05)' }}>{rec.period}</span>
