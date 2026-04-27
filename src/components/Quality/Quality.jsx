@@ -268,7 +268,7 @@ const Quality = ({ addToast }) => {
               <><Download size={18} /> Export</>
             )}
           </button>
-          <button className="create-btn" style={{ background: '#2ecc71', boxShadow: '0 4px 15px rgba(46, 204, 113, 0.3)' }} onClick={() => addToast('Új ellenőrzési folyamat indítva', 'success')}>
+          <button className="create-btn-premium" onClick={() => addToast('Új ellenőrzési folyamat indítva', 'success')}>
             <Plus size={18} /> Új Ellenőrzés
           </button>
         </div>
