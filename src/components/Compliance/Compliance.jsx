@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   Shield, 
   History, 
@@ -28,6 +28,14 @@ import './Compliance.css';
 const Compliance = ({ addToast }) => {
   const [activeTab, setActiveTab] = useState('audit');
   const [logs] = useState(auditLogService.getLogs());
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredLogs = logs.filter(log => 
+    log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.details.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const ncrList = [
     { id: 'NCR-2024-042', project: 'Stadler EuroDual', issue: 'Anyaghiba: Alumínium profil vetemedés', status: 'In Review', severity: 'High', date: '2024-04-20' },
@@ -107,7 +115,7 @@ const Compliance = ({ addToast }) => {
            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div className="search-bar" style={{ width: '400px' }}>
                  <Search size={18} />
-                 <input type="text" placeholder="Keresés az események között..." />
+                  <input type="text" placeholder="Keresés az események között..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ color: 'var(--text-muted)' }} />
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                  <button className="view-btn-small"><Filter size={14} /> Szűrés</button>
@@ -121,7 +129,7 @@ const Compliance = ({ addToast }) => {
                  <span>MODUL</span>
                  <span>MŰVELET</span>
               </div>
-              {logs.map(log => (
+              {filteredLogs.map(log => (
                 <div key={log.id} className="audit-row">
                    <span className="text-muted">{new Date(log.timestamp).toLocaleTimeString()}</span>
                    <span style={{ fontWeight: 700 }}>{log.user}</span>
