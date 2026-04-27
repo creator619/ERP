@@ -277,10 +277,10 @@ const Maintenance = ({ addToast }) => {
       >
         {selectedMachine && (
           <div className="machine-detail-view">
-            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', borderBottom: '1px solid var(--border-color)', borderRadius: 0, padding: 0 }}>
-              <div className={`settings-nav-item ${activeTab === 'telemetry' ? 'active' : ''}`} onClick={() => setActiveTab('telemetry')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Telemetria & AI</div>
-              <div className={`settings-nav-item ${activeTab === 'parts' ? 'active' : ''}`} onClick={() => setActiveTab('parts')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Alkatrészek</div>
-              <div className={`settings-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Szerviznapló</div>
+            <div className="settings-nav">
+              <div className={`settings-nav-item ${activeTab === 'telemetry' ? 'active' : ''}`} onClick={() => setActiveTab('telemetry')}>Telemetria & AI</div>
+              <div className={`settings-nav-item ${activeTab === 'parts' ? 'active' : ''}`} onClick={() => setActiveTab('parts')}>Alkatrészek</div>
+              <div className={`settings-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>Szerviznapló</div>
             </div>
 
             {activeTab === 'telemetry' && (
