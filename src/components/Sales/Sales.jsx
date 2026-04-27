@@ -207,51 +207,106 @@ const Sales = ({ addToast }) => {
         </div>
       </div>
 
-      <div className="pipeline-kanban" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', alignItems: 'flex-start' }}>
-        {stages.map(stage => (
-          <div key={stage} className="pipeline-column">
-            <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '2px solid var(--border-color)', marginBottom: '15px' }}>
-              <h5 style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{stage}</h5>
-              <span className="count" style={{ background: 'var(--border-color)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem' }}>
-                {opportunities.filter(o => o.stage === stage).length}
-              </span>
+      {viewType === 'pipeline' ? (
+        <div className="pipeline-kanban" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', alignItems: 'flex-start' }}>
+          {stages.map(stage => (
+            <div key={stage} className="pipeline-column">
+              <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '2px solid var(--border-color)', marginBottom: '15px' }}>
+                <h5 style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{stage}</h5>
+                <span className="count" style={{ background: 'var(--border-color)', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem' }}>
+                  {opportunities.filter(o => o.stage === stage).length}
+                </span>
+              </div>
+              <div className="column-body" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {opportunities.filter(o => o.stage === stage).map(opp => (
+                  <div key={opp.id} className="opportunity-card glass" style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--primary-color)', fontWeight: 600 }}>{opp.id}</span>
+                      <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{opp.probability}% esély</span>
+                    </div>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '5px' }}>{opp.title}</h4>
+                    <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '12px' }}>{opp.customer}</p>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{formatCurrency(opp.value)}</span>
+                      <button 
+                        className="view-btn-small" 
+                        onClick={() => handleNextStage(opp.id)}
+                        disabled={opp.stage === 'Lezárás'}
+                      >
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <button 
+                  className="add-btn-dash" 
+                  style={{ border: '1px dashed var(--border-color)', background: 'transparent', padding: '10px', borderRadius: '10px', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', width: '100%' }}
+                  onClick={() => {
+                    setNewOppData({...newOppData, stage: stage});
+                    setIsAddingOpp(true);
+                  }}
+                >
+                  + Új elem
+                </button>
+              </div>
             </div>
-            <div className="column-body" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {opportunities.filter(o => o.stage === stage).map(opp => (
-                <div key={opp.id} className="opportunity-card glass" style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--primary-color)', fontWeight: 600 }}>{opp.id}</span>
-                    <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{opp.probability}% esély</span>
-                  </div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '5px' }}>{opp.title}</h4>
-                  <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '12px' }}>{opp.customer}</p>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{formatCurrency(opp.value)}</span>
-                    <button 
-                      className="view-btn-small" 
-                      onClick={() => handleNextStage(opp.id)}
-                      disabled={opp.stage === 'Closing'}
-                    >
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
+          ))}
+        </div>
+      ) : (
+        <div className="list-view glass" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Megnevezés</th>
+                <th>Ügyfél</th>
+                <th>Érték</th>
+                <th>Fázis</th>
+                <th>Esély</th>
+                <th>Prioritás</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {opportunities.map(opp => (
+                <tr key={opp.id}>
+                  <td style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-color)' }}>{opp.id}</td>
+                  <td style={{ fontWeight: 600 }}>{opp.title}</td>
+                  <td className="text-muted">{opp.customer}</td>
+                  <td style={{ fontWeight: 700 }}>{formatCurrency(opp.value)}</td>
+                  <td>
+                    <span className="status-badge active" style={{ fontSize: '0.7rem' }}>{opp.stage}</span>
+                  </td>
+                  <td>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ flex: 1, height: '4px', width: '60px', background: 'var(--bg-main)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ width: `${opp.probability}%`, height: '100%', background: 'var(--primary-color)' }}></div>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{opp.probability}%</span>
+                     </div>
+                  </td>
+                  <td>
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      fontWeight: 800, 
+                      padding: '4px 8px', 
+                      borderRadius: '6px',
+                      background: opp.priority === 'High' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(52, 152, 219, 0.1)',
+                      color: opp.priority === 'High' ? '#e74c3c' : '#3498db'
+                    }}>
+                      {opp.priority === 'High' ? 'Magas' : opp.priority === 'Medium' ? 'Közepes' : 'Alacsony'}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <button className="view-btn-small"><MoreVertical size={16} /></button>
+                  </td>
+                </tr>
               ))}
-              <button 
-                className="add-btn-dash" 
-                style={{ border: '1px dashed var(--border-color)', background: 'transparent', padding: '10px', borderRadius: '10px', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', width: '100%' }}
-                onClick={() => {
-                  setNewOppData({...newOppData, stage: stage});
-                  setIsAddingOpp(true);
-                }}
-              >
-                + Új elem
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
