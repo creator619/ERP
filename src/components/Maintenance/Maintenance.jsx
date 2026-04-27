@@ -136,7 +136,7 @@ const Maintenance = ({ addToast }) => {
       supplier: 'Karbantartási Igény',
       date: new Date().toISOString().split('T')[0],
       total: 0,
-      status: 'Ordered',
+      status: 'Request',
       category: 'Alkatrész',
       approvalStep: 0,
       rating: 4.5,

@@ -491,7 +491,21 @@ const Purchase = ({ addToast, currency }) => {
         width="950px"
         footer={
           <>
-            <button className="view-btn" onClick={() => setIsModalOpen(false)}>Bezárás</button>
+            <button className="view-btn" onClick={() => { setIsModalOpen(false); setSelectedPO(null); }}>Bezárás</button>
+            {selectedPO?.status === 'Request' && (
+              <button 
+                className="create-btn" 
+                style={{ background: 'var(--primary-color)' }}
+                onClick={() => handleConvertRequest(selectedPO.id)}
+              >
+                <Zap size={18} /> Rendelés Kiküldése
+              </button>
+            )}
+            {selectedPO?.status === 'Ordered' && (
+              <button className="create-btn" onClick={() => addToast('Szállító értesítve a sürgetésről', 'warning')}>
+                <AlertTriangle size={18} /> Sürgetés
+              </button>
+            )}
             {selectedPO?.approvalStep < 3 && (
               <button className="create-btn" onClick={() => {
                 handleApprove(selectedPO.id);
