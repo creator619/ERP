@@ -44,7 +44,8 @@ const HR = ({ addToast }) => {
       certifications: [
         { name: 'ISO 27001 Auditor', expiry: '2025-10-12', status: 'valid' },
         { name: 'CCNA Security', expiry: '2024-06-01', status: 'warning' }
-      ]
+      ],
+      matrix: { welding: 1, cnc: 2, quality: 3, logistics: 0, electrical: 1, cad: 3 }
     },
     { 
       id: 2, 
@@ -57,7 +58,8 @@ const HR = ({ addToast }) => {
       certifications: [
         { name: 'EN ISO 9606-1', expiry: '2024-12-15', status: 'valid' },
         { name: 'Tűzvédelmi szakvizsga', expiry: '2024-04-20', status: 'expired' }
-      ]
+      ],
+      matrix: { welding: 3, cnc: 0, quality: 2, logistics: 1, electrical: 2, cad: 1 }
     },
     { 
       id: 3, 
@@ -69,7 +71,8 @@ const HR = ({ addToast }) => {
       shifts: ['DE', 'DE', 'DE', 'DE', 'SZAB', 'PIH', 'PIH'],
       certifications: [
         { name: 'PMP Certification', expiry: '2026-01-10', status: 'valid' }
-      ]
+      ],
+      matrix: { welding: 0, cnc: 1, quality: 3, logistics: 3, electrical: 1, cad: 2 }
     }
   ]);
 
@@ -173,6 +176,29 @@ const HR = ({ addToast }) => {
       details: `${selectedEmployee.name} - ${newCert.name}`,
       severity: 'info'
     });
+  };
+
+  const handleMatrixChange = (empId, skill) => {
+    setEmployees(prev => prev.map(emp => {
+      if (emp.id === empId) {
+        const currentLevel = emp.matrix[skill];
+        const nextLevel = (currentLevel + 1) % 4; // 0, 1, 2, 3
+        return {
+          ...emp,
+          matrix: { ...emp.matrix, [skill]: nextLevel }
+        };
+      }
+      return emp;
+    }));
+  };
+
+  const getMatrixColor = (level) => {
+    switch (level) {
+      case 3: return 'rgba(46, 204, 113, 0.8)'; // Expert - Green
+      case 2: return 'rgba(52, 152, 219, 0.8)'; // Advanced - Blue
+      case 1: return 'rgba(241, 196, 15, 0.8)'; // Beginner - Yellow
+      default: return 'var(--bg-main)';        // None
+    }
   };
 
   // Modern SVG Gauge rendering
@@ -335,12 +361,54 @@ const HR = ({ addToast }) => {
                 {employees.map(emp => (
                   <tr key={emp.id}>
                     <td><span style={{ fontWeight: 800 }}>{emp.name}</span></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? 'rgba(46, 204, 113, 0.8)' : 'rgba(241, 196, 15, 0.8)' }} title={`${emp.name}: Hegesztés`}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? 'rgba(52, 152, 219, 0.8)' : 'var(--bg-main)' }} title={`${emp.name}: CNC`}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 2 ? 'rgba(52, 152, 219, 0.8)' : 'rgba(46, 204, 113, 0.8)' }} title={`${emp.name}: Minőség`}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 3 ? 'rgba(46, 204, 113, 0.8)' : 'var(--bg-main)' }} title={`${emp.name}: Logisztika`}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: 'rgba(241, 196, 15, 0.8)' }} title={`${emp.name}: Villanyszerelés`}></div></td>
-                    <td style={{ textAlign: 'center' }}><div className="matrix-cell" style={{ background: emp.id === 1 ? 'rgba(46, 204, 113, 0.8)' : 'rgba(52, 152, 219, 0.8)' }} title={`${emp.name}: CAD/CAM`}></div></td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div 
+                        className="matrix-cell" 
+                        style={{ background: getMatrixColor(emp.matrix.welding) }} 
+                        onClick={() => handleMatrixChange(emp.id, 'welding')}
+                        title={`${emp.name}: Hegesztés (Kattints a váltáshoz)`}
+                      ></div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div 
+                        className="matrix-cell" 
+                        style={{ background: getMatrixColor(emp.matrix.cnc) }} 
+                        onClick={() => handleMatrixChange(emp.id, 'cnc')}
+                        title={`${emp.name}: CNC (Kattints a váltáshoz)`}
+                      ></div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div 
+                        className="matrix-cell" 
+                        style={{ background: getMatrixColor(emp.matrix.quality) }} 
+                        onClick={() => handleMatrixChange(emp.id, 'quality')}
+                        title={`${emp.name}: Minőség (Kattints a váltáshoz)`}
+                      ></div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div 
+                        className="matrix-cell" 
+                        style={{ background: getMatrixColor(emp.matrix.logistics) }} 
+                        onClick={() => handleMatrixChange(emp.id, 'logistics')}
+                        title={`${emp.name}: Logisztika (Kattints a váltáshoz)`}
+                      ></div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div 
+                        className="matrix-cell" 
+                        style={{ background: getMatrixColor(emp.matrix.electrical) }} 
+                        onClick={() => handleMatrixChange(emp.id, 'electrical')}
+                        title={`${emp.name}: Villanyszerelés (Kattints a váltáshoz)`}
+                      ></div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div 
+                        className="matrix-cell" 
+                        style={{ background: getMatrixColor(emp.matrix.cad) }} 
+                        onClick={() => handleMatrixChange(emp.id, 'cad')}
+                        title={`${emp.name}: CAD/CAM (Kattints a váltáshoz)`}
+                      ></div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
