@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   AlertTriangle,
   Ban,
-  GraduationCap
+  GraduationCap,
+  ChevronRight
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
@@ -29,6 +30,8 @@ const HR = ({ addToast }) => {
   const [isAddingCert, setIsAddingCert] = useState(false);
   const [newCertData, setNewCertData] = useState({ name: '', expiry: '' });
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [attendance, setAttendance] = useState({}); // { empId: { time: '08:12', status: 'IN' } }
   const [newEmployeeData, setNewEmployeeData] = useState({ 
     name: '', 
     role: '', 
@@ -156,14 +159,28 @@ const HR = ({ addToast }) => {
   };
 
   const dailyCheckIn = () => {
+    setIsCheckingIn(true);
+  };
+
+  const handleConfirmCheckIn = (emp) => {
+    const now = new Date();
+    const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    
+    setAttendance(prev => ({
+      ...prev,
+      [emp.id]: { time: timeString, status: 'IN' }
+    }));
+
+    setIsCheckingIn(false);
+    addToast(`${emp.name} érkezése rögzítve: ${timeString}`, 'success');
+
     auditLogService.log({
-      user: 'Jelenlegi Felhasználó',
+      user: 'Simon Ernő',
       action: 'Napi Blokkolás',
       module: 'HR',
-      details: 'Sikeres érkeztetés rögzítve.',
+      details: `${emp.name} belépett (${timeString})`,
       severity: 'success'
     });
-    addToast('Sikeres napi érkeztetés (Blokkolás) rögzítve', 'success');
   };
 
   const handleApproveLeave = (reqId) => {
@@ -343,6 +360,49 @@ const HR = ({ addToast }) => {
         </div>
       </Modal>
 
+      <Modal
+        isOpen={isCheckingIn}
+        onClose={() => setIsCheckingIn(false)}
+        title="Digitális Kártyaolvasó / Érkeztetés"
+        width="450px"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', padding: '20px 0' }}>
+           <div className="scanner-circle" style={{ width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(155, 89, 182, 0.1)', border: '2px dashed #9b59b6', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+              <div className="scanner-line"></div>
+              <ShieldCheck size={50} color="#9b59b6" />
+           </div>
+           
+           <div style={{ textAlign: 'center' }}>
+              <h4 style={{ fontWeight: 800, marginBottom: '10px' }}>Válassza ki a dolgozót a blokkoláshoz</h4>
+              <p className="text-muted" style={{ fontSize: '0.85rem' }}>A rendszer rögzíti a pontos időpontot és a GPS koordinátákat.</p>
+           </div>
+
+           <div style={{ width: '100%', maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {employees.map(emp => (
+                <button 
+                  key={emp.id} 
+                  className="dropdown-item" 
+                  style={{ justifyContent: 'space-between', padding: '12px 20px', borderRadius: '12px', border: '1px solid var(--border-color)' }}
+                  onClick={() => handleConfirmCheckIn(emp)}
+                  disabled={attendance[emp.id]?.status === 'IN'}
+                >
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800 }}>
+                        {emp.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <span style={{ fontWeight: 700 }}>{emp.name}</span>
+                   </div>
+                   {attendance[emp.id]?.status === 'IN' ? (
+                     <span style={{ fontSize: '0.75rem', color: '#2ecc71', fontWeight: 800 }}>Már belépett: {attendance[emp.id].time}</span>
+                   ) : (
+                     <ChevronRight size={16} />
+                   )}
+                </button>
+              ))}
+           </div>
+        </div>
+      </Modal>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px', marginBottom: '35px' }}>
         <div className="stat-card">
           <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Teljes Létszám</p>
@@ -397,10 +457,20 @@ const HR = ({ addToast }) => {
                 <tr key={emp.id} onClick={() => openEmployeeDetails(emp)} style={{ cursor: 'pointer' }}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                      <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(155, 89, 182, 0.1)', color: '#9b59b6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', border: '1px solid rgba(155, 89, 182, 0.3)' }}>
-                        {emp.name.split(' ').map(n => n[0]).join('')}
+                      <div style={{ position: 'relative' }}>
+                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(155, 89, 182, 0.1)', color: '#9b59b6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', border: '1px solid rgba(155, 89, 182, 0.3)' }}>
+                          {emp.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        {attendance[emp.id]?.status === 'IN' && (
+                          <div style={{ position: 'absolute', bottom: '0', right: '0', width: '12px', height: '12px', background: '#2ecc71', borderRadius: '50%', border: '2px solid var(--bg-card)', boxShadow: '0 0 10px rgba(46, 204, 113, 0.5)' }}></div>
+                        )}
                       </div>
-                      <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{emp.name}</span>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{emp.name}</div>
+                        {attendance[emp.id]?.status === 'IN' && (
+                          <div style={{ fontSize: '0.7rem', color: '#2ecc71', fontWeight: 700 }}>Benn: {attendance[emp.id].time}</div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td style={{ fontWeight: 600 }}>{emp.role}</td>
