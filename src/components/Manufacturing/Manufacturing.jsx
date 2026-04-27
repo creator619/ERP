@@ -22,12 +22,29 @@ import auditLogService from '../../services/AuditLogService';
 import './Manufacturing.css';
 
 const Manufacturing = ({ addToast }) => {
-  const { workOrders, advanceWorkOrderStage, getBomStatus } = useData();
+  const { workOrders, setWorkOrders, products, advanceWorkOrderStage, getBomStatus } = useData();
   
   const [selectedWO, setSelectedWO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('stages');
   const [activeKpiModal, setActiveKpiModal] = useState(null);
+  const [selectedMachine, setSelectedMachine] = useState(null);
+  const [isMachineModalOpen, setIsMachineModalOpen] = useState(false);
+  const [isNewWOModalOpen, setIsNewWOModalOpen] = useState(false);
+  const [newWOData, setNewWOData] = useState({
+    product: '',
+    quantity: 1,
+    deadline: '',
+    priority: 'Medium',
+    technician: 'Kovács János'
+  });
+
+  const [machineData, setMachineData] = useState([
+    { id: 'CNC-04', name: 'CNC Megmunkáló', status: 'running', oee: 92, availability: 98, performance: 95, quality: 99, load: 85, temp: '42°C' },
+    { id: 'LSR-01', name: 'Lézer Vágó', status: 'idle', oee: 78, availability: 85, performance: 92, quality: 100, load: 0, temp: '24°C' },
+    { id: 'PR-12', name: 'Hidraulikus Prés', status: 'running', oee: 88, availability: 94, performance: 94, quality: 99, load: 70, temp: '38°C' },
+    { id: 'WLD-08', name: 'Hegesztő Robot', status: 'down', oee: 45, availability: 50, performance: 90, quality: 100, load: 0, temp: 'N/A' },
+  ]);
 
   const getShortages = () => {
     let missingItems = [];
@@ -84,12 +101,6 @@ const Manufacturing = ({ addToast }) => {
 
   const [viewMode, setViewMode] = useState('orders'); // 'orders' or 'monitor'
 
-  const machines = [
-    { id: 'CNC-04', name: 'CNC Megmunkáló', status: 'running', oee: 92, availability: 98, performance: 95, quality: 99, load: 85, temp: '42°C' },
-    { id: 'LSR-01', name: 'Lézer Vágó', status: 'idle', oee: 78, availability: 85, performance: 92, quality: 100, load: 0, temp: '24°C' },
-    { id: 'PR-12', name: 'Hidraulikus Prés', status: 'running', oee: 88, availability: 94, performance: 94, quality: 99, load: 70, temp: '38°C' },
-    { id: 'WLD-08', name: 'Hegesztő Robot', status: 'down', oee: 45, availability: 50, performance: 90, quality: 100, load: 0, temp: 'N/A' },
-  ];
 
   const OEEGauge = ({ value, color }) => {
     const radius = 50;
@@ -112,6 +123,69 @@ const Manufacturing = ({ addToast }) => {
         </div>
       </div>
     );
+  };
+
+  const handleEmergencyStop = (machineId) => {
+    setMachineData(prev => prev.map(m => m.id === machineId ? { ...m, status: 'down' } : m));
+    addToast(`${machineId} vészleállítása sikeres!`, 'danger');
+    
+    auditLogService.log({
+      user: 'Rendszerüzenet (Biztonsági)',
+      action: 'VÉSZLEÁLLÍTÁS AKTIVÁLVA',
+      module: 'Manufacturing',
+      details: `Gép azonosító: ${machineId}`,
+      severity: 'danger'
+    });
+  };
+
+  const openMachineParams = (machine) => {
+    setSelectedMachine(machine);
+    setIsMachineModalOpen(true);
+  };
+
+  const handleSaveNewWO = (e) => {
+    e.preventDefault();
+    if (!newWOData.product || !newWOData.deadline) {
+      addToast('Kérjük töltsön ki minden mezőt!', 'warning');
+      return;
+    }
+
+    const lastIdNum = parseInt(workOrders[workOrders.length - 1]?.id.split('/').pop() || '0');
+    const newId = `RW/MO/${String(lastIdNum + 1).padStart(3, '0')}`;
+    
+    const selectedProd = products.find(p => p.name === newWOData.product);
+
+    const woToAdd = {
+      ...newWOData,
+      id: newId,
+      progress: 0,
+      currentStage: 1,
+      status: 'In Progress',
+      workCenter: 'MC-101 (Előkészítés)',
+      bom: selectedProd ? [
+        { item: 'Alapanyag Bejegyzés', sku: selectedProd.sku, required: newWOData.quantity }
+      ] : []
+    };
+
+    setWorkOrders([...workOrders, woToAdd]);
+    setIsNewWOModalOpen(false);
+    setNewWOData({
+      product: '',
+      quantity: 1,
+      deadline: '',
+      priority: 'Medium',
+      technician: 'Kovács János'
+    });
+
+    auditLogService.log({
+      user: 'Gyártástervező',
+      action: 'Új Munkalap Létrehozva',
+      module: 'Manufacturing',
+      details: `${newId} - ${woToAdd.product} (${woToAdd.quantity} db)`,
+      severity: 'success'
+    });
+
+    addToast(`Munkalap (${newId}) sikeresen létrehozva`, 'success');
   };
 
   return (
@@ -143,7 +217,7 @@ const Manufacturing = ({ addToast }) => {
               Élő Monitor
             </button>
           </div>
-          <button className="create-btn" onClick={() => addToast('Új gyártási terv', 'info')}>
+          <button className="create-btn" onClick={() => setIsNewWOModalOpen(true)}>
             <Plus size={20} /> Új Munkalap
           </button>
         </div>
@@ -209,7 +283,7 @@ const Manufacturing = ({ addToast }) => {
       ) : (
         <div className="machine-monitor-view">
           <div className="machine-grid responsive-grid">
-            {machines.map(m => (
+            {machineData.map(m => (
               <div key={m.id} className={`machine-card glass ${m.status}`}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                   <div>
@@ -244,8 +318,15 @@ const Manufacturing = ({ addToast }) => {
                 </div>
 
                 <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  <button className="view-btn-small" style={{ width: '100%' }}>Paraméterek</button>
-                  <button className="view-btn-small" style={{ width: '100%', borderColor: '#e74c3c', color: '#e74c3c' }}>Vészleállás</button>
+                  <button className="view-btn-small" style={{ width: '100%' }} onClick={() => openMachineParams(m)}>Paraméterek</button>
+                  <button 
+                    className="view-btn-small" 
+                    style={{ width: '100%', borderColor: '#e74c3c', color: '#e74c3c' }}
+                    onClick={() => handleEmergencyStop(m.id)}
+                    disabled={m.status === 'down'}
+                  >
+                    Vészleállás
+                  </button>
                 </div>
               </div>
             ))}
@@ -407,7 +488,7 @@ const Manufacturing = ({ addToast }) => {
                 </tr>
               </thead>
               <tbody>
-                {machines.map(m => (
+                {machineData.map(m => (
                   <tr key={m.id}>
                     <td style={{ fontWeight: 700 }}>{m.name}</td>
                     <td>
@@ -478,6 +559,122 @@ const Manufacturing = ({ addToast }) => {
             </table>
           )}
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={isMachineModalOpen}
+        onClose={() => setIsMachineModalOpen(false)}
+        title={`Gép Paraméterek: ${selectedMachine?.name}`}
+        width="600px"
+        footer={<button className="view-btn" onClick={() => setIsMachineModalOpen(false)}>Bezárás</button>}
+      >
+        {selectedMachine && (
+          <div className="machine-params-view" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="stat-card glass">
+                <p className="text-muted" style={{ fontSize: '0.7rem' }}>Aktuális Terhelés</p>
+                <p style={{ fontSize: '1.2rem', fontWeight: 800 }}>{selectedMachine.load}%</p>
+              </div>
+              <div className="stat-card glass">
+                <p className="text-muted" style={{ fontSize: '0.7rem' }}>Üzemi Hőmérséklet</p>
+                <p style={{ fontSize: '1.2rem', fontWeight: 800 }}>{selectedMachine.temp}</p>
+              </div>
+            </div>
+            
+            <div className="glass" style={{ padding: '20px', borderRadius: '15px' }}>
+              <h4 style={{ fontSize: '0.9rem', marginBottom: '15px', fontWeight: 700 }}>Szenzor Adatok (Valós idejű)</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                  <span className="text-muted">Vibráció (RMS)</span>
+                  <span style={{ fontWeight: 600 }}>0.42 mm/s</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                  <span className="text-muted">Kenőanyag szint</span>
+                  <span style={{ fontWeight: 600, color: '#2ecc71' }}>Megfelelő (88%)</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                  <span className="text-muted">Energiafogyasztás</span>
+                  <span style={{ fontWeight: 600 }}>4.2 kW/h</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={isNewWOModalOpen}
+        onClose={() => setIsNewWOModalOpen(false)}
+        title="Új Gyártási Munkalap Létrehozása"
+        width="650px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsNewWOModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleSaveNewWO}>Munkalap Mentése</button>
+          </>
+        }
+      >
+        <form onSubmit={handleSaveNewWO} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ gridColumn: 'span 2' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Gyártandó Termék</label>
+            <select 
+              className="form-input"
+              value={newWOData.product}
+              onChange={(e) => setNewWOData({...newWOData, product: e.target.value})}
+              required
+            >
+              <option value="">Válasszon terméket...</option>
+              {products.map(p => (
+                <option key={p.id} value={p.name}>{p.name} ({p.sku})</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Mennyiség</label>
+            <input 
+              type="number" 
+              className="form-input"
+              min="1"
+              value={newWOData.quantity}
+              onChange={(e) => setNewWOData({...newWOData, quantity: parseInt(e.target.value)})}
+              required
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Határidő</label>
+            <input 
+              type="date" 
+              className="form-input"
+              value={newWOData.deadline}
+              onChange={(e) => setNewWOData({...newWOData, deadline: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Felelős Technikus</label>
+            <select 
+              className="form-input"
+              value={newWOData.technician}
+              onChange={(e) => setNewWOData({...newWOData, technician: e.target.value})}
+            >
+              <option value="Kovács János">Kovács János</option>
+              <option value="Nagy Péter">Nagy Péter</option>
+              <option value="Szabó Anna">Szabó Anna</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Prioritás</label>
+            <select 
+              className="form-input"
+              value={newWOData.priority}
+              onChange={(e) => setNewWOData({...newWOData, priority: e.target.value})}
+            >
+              <option value="Low">Alacsony</option>
+              <option value="Medium">Közepes</option>
+              <option value="High">Sürgős</option>
+            </select>
+          </div>
+        </form>
       </Modal>
     </div>
   );
