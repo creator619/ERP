@@ -19,10 +19,19 @@ import {
   Briefcase
 } from 'lucide-react';
 import auditLogService from '../../services/AuditLogService';
+import Modal from '../UI/Modal';
 import './Sales.css';
 
 const Sales = ({ addToast }) => {
   const [viewType, setViewType] = useState('pipeline');
+  const [isAddingOpp, setIsAddingOpp] = useState(false);
+  const [newOppData, setNewOppData] = useState({
+    title: '',
+    customer: '',
+    value: '',
+    stage: 'Prospecting',
+    priority: 'Medium'
+  });
   const [opportunities, setOpportunities] = useState([
     { id: 'OPP-101', title: 'MÁV Ablak Csere', customer: 'MÁV-START', value: 12500000, probability: 70, stage: 'Qualified', priority: 'High' },
     { id: 'OPP-102', title: 'GYSEV Ajtó modernizáció', customer: 'GYSEV', value: 8400000, probability: 40, stage: 'Negotiation', priority: 'Medium' },
@@ -31,6 +40,40 @@ const Sales = ({ addToast }) => {
   ]);
 
   const stages = ['Prospecting', 'Qualified', 'Negotiation', 'Closing'];
+
+  const handleAddOpportunity = () => {
+    if (!newOppData.title || !newOppData.customer || !newOppData.value) {
+      addToast('Kérjük töltsön ki minden mezőt!', 'warning');
+      return;
+    }
+
+    const nextIdNum = opportunities.length > 0 
+      ? Math.max(...opportunities.map(o => parseInt(o.id.split('-')[1]))) + 1 
+      : 101;
+    
+    const newOpp = {
+      id: `OPP-${nextIdNum}`,
+      title: newOppData.title,
+      customer: newOppData.customer,
+      value: parseInt(newOppData.value),
+      stage: newOppData.stage,
+      probability: (stages.indexOf(newOppData.stage) + 1) * 25,
+      priority: newOppData.priority
+    };
+
+    setOpportunities([...opportunities, newOpp]);
+    setIsAddingOpp(false);
+    setNewOppData({ title: '', customer: '', value: '', stage: 'Prospecting', priority: 'Medium' });
+    addToast('Új értékesítési lehetőség rögzítve', 'success');
+
+    auditLogService.log({
+      user: 'Sales Manager',
+      action: 'Új lehetőség rögzítve',
+      module: 'Sales',
+      details: `${newOpp.id} - ${newOpp.title}`,
+      severity: 'success'
+    });
+  };
 
   const handleNextStage = (id) => {
     setOpportunities(prev => prev.map(opp => {
@@ -79,12 +122,75 @@ const Sales = ({ addToast }) => {
               <List size={18} />
             </button>
           </div>
-          <button className="create-btn" onClick={() => addToast('Új lehetőség', 'success')}>
+          <button className="create-btn" onClick={() => setIsAddingOpp(true)}>
             <Plus size={20} />
             Új Lehetőség
           </button>
         </div>
       </div>
+
+      <Modal
+        isOpen={isAddingOpp}
+        onClose={() => setIsAddingOpp(false)}
+        title="Új Értékesítési Lehetőség"
+        width="500px"
+      >
+        <div className="settings-row" style={{ maxWidth: '100%' }}>
+          <div className="settings-group">
+            <label>Projekt Megnevezése *</label>
+            <input 
+              type="text" 
+              placeholder="pl. GYSEV Kocsifelújítás" 
+              value={newOppData.title}
+              onChange={(e) => setNewOppData({...newOppData, title: e.target.value})}
+            />
+          </div>
+          <div className="settings-group">
+            <label>Ügyfél *</label>
+            <input 
+              type="text" 
+              placeholder="pl. GYSEV Zrt." 
+              value={newOppData.customer}
+              onChange={(e) => setNewOppData({...newOppData, customer: e.target.value})}
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="settings-group">
+              <label>Becsült Érték (HUF) *</label>
+              <input 
+                type="number" 
+                placeholder="pl. 5000000" 
+                value={newOppData.value}
+                onChange={(e) => setNewOppData({...newOppData, value: e.target.value})}
+              />
+            </div>
+            <div className="settings-group">
+              <label>Prioritás</label>
+              <select 
+                value={newOppData.priority}
+                onChange={(e) => setNewOppData({...newOppData, priority: e.target.value})}
+              >
+                <option value="Low">Alacsony</option>
+                <option value="Medium">Közepes</option>
+                <option value="High">Magas</option>
+              </select>
+            </div>
+          </div>
+          <div className="settings-group">
+            <label>Értékesítési Fázis</label>
+            <select 
+              value={newOppData.stage}
+              onChange={(e) => setNewOppData({...newOppData, stage: e.target.value})}
+            >
+              {stages.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+            <button className="view-btn" style={{ flex: 1 }} onClick={() => setIsAddingOpp(false)}>Mégse</button>
+            <button className="create-btn" style={{ flex: 1, background: '#3498db' }} onClick={handleAddOpportunity}>Létrehozás</button>
+          </div>
+        </div>
+      </Modal>
 
       <div className="pipeline-stats glass" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', padding: '20px', marginBottom: '25px', borderRadius: '15px' }}>
         <div className="stat-item">
@@ -132,7 +238,14 @@ const Sales = ({ addToast }) => {
                   </div>
                 </div>
               ))}
-              <button className="add-btn-dash" style={{ border: '1px dashed var(--border-color)', background: 'transparent', padding: '10px', borderRadius: '10px', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer' }}>
+              <button 
+                className="add-btn-dash" 
+                style={{ border: '1px dashed var(--border-color)', background: 'transparent', padding: '10px', borderRadius: '10px', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer', width: '100%' }}
+                onClick={() => {
+                  setNewOppData({...newOppData, stage: stage});
+                  setIsAddingOpp(true);
+                }}
+              >
                 + Új elem
               </button>
             </div>
