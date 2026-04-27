@@ -512,17 +512,17 @@ const Purchase = ({ addToast, currency }) => {
                       <span style={{ fontWeight: 800, color: '#2ecc71' }}>{s.score}% Match</span>
                    </div>
                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '12px' }}>
-                      <div className="glass" style={{ padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
-                         <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', textTransform: 'uppercase' }}>Ár</p>
-                         <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#f1c40f' }}>{s.price}</p>
+                      <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                         <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Ár</p>
+                         <p style={{ fontSize: '0.9rem', fontWeight: 900, color: '#f1c40f' }}>{s.price}</p>
                       </div>
-                      <div className="glass" style={{ padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
-                         <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', textTransform: 'uppercase' }}>Kockázat</p>
-                         <p style={{ fontSize: '0.8rem', fontWeight: 800, color: s.risk === 'Alacsony' ? '#2ecc71' : '#f1c40f' }}>{s.risk}</p>
+                      <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                         <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Kockázat</p>
+                         <p style={{ fontSize: '0.9rem', fontWeight: 900, color: s.risk === 'Alacsony' ? '#2ecc71' : '#f1c40f' }}>{s.risk}</p>
                       </div>
-                      <div className="glass" style={{ padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
-                         <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', textTransform: 'uppercase' }}>Szállítás</p>
-                         <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#3498db' }}>{s.delivery}</p>
+                      <div className="glass" style={{ padding: '10px', borderRadius: '8px', textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                         <p style={{ fontSize: '0.7rem', color: 'white', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700, opacity: 0.9 }}>Szállítás</p>
+                         <p style={{ fontSize: '0.9rem', fontWeight: 900, color: '#3498db' }}>{s.delivery}</p>
                       </div>
                    </div>
                 </div>
