@@ -511,16 +511,23 @@ const Purchase = ({ addToast, currency }) => {
                       <h4 style={{ fontWeight: 800 }}>{s.name}</h4>
                       <span style={{ fontWeight: 800, color: '#2ecc71' }}>{s.score}% Match</span>
                    </div>
-                   <div style={{ display: 'flex', gap: '15px', fontSize: '0.7rem' }}>
-                      <span className="text-muted">Ár: <strong style={{ color: 'white' }}>{s.price}</strong></span>
-                      <span className="text-muted">Kockázat: <strong style={{ color: 'white' }}>{s.risk}</strong></span>
-                      <span className="text-muted">Szállítás: <strong style={{ color: 'white' }}>{s.delivery}</strong></span>
+                   <div style={{ display: 'flex', gap: '15px', fontSize: '0.75rem', marginTop: '5px' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Ár: <strong style={{ color: 'white' }}>{s.price}</strong></span>
+                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Kockázat: <strong style={{ color: 'white' }}>{s.risk}</strong></span>
+                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Szállítás: <strong style={{ color: 'white' }}>{s.delivery}</strong></span>
                    </div>
                 </div>
                 <ChevronRight size={20} className="text-muted" />
              </div>
            ))}
-           <button className="create-btn" style={{ width: '100%', marginTop: '10px' }} onClick={() => addToast('Ajánlatkérés (RFQ) kiküldve', 'success')}>
+           <button 
+             className="create-btn" 
+             style={{ width: '100%', marginTop: '10px' }} 
+             onClick={() => {
+               addToast('Ajánlatkérés (RFQ) kiküldve az alternatív beszállítóknak', 'success');
+               setIsAlternativesModalOpen(false);
+             }}
+           >
               Ajánlatkérés Kiküldése az Alternatívákra
            </button>
         </div>
