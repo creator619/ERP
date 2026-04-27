@@ -125,6 +125,18 @@ const Maintenance = ({ addToast }) => {
     setIsModalOpen(false);
   };
 
+  const handleOrderPart = (partName) => {
+    auditLogService.log({
+      user: 'Maintenance Manager',
+      action: 'Alkatrész rendelési igény indítva',
+      module: 'Maintenance',
+      details: `${partName} - Igény továbbítva a Beszerzés felé`,
+      severity: 'warning'
+    });
+    addToast(`Rendelési igény továbbítva a Beszerzés felé: ${partName}`, 'success');
+    setIsModalOpen(false);
+  };
+
   const TelemetryChart = ({ data, color = 'var(--primary-color)' }) => {
     const width = 400;
     const height = 100;
@@ -360,7 +372,13 @@ const Maintenance = ({ addToast }) => {
                        </div>
                     ))}
                  </div>
-                 <button className="view-btn-small" style={{ marginTop: '20px' }}>Alkatrész rendelése</button>
+                                   <button 
+                    className="view-btn-small" 
+                    style={{ marginTop: '20px', width: '100%', padding: '12px', fontSize: '0.9rem' }}
+                    onClick={() => handleOrderPart(selectedMachine.parts[0]?.name || 'Alkatrész')}
+                  >
+                    Alkatrész rendelése
+                  </button>
               </div>
             )}
 
