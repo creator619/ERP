@@ -45,6 +45,7 @@ export const DataProvider = ({ children }) => {
   });
 
   // 1. Initial Products State (Inventory)
+  const [products, setProducts] = useState([
     { 
       id: 1, 
       name: 'Poggyásztartó modul (Alumínium)', 
