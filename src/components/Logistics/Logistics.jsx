@@ -9,7 +9,9 @@ import {
   Navigation,
   Globe,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Activity,
+  Radar
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import './Logistics.css';
@@ -18,6 +20,7 @@ const Logistics = ({ addToast }) => {
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPlanning, setIsPlanning] = useState(false);
+  const [isGISMapOpen, setIsGISMapOpen] = useState(false);
   const [newShipmentData, setNewShipmentData] = useState({
     id: `SHP-2024-${Math.floor(Math.random() * 1000)}`,
     origin: 'RailParts Raktár (HU)',
@@ -357,9 +360,101 @@ const Logistics = ({ addToast }) => {
                ))}
             </div>
             
-            <button className="create-btn" style={{ width: '100%', marginTop: '30px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-color)', boxShadow: 'none' }}>
+            <button 
+              className="create-btn" 
+              style={{ width: '100%', marginTop: '30px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-color)', boxShadow: 'none' }}
+              onClick={() => setIsGISMapOpen(true)}
+            >
                <ExternalLink size={16} /> Megnyitás teljes GIS Térképen
             </button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={isGISMapOpen}
+        onClose={() => setIsGISMapOpen(false)}
+        title={selectedShipment ? `Élő GIS Telemetria: ${selectedShipment.id}` : 'Globális Követési Rendszer'}
+        width="950px"
+      >
+        {selectedShipment && (
+          <div className="gis-map-container" style={{ position: 'relative', height: '600px', background: '#0f172a', borderRadius: '20px', overflow: 'hidden', border: '1px solid #1e293b' }}>
+             {/* Simulated Map Background */}
+             <div style={{ position: 'absolute', inset: 0, opacity: 0.4, backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+             
+             {/* Map Grid / HUD */}
+             <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div className="glass" style={{ padding: '15px', borderRadius: '12px', border: '1px solid rgba(52, 152, 219, 0.3)', background: 'rgba(15, 23, 42, 0.8)' }}>
+                   <div style={{ fontSize: '0.7rem', color: '#3498db', fontWeight: 800, textTransform: 'uppercase', marginBottom: '5px' }}>Koordináták</div>
+                   <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff', fontFamily: 'monospace' }}>
+                      47.4979° N, 19.0402° E
+                   </div>
+                </div>
+                <div className="glass" style={{ padding: '15px', borderRadius: '12px', border: '1px solid rgba(46, 204, 113, 0.3)', background: 'rgba(15, 23, 42, 0.8)' }}>
+                   <div style={{ fontSize: '0.7rem', color: '#2ecc71', fontWeight: 800, textTransform: 'uppercase', marginBottom: '5px' }}>GPS Állapot</div>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 800 }}>
+                      <Radar size={16} color="#2ecc71" className="scanner-circle" /> Stabil (8 Sat)
+                   </div>
+                </div>
+             </div>
+
+             {/* Center Marker Simulation */}
+             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 5 }}>
+                <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: '2px solid #3498db', animation: 'pulseScanner 2s infinite' }}></div>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#3498db', padding: '8px', borderRadius: '50%', boxShadow: '0 0 20px #3498db' }}>
+                   {selectedShipment.type === 'Sea' ? <Ship size={24} color="#fff" /> : selectedShipment.type === 'Road' ? <Truck size={24} color="#fff" /> : <Plane size={24} color="#fff" />}
+                </div>
+             </div>
+
+             {/* Right Sidebar Telemetry */}
+             <div style={{ position: 'absolute', top: '20px', right: '20px', bottom: '20px', width: '250px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="glass" style={{ flex: 1, padding: '20px', borderRadius: '15px', background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                   <h5 style={{ color: '#fff', fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Activity size={16} color="#3498db" /> Telemetria
+                   </h5>
+                   
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                      <div className="telemetry-item">
+                         <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 800 }}>SEBESSÉG</div>
+                         <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#3498db' }}>{selectedShipment.type === 'Sea' ? '18.4' : '82.0'} <span style={{ fontSize: '0.8rem', color: '#fff' }}>km/h</span></div>
+                      </div>
+                      <div className="telemetry-item">
+                         <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 800 }}>TENGERSZINT FELETT</div>
+                         <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff' }}>{selectedShipment.type === 'Sea' ? '0' : '142'} <span style={{ fontSize: '0.8rem' }}>m</span></div>
+                      </div>
+                      <div className="telemetry-item">
+                         <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 800 }}>ÜZEMANYAG / TÖLTÉS</div>
+                         <div style={{ width: '100%', height: '6px', background: '#334155', borderRadius: '3px', marginTop: '10px', overflow: 'hidden' }}>
+                            <div style={{ width: '74%', height: '100%', background: '#2ecc71' }}></div>
+                         </div>
+                         <div style={{ textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, marginTop: '5px', color: '#2ecc71' }}>74%</div>
+                      </div>
+                   </div>
+                </div>
+
+                <button 
+                  className="create-btn" 
+                  style={{ background: '#3498db', border: 'none' }}
+                  onClick={() => addToast('Kapcsolatfelvétel a járművel...', 'info')}
+                >
+                   Közvetlen Kapcsolat
+                </button>
+             </div>
+
+             {/* Bottom Overlay Info */}
+             <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '280px', height: '80px', zLimit: 10 }} className="glass">
+                <div style={{ display: 'flex', height: '100%', alignItems: 'center', padding: '0 25px', justifyContent: 'space-between' }}>
+                   <div>
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>INDULÁSI PONT</div>
+                      <div style={{ color: '#fff', fontWeight: 800 }}>{selectedShipment.origin}</div>
+                   </div>
+                   <div style={{ color: '#3498db', fontSize: '1.2rem', fontWeight: 900 }}>&rarr;</div>
+                   <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>CÉLÁLLOMÁS</div>
+                      <div style={{ color: '#fff', fontWeight: 800 }}>{selectedShipment.destination}</div>
+                   </div>
+                </div>
+             </div>
           </div>
         )}
       </Modal>
