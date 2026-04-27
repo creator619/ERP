@@ -94,9 +94,9 @@ const Maintenance = ({ addToast }) => {
   ]);
 
   const [workOrders, setWorkOrders] = useState([
-    { id: 'WO-001', machine: 'MC-102', task: 'Henger tömítés csere', priority: 'High', status: 'Backlog' },
-    { id: 'WO-002', machine: 'MC-104', task: 'Vezérlő panel diagnosztika', priority: 'Critical', status: 'In Progress' },
-    { id: 'WO-003', machine: 'MC-101', task: 'Éves megelőző szerviz', priority: 'Medium', status: 'Backlog' }
+    { id: 'WO-001', machine: 'MC-102', task: 'Henger tömítés csere', priority: 'Magas', status: 'Várólista' },
+    { id: 'WO-002', machine: 'MC-104', task: 'Vezérlő panel diagnosztika', priority: 'Kritikus', status: 'Folyamatban' },
+    { id: 'WO-003', machine: 'MC-101', task: 'Éves megelőző szerviz', priority: 'Közepes', status: 'Várólista' }
   ]);
 
   const [selectedMachine, setSelectedMachine] = useState(null);
@@ -267,7 +267,7 @@ const Maintenance = ({ addToast }) => {
         </>
       ) : (
         <div className="maintenance-kanban-view" style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px' }}>
-           {['Backlog', 'In Progress', 'Waiting for Parts', 'Done'].map(column => (
+           {['Várólista', 'Folyamatban', 'Alkatrészre vár', 'Kész'].map(column => (
               <div key={column} className="kanban-column glass" style={{ minWidth: '320px', flex: 1, padding: '20px', borderRadius: '20px' }}>
                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase' }}>{column}</h3>
