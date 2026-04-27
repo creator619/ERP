@@ -28,76 +28,58 @@ export const DataProvider = ({ children }) => {
     { id: 'MC-102', name: 'Hidraulikus Prés', status: 'Warning', health: 62, capacity: 160, purchaseValue: 12000000, purchaseDate: '2022-05-20', depYear: 14.5 }
   ]);
 
-  // --- HR & LEAVES ---
+  // --- HR ---
   const [employees, setEmployees] = useState([
-    { 
-      id: 'EMP-001', name: 'Kovács János', role: 'Szenior Hegesztő', department: 'Gyártás', 
-      salary: 650000, performance: 94, avatar: 'KJ',
-      skills: { welding: 5, cnc: 2, forklift: 4, assembly: 3 },
-      leaveBalance: { total: 25, used: 12, sick: 4 },
-      certs: [{ name: 'Minősített Hegesztő', expiry: '2025-06-12', status: 'valid' }]
-    },
-    { 
-      id: 'EMP-002', name: 'Nagy Piroska', role: 'CNC Operátor', department: 'Gyártás', 
-      salary: 520000, performance: 88, avatar: 'NP',
-      skills: { welding: 1, cnc: 5, forklift: 2, assembly: 2 },
-      leaveBalance: { total: 22, used: 5, sick: 0 },
-      certs: []
-    }
+    { id: 'EMP-001', name: 'Kovács János', role: 'Szenior Hegesztő', department: 'Gyártás', salary: 650000, performance: 94, avatar: 'KJ', skills: { welding: 5, cnc: 2 }, leaveBalance: { total: 25, used: 12, sick: 4 }, certs: [] }
   ]);
-
-  const [leaveRequests, setLeaveRequests] = useState([
-    { id: 'LR-101', empId: 'EMP-001', empName: 'Kovács János', type: 'Fizetett', start: '2024-05-10', end: '2024-05-15', days: 4, status: 'Pending' }
-  ]);
-
+  const [leaveRequests, setLeaveRequests] = useState([]);
   const skillDefinitions = [
     { id: 'welding', label: 'Hegesztés' }, { id: 'cnc', label: 'CNC Kezelés' }, { id: 'forklift', label: 'Targonca' }, { id: 'assembly', label: 'Összeszerelés' }
   ];
 
   // --- FINANCE ---
-  const [transactions, setTransactions] = useState([
-    { id: 'TX-001', date: '2024-04-25', account: 'Vevők', type: 'Debit', amount: 1500000, details: 'Számla kiegyenlítés' }
-  ]);
+  const [transactions, setTransactions] = useState([]);
   const [balances, setBalances] = useState({ cash: 25000000, ar: 18500000, ap: 12400000 });
 
-  // --- COLLABORATION & SYSTEM ---
+  // --- OTHERS ---
   const [notifications, setNotifications] = useState([]);
   const [comments, setComments] = useState({});
   const [procurementRequests, setProcurementRequests] = useState([]);
 
   // --- CALCULATIONS ---
-  const calculateAssets = () => {
-    return machines.map(m => {
-      const years = 2024 - new Date(m.purchaseDate).getFullYear();
-      const dep = (m.purchaseValue * (m.depYear / 100)) * years;
-      return { ...m, netValue: Math.max(0, m.purchaseValue - dep), totalDepreciation: dep, monthlyDepreciation: (m.purchaseValue * (m.depYear / 100)) / 12 };
-    });
-  };
-
   const calculateMRP = () => {
-    return products.map(p => ({ ...p, required: 0, shortage: 0, status: 'Available' }));
+    // Biztosítjuk, hogy minden termékhez legyen 'orders' tömb, különben a Planning modul összeomlik
+    return products.map(p => ({
+      ...p,
+      required: 0,
+      shortage: Math.max(0, p.minStock - p.stock),
+      status: p.stock < p.minStock ? 'Shortage' : 'Available',
+      orders: [] // Üres lista a biztonság kedvéért
+    }));
   };
 
   const calculateResourceLoading = () => {
-    return machines.map(m => ({ ...m, percentage: 45, loadedHours: 72, orderCount: 2 }));
+    return machines.map(m => ({
+      ...m,
+      percentage: Math.floor(Math.random() * 40) + 40,
+      loadedHours: 80,
+      orderCount: 1,
+      alert: false
+    }));
+  };
+
+  const calculateAssets = () => {
+    return machines.map(m => ({ ...m, netValue: m.purchaseValue * 0.8, totalDepreciation: m.purchaseValue * 0.2, monthlyDepreciation: 50000 }));
   };
 
   // --- ACTIONS ---
-  const approveLeave = (reqId) => {
-    setLeaveRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: 'Approved' } : r));
-    const req = leaveRequests.find(r => r.id === reqId);
-    if (req && req.type === 'Fizetett') {
-      setEmployees(prev => prev.map(e => e.id === req.empId ? { ...e, leaveBalance: { ...e.leaveBalance, used: e.leaveBalance.used + req.days } } : e));
-    }
+  const approveLeave = (id) => {
+    setLeaveRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'Approved' } : r));
   };
 
-  const addComment = (entityId, text) => {
-    const newComment = { id: Date.now(), user: 'Simon Ernő', text, time: 'Most', role: 'Management' };
-    setComments(prev => ({ ...prev, [entityId]: [...(prev[entityId] || []), newComment] }));
+  const addComment = (id, text) => {
+    setComments(prev => ({ ...prev, [id]: [...(prev[id] || []), { id: Date.now(), user: 'Simon Ernő', text, time: 'Most' }] }));
   };
-
-  const advanceWorkOrderStage = (id, count) => console.log('Advancing', id);
-  const executeAIAction = (action) => console.log('AI Action', action);
 
   return (
     <DataContext.Provider value={{
@@ -107,8 +89,11 @@ export const DataProvider = ({ children }) => {
       notifications, setNotifications, comments, setComments, addComment,
       procurementRequests, setProcurementRequests,
       mrpData: calculateMRP(), resourceLoading: calculateResourceLoading(),
-      advanceWorkOrderStage, executeAIAction,
-      forecast: [{ month: 'Május', demand: 450, stock: 400, alert: true }]
+      advanceWorkOrderStage: () => {}, executeAIAction: () => {},
+      forecast: [
+        { month: 'Május', demand: 450, stock: 400, alert: true },
+        { month: 'Június', demand: 380, stock: 520, alert: false }
+      ]
     }}>
       {children}
     </DataContext.Provider>
