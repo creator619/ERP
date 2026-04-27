@@ -511,10 +511,19 @@ const Purchase = ({ addToast, currency }) => {
                       <h4 style={{ fontWeight: 800 }}>{s.name}</h4>
                       <span style={{ fontWeight: 800, color: '#2ecc71' }}>{s.score}% Match</span>
                    </div>
-                   <div style={{ display: 'flex', gap: '15px', fontSize: '0.75rem', marginTop: '5px' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Ár: <strong style={{ color: 'white' }}>{s.price}</strong></span>
-                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Kockázat: <strong style={{ color: 'white' }}>{s.risk}</strong></span>
-                      <span style={{ color: 'rgba(255,255,255,0.7)' }}>Szállítás: <strong style={{ color: 'white' }}>{s.delivery}</strong></span>
+                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '12px' }}>
+                      <div className="glass" style={{ padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                         <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', textTransform: 'uppercase' }}>Ár</p>
+                         <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#f1c40f' }}>{s.price}</p>
+                      </div>
+                      <div className="glass" style={{ padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                         <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', textTransform: 'uppercase' }}>Kockázat</p>
+                         <p style={{ fontSize: '0.8rem', fontWeight: 800, color: s.risk === 'Alacsony' ? '#2ecc71' : '#f1c40f' }}>{s.risk}</p>
+                      </div>
+                      <div className="glass" style={{ padding: '8px', borderRadius: '8px', textAlign: 'center' }}>
+                         <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px', textTransform: 'uppercase' }}>Szállítás</p>
+                         <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#3498db' }}>{s.delivery}</p>
+                      </div>
                    </div>
                 </div>
                 <ChevronRight size={20} className="text-muted" />
