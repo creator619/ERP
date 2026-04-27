@@ -26,11 +26,57 @@ const Quality = ({ addToast }) => {
   const [isPreviewDrawingOpen, setIsPreviewDrawingOpen] = useState(false);
   const [isCalibrationModalOpen, setIsCalibrationModalOpen] = useState(false);
 
+  const [calibrations, setCalibrations] = useState([
+    { id: 'QC-01', tool: 'Digitális Tolómérő', status: 'Hiteles', due: '2024-12-15' },
+    { id: 'MT-08', tool: 'Nyomatékkulcs', status: 'Lejáróban', due: '2024-05-01' },
+    { id: 'QC-05', tool: 'Mikrométer', status: 'Hiteles', due: '2024-10-20' },
+    { id: 'QC-12', tool: 'Rétegvastagság-mérő', id: 'QC-12', status: 'Hiteles', due: '2024-11-10' },
+    { id: 'QC-22', tool: 'Digitális Szögmérő', id: 'QC-22', status: 'Érvénytelen', due: '2024-04-15' },
+    { id: 'MT-02', tool: 'Hőmérséklet Kalibrátor', id: 'MT-02', status: 'Hiteles', due: '2025-01-20' },
+    { id: 'QC-09', tool: 'Nyomásmérő Műszer', id: 'QC-09', status: 'Hiteles', due: '2024-09-05' }
+  ]);
+
+  const [selectedCalTool, setSelectedCalTool] = useState(null);
+
+  const handleCertifyTool = (toolId) => {
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const dateStr = nextYear.toISOString().split('T')[0];
+
+    setCalibrations(prev => prev.map(t => t.id === toolId ? { ...t, status: 'Hiteles', due: dateStr } : t));
+    
+    auditLogService.log({
+      user: 'Minőségügyi Technikus',
+      action: 'Műszer Hitelesítve',
+      module: 'Quality',
+      details: `${toolId} - Következő felülvizsgálat: ${dateStr}`,
+      severity: 'success'
+    });
+    
+    addToast(`${toolId} sikeresen hitelesítve`, 'success');
+    setSelectedCalTool(null);
+  };
+
+  const handleDecommissionTool = (toolId) => {
+    setCalibrations(prev => prev.map(t => t.id === toolId ? { ...t, status: 'Érvénytelen' } : t));
+    
+    auditLogService.log({
+      user: 'Minőségügyi Technikus',
+      action: 'Műszer Kivonva a Forgalomból',
+      module: 'Quality',
+      details: `${toolId} - Használata tilos!`,
+      severity: 'warning'
+    });
+    
+    addToast(`${toolId} kivonva a forgalomból`, 'warning');
+    setSelectedCalTool(null);
+  };
+
   const handleViewDrawing = () => {
     setIsPreviewDrawingOpen(true);
     auditLogService.log({
       user: 'Minőségügyi Ellenőr',
-      action: 'Műszaki rajz megtekintve',
+      action: 'Műszak rajz megtekintve',
       module: 'Quality',
       details: 'DRW-882-V2.pdf (Blueprint #42)',
       severity: 'info'
@@ -49,7 +95,6 @@ const Quality = ({ addToast }) => {
       });
       addToast(`Jegyzőkönyv (${insp.id}) sikeresen generálva és letöltve`, 'success');
       
-      // Add to central Document Engine
       const newDoc = {
         id: `DOC-${insp.id.split('-').pop()}-${Math.floor(Math.random() * 1000)}`,
         name: `Minőségügyi Jegyzőkönyv: ${insp.id}`,
@@ -75,13 +120,6 @@ const Quality = ({ addToast }) => {
   const lcl = 92;
   const mean = 95;
 
-  const calibrations = [
-    { tool: 'Digitális Tolómérő #QC-01', status: 'Valid', due: '2024-12-15' },
-    { tool: 'Nyomatékkulcs #MT-08', status: 'Expiring', due: '2024-05-01' },
-    { tool: 'Mikrométer #QC-05', status: 'Valid', due: '2024-10-20' }
-  ];
-
-  /* Interactive SVG Chart */
   const SPCControlChart = ({ data }) => {
     const [hoveredPoint, setHoveredPoint] = useState(null);
     const width = 400;
@@ -102,11 +140,8 @@ const Quality = ({ addToast }) => {
            </div>
         )}
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="spc-svg">
-          {/* Upper Control Limit */}
           <line x1={padding} y1={getY(ucl)} x2={width-padding} y2={getY(ucl)} stroke="#e74c3c" strokeDasharray="4" strokeWidth="1" />
-          {/* Lower Control Limit */}
           <line x1={padding} y1={getY(lcl)} x2={width-padding} y2={getY(lcl)} stroke="#e74c3c" strokeDasharray="4" strokeWidth="1" />
-          {/* Mean */}
           <line x1={padding} y1={getY(mean)} x2={width-padding} y2={getY(mean)} stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
           
           <polyline points={points} fill="none" stroke="var(--primary-color)" strokeWidth="2" className="spc-line-path" />
@@ -140,8 +175,6 @@ const Quality = ({ addToast }) => {
       { id: 'D5', name: 'Megoldás' }, { id: 'D6', name: 'Validálás' }, { id: 'D7', name: 'Megelőzés' }, { id: 'D8', name: 'Zárás' }
     ];
     const currentIndex = steps.findIndex(s => s.id === currentStep);
-    
-    // Calculate progress rail width (percentage)
     const progressPerc = Math.max(0, currentIndex) / (steps.length - 1) * 100;
 
     return (
@@ -165,7 +198,6 @@ const Quality = ({ addToast }) => {
 
   const handleCreateNCR = (insp) => {
     setIsCreatingNCR(true);
-    
     setTimeout(() => {
       auditLogService.log({
         user: 'Minőségellenőr (Automatizált)',
@@ -177,8 +209,6 @@ const Quality = ({ addToast }) => {
       addToast(`NCR-${insp.id.slice(-3)} jegyzőkönyv elindítva`, 'success');
       setIsCreatingNCR(false);
       setIsModalOpen(false);
-      
-      // Update state locally to show progress
       setInspections(prev => prev.map(i => i.id === insp.id ? { ...i, d_status: 'D4' } : i));
     }, 1500);
   };
@@ -271,12 +301,12 @@ const Quality = ({ addToast }) => {
                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                          <div style={{ flex: 1, height: '8px', background: 'var(--bg-main)', borderRadius: '4px', width: '80px', overflow: 'hidden' }}>
                            <div style={{ 
-                              width: `${insp.score}%`, 
-                              height: '100%', 
-                              background: insp.score > 90 ? '#2ecc71' : insp.score > 70 ? '#f39c12' : '#e74c3c', 
-                              borderRadius: '4px',
-                              transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)'
-                           }}></div>
+                               width: `${insp.score}%`, 
+                               height: '100%', 
+                               background: insp.score > 90 ? '#2ecc71' : insp.score > 70 ? '#f39c12' : '#e74c3c', 
+                               borderRadius: '4px',
+                               transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)'
+                            }}></div>
                          </div>
                          <span style={{ fontWeight: 800, fontSize: '0.85rem' }}>{insp.score}%</span>
                        </div>
@@ -296,20 +326,20 @@ const Quality = ({ addToast }) => {
               <Clock size={20} color="var(--primary-color)" /> Műszer Kalibráció
            </h3>
            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {calibrations.map((c, i) => (
-                <div key={i} className="stat-card" style={{ padding: '15px', borderRadius: '12px' }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{c.tool}</span>
-                      <span className={`status-badge ${c.status === 'Valid' ? 'active' : 'warning'}`} style={{ fontSize: '0.65rem', padding: '4px 8px' }}>
-                         {c.status === 'Valid' ? 'Hiteles' : 'Lejáróban'}
-                      </span>
-                   </div>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                      <span>Lejárat:</span>
-                      <span>{c.due}</span>
-                   </div>
-                </div>
-              ))}
+               {calibrations.slice(0, 3).map((c, i) => (
+                 <div key={i} className="stat-card" style={{ padding: '15px', borderRadius: '12px', cursor: 'pointer' }} onClick={() => setSelectedCalTool(c)}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                       <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{c.tool} #{c.id}</span>
+                       <span className={`status-badge ${c.status === 'Hiteles' ? 'active' : c.status === 'Lejáróban' ? 'warning' : 'danger'}`} style={{ fontSize: '0.65rem', padding: '4px 8px' }}>
+                          {c.status}
+                       </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                       <span>Lejárat:</span>
+                       <span>{c.due}</span>
+                    </div>
+                 </div>
+               ))}
            </div>
            <button className="view-btn" style={{ width: '100%', marginTop: '25px', justifyContent: 'center' }} onClick={() => setIsCalibrationModalOpen(true)}>Összes műszer</button>
         </div>
@@ -466,17 +496,9 @@ const Quality = ({ addToast }) => {
               </tr>
             </thead>
             <tbody>
-              {[
-                { name: 'Digitális Tolómérő', id: 'QC-01', status: 'Hiteles', due: '2024-12-15' },
-                { name: 'Nyomatékkulcs', id: 'MT-08', status: 'Lejáróban', due: '2024-05-01' },
-                { name: 'Mikrométer', id: 'QC-05', status: 'Hiteles', due: '2024-10-20' },
-                { name: 'Rétegvastagság-mérő', id: 'QC-12', status: 'Hiteles', due: '2024-11-10' },
-                { name: 'Digitális Szögmérő', id: 'QC-22', status: 'Érvénytelen', due: '2024-04-15' },
-                { name: 'Hőmérséklet Kalibrátor', id: 'MT-02', status: 'Hiteles', due: '2025-01-20' },
-                { name: 'Nyomásmérő Műszer', id: 'QC-09', status: 'Hiteles', due: '2024-09-05' }
-              ].map((m, i) => (
-                <tr key={i}>
-                  <td style={{ fontWeight: 700 }}>{m.name}</td>
+              {calibrations.map((m, i) => (
+                <tr key={i} onClick={() => { setSelectedCalTool(m); setIsCalibrationModalOpen(false); }} style={{ cursor: 'pointer' }}>
+                  <td style={{ fontWeight: 700 }}>{m.tool}</td>
                   <td className="text-muted" style={{ fontWeight: 600 }}>{m.id}</td>
                   <td>
                     <span className={`status-badge ${m.status === 'Hiteles' ? 'active' : m.status === 'Lejáróban' ? 'warning' : 'danger'}`}>
@@ -489,6 +511,55 @@ const Quality = ({ addToast }) => {
             </tbody>
           </table>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={!!selectedCalTool}
+        onClose={() => setSelectedCalTool(null)}
+        title={`Műszer Kezelése: ${selectedCalTool?.tool}`}
+        width="500px"
+        footer={
+          <button className="view-btn" onClick={() => setSelectedCalTool(null)}>Mégse</button>
+        }
+      >
+        {selectedCalTool && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="stat-card" style={{ padding: '20px', background: 'rgba(255,255,255,0.02)' }}>
+              <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>Aktuális Állapot</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>{selectedCalTool.id}</span>
+                <span className={`status-badge ${selectedCalTool.status === 'Hiteles' ? 'active' : selectedCalTool.status === 'Lejáróban' ? 'warning' : 'danger'}`}>
+                  {selectedCalTool.status}
+                </span>
+              </div>
+              <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '10px' }}>Lejárat: {selectedCalTool.due}</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+              <button 
+                className="create-btn" 
+                style={{ background: '#2ecc71', width: '100%', justifyContent: 'center' }}
+                onClick={() => handleCertifyTool(selectedCalTool.id)}
+              >
+                Hitelesítés (+1 év)
+              </button>
+              <button 
+                className="view-btn" 
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={() => addToast('Műszer beállítása folyamatban...', 'info')}
+              >
+                Beállítás / Kalibrálás
+              </button>
+              <button 
+                className="create-btn" 
+                style={{ background: '#e74c3c', width: '100%', justifyContent: 'center' }}
+                onClick={() => handleDecommissionTool(selectedCalTool.id)}
+              >
+                Kivonás a forgalomból
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
