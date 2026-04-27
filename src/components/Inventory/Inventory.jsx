@@ -211,7 +211,17 @@ const Inventory = ({ addToast }) => {
         <div className="glass" style={{ padding: '30px', borderRadius: '24px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Raktár Alaprajz (Interaktív Hőtérkép)</h3>
-              <div className="status-badge active">RAKTÁR TELÍTETTSÉG: 72%</div>
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.7rem', fontWeight: 700 }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(52, 152, 219, 0.2)', border: '1px solid #3498db' }}></div>
+                    <span>GYORS FORGÁS</span>
+                 </div>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.7rem', fontWeight: 700 }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(231, 76, 60, 0.2)', border: '1px solid #e74c3c' }}></div>
+                    <span>KRITIKUS KÉSZLET</span>
+                 </div>
+                 <div className="status-badge active">RAKTÁR TELÍTETTSÉG: 72%</div>
+              </div>
            </div>
            
            <div style={{ display: 'grid', gridTemplateColumns: selectedZone ? '1.5fr 1fr' : '1fr', gap: '30px', transition: 'all 0.5s ease' }}>
