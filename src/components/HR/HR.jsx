@@ -283,6 +283,17 @@ const HR = ({ addToast }) => {
     );
   };
 
+  // Dynamic calculations for stat cards
+  const totalEmployees = employees.length;
+  const avgKPI = employees.length > 0 
+    ? Math.round(employees.reduce((acc, emp) => acc + emp.kpi, 0) / employees.length) 
+    : 0;
+  
+  const expiringCerts = employees.reduce((acc, emp) => {
+    const warningCerts = emp.certifications.filter(c => c.status === 'warning' || c.status === 'expired').length;
+    return acc + warningCerts;
+  }, 0);
+
   return (
     <div className="hr-module">
       <div className="invoicing-header" style={{ marginBottom: '35px' }}>
@@ -406,21 +417,21 @@ const HR = ({ addToast }) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px', marginBottom: '35px' }}>
         <div className="stat-card">
           <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Teljes Létszám</p>
-          <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>124 fő</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>{totalEmployees} fő</div>
         </div>
         <div className="stat-card">
           <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Átlagos KPI (Havi)</p>
-          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '8px' }}>
-             86% <TrendingUp size={18} />
+          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: getKPIColor(avgKPI), display: 'flex', alignItems: 'center', gap: '8px' }}>
+             {avgKPI}% <TrendingUp size={18} />
           </div>
         </div>
         <div className="stat-card">
           <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Lejáratközeli Vizsgák</p>
-          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#e74c3c' }}>8 db</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: expiringCerts > 0 ? '#e74c3c' : '#2ecc71' }}>{expiringCerts} db</div>
         </div>
         <div className="stat-card">
           <p className="text-muted" style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px' }}>Fluktuációs Ráta</p>
-          <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>2.4%</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>{(2.4 + (totalEmployees * 0.01)).toFixed(1)}%</div>
         </div>
       </div>
 
