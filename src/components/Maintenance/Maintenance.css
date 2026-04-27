@@ -119,3 +119,25 @@
   box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
   transform: scale(1.02);
 }
+
+/* Maintenance Input Fix */
+.maintenance-input {
+  width: 100% !important;
+  padding: 12px !important;
+  border-radius: 10px !important;
+  background: #1a1a1a !important;
+  border: 1px solid var(--border-color) !important;
+  color: #a0a0a0 !important;
+  font-size: 0.9rem !important;
+  outline: none !important;
+  opacity: 1 !important;
+}
+
+.maintenance-input:focus {
+  border-color: var(--primary-color) !important;
+}
+
+.maintenance-input::placeholder {
+  color: rgba(255,255,255,0.2) !important;
+}
+
