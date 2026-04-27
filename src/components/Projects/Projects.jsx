@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Folder, 
   FileText, 
@@ -23,7 +23,8 @@ import {
   Activity,
   Zap,
   Target,
-  ArrowRight
+  ArrowRight,
+  Eye
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
@@ -34,6 +35,19 @@ const Projects = ({ addToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'portfolio'
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const fileInputRef = useRef(null);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [newProjectData, setNewProjectData] = useState({
+    name: '',
+    customer: '',
+    budget: 0
+  });
+  const [newTaskData, setNewTaskData] = useState({
+    name: '',
+    assignee: 'Kovács J.',
+    priority: 'medium'
+  });
 
   const [projects, setProjects] = useState([
     { 
@@ -96,6 +110,127 @@ const Projects = ({ addToast }) => {
     setSelectedProject(prj);
     setIsModalOpen(true);
     setActiveTab('overview');
+  };
+
+  const handleSaveNewTask = (e) => {
+    e.preventDefault();
+    if (!newTaskData.name) {
+      addToast('A feladat neve nem lehet üres!', 'warning');
+      return;
+    }
+
+    const newTask = {
+      ...newTaskData,
+      id: `T${selectedProject.tasks.length + 1}`,
+      status: 'pending'
+    };
+
+    const updatedTasks = [...selectedProject.tasks, newTask];
+    const updatedProject = { ...selectedProject, tasks: updatedTasks };
+
+    setProjects(prev => prev.map(p => p.id === selectedProject.id ? updatedProject : p));
+    setSelectedProject(updatedProject);
+    setIsAddTaskModalOpen(false);
+    setNewTaskData({ name: '', assignee: 'Kovács J.', priority: 'medium' });
+
+    auditLogService.log({
+      user: 'Projektmenedzser',
+      action: 'Új Feladat Hozzáadva',
+      module: 'Projects',
+      details: `${selectedProject.id} - ${newTask.name}`,
+      severity: 'info'
+    });
+
+    addToast('Feladat sikeresen hozzáadva', 'success');
+  };
+
+  const handleAdvanceTaskStatus = (taskId) => {
+    const statusCycle = {
+      'pending': 'active',
+      'active': 'done',
+      'done': 'pending'
+    };
+
+    const updatedTasks = selectedProject.tasks.map(t => 
+      t.id === taskId ? { ...t, status: statusCycle[t.status] || 'active' } : t
+    );
+
+    const updatedProject = { ...selectedProject, tasks: updatedTasks };
+    
+    setProjects(prev => prev.map(p => p.id === selectedProject.id ? updatedProject : p));
+    setSelectedProject(updatedProject);
+
+    addToast('Feladat státusza frissítve', 'info');
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const newDoc = {
+      name: file.name,
+      size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    const updatedDocs = [...selectedProject.docs, newDoc];
+    const updatedProject = { ...selectedProject, docs: updatedDocs };
+
+    setProjects(prev => prev.map(p => p.id === selectedProject.id ? updatedProject : p));
+    setSelectedProject(updatedProject);
+
+    auditLogService.log({
+      user: 'Projekt Admin',
+      action: 'Dokumentum Feltöltve',
+      module: 'Projects',
+      details: `${selectedProject.id} - ${file.name}`,
+      severity: 'info'
+    });
+
+    addToast(`${file.name} sikeresen feltöltve`, 'success');
+  };
+
+  const handleSaveNewProject = (e) => {
+    e.preventDefault();
+    if (!newProjectData.name || !newProjectData.customer) {
+      addToast('Kérjük töltsön ki minden mezőt!', 'warning');
+      return;
+    }
+
+    const lastIdNum = parseInt(projects[projects.length - 1]?.id.split('-').pop() || '0');
+    const newId = `PRJ-${String(lastIdNum + 1).padStart(3, '0')}`;
+
+    const projectToAdd = {
+      id: newId,
+      ...newProjectData,
+      status: 'In Progress',
+      progress: 0,
+      risk: 'Low',
+      actual: 0,
+      cpi: 1.0,
+      spi: 1.0,
+      riskMatrix: { impact: 1, probability: 1 },
+      team: [{ name: 'Admin', role: 'Project Manager', avatar: 'AD' }],
+      tasks: [],
+      milestones: [
+        { id: 1, name: 'Projekt Indítás', status: 'active', start: 0, duration: 10 }
+      ],
+      docs: []
+    };
+
+    setProjects([...projects, projectToAdd]);
+    setIsNewProjectModalOpen(false);
+    setNewProjectData({ name: '', customer: '', budget: 0 });
+
+    auditLogService.log({
+      user: 'Projekt Igazgató',
+      action: 'Új Projekt Indítva',
+      module: 'Projects',
+      details: `${newId} - ${projectToAdd.name}`,
+      severity: 'success'
+    });
+
+    addToast(`Projekt (${newId}) sikeresen elindítva`, 'success');
   };
 
   const RiskHeatmap = ({ matrix }) => {
@@ -205,7 +340,7 @@ const Projects = ({ addToast }) => {
             <button className={`view-btn ${viewMode === 'kanban' ? 'active' : ''}`} onClick={() => setViewMode('kanban')}>Kártyák</button>
             <button className={`view-btn ${viewMode === 'portfolio' ? 'active' : ''}`} onClick={() => setViewMode('portfolio')}>Portfólió (Gantt)</button>
           </div>
-          <button className="create-btn" onClick={() => addToast('Új projekt indítása', 'info')}>
+          <button className="create-btn" onClick={() => setIsNewProjectModalOpen(true)}>
             <Plus size={20} /> Új Projekt
           </button>
         </div>
@@ -420,7 +555,9 @@ const Projects = ({ addToast }) => {
               <div className="tasks-tab">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                    <h4 style={{ fontSize: '0.9rem', fontWeight: 700 }}>Work Breakdown Structure (WBS)</h4>
-                   <button className="view-btn-small"><Plus size={14} /> Feladat hozzáadása</button>
+                   <button className="view-btn-small" onClick={() => setIsAddTaskModalOpen(true)}>
+                     <Plus size={14} /> Feladat hozzáadása
+                   </button>
                 </div>
                 <div className="wbs-list">
                    {selectedProject.tasks.map(task => (
@@ -436,7 +573,9 @@ const Projects = ({ addToast }) => {
                          </div>
                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                             <span className={`status-badge ${task.priority === 'critical' ? 'danger' : 'active'}`} style={{ fontSize: '0.6rem' }}>{task.priority.toUpperCase()}</span>
-                            <button className="view-btn-small"><ArrowRight size={14} /></button>
+                            <button className="view-btn-small" onClick={() => handleAdvanceTaskStatus(task.id)} title="Státusz váltása">
+                               <ArrowRight size={14} />
+                            </button>
                          </div>
                       </div>
                    ))}
@@ -482,15 +621,131 @@ const Projects = ({ addToast }) => {
                       </div>
                     </div>
                   ))}
-                  <div className="glass" style={{ padding: '20px', borderRadius: '15px', border: '2px dashed var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: '140px' }}>
+                  <div 
+                    className="glass" 
+                    style={{ padding: '20px', borderRadius: '15px', border: '2px dashed var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: '140px' }}
+                    onClick={() => fileInputRef.current.click()}
+                  >
                     <Upload size={24} className="text-muted" />
                     <span style={{ fontSize: '0.7rem', marginTop: '8px' }}>Dokumentum feltöltése</span>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      style={{ display: 'none' }} 
+                      onChange={handleFileUpload}
+                    />
                   </div>
                 </div>
               </div>
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={isAddTaskModalOpen}
+        onClose={() => setIsAddTaskModalOpen(false)}
+        title="Új Feladat Létrehozása (WBS)"
+        width="500px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsAddTaskModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleSaveNewTask}>Feladat Mentése</button>
+          </>
+        }
+      >
+        <form onSubmit={handleSaveNewTask} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Feladat Megnevezése</label>
+            <input 
+              type="text" 
+              className="form-input"
+              placeholder="Pl: Rezgésvizsgálati dokumentáció összeállítása"
+              value={newTaskData.name}
+              onChange={(e) => setNewTaskData({...newTaskData, name: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Felelős</label>
+            <select 
+              className="form-input"
+              value={newTaskData.assignee}
+              onChange={(e) => setNewTaskData({...newTaskData, assignee: e.target.value})}
+            >
+              <option value="Kovács J.">Kovács J.</option>
+              <option value="Nagy P.">Nagy P.</option>
+              <option value="Tóth G.">Tóth G. </option>
+              <option value="Mérnökség">Mérnökség</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Prioritás</label>
+            <select 
+              className="form-input"
+              value={newTaskData.priority}
+              onChange={(e) => setNewTaskData({...newTaskData, priority: e.target.value})}
+            >
+              <option value="low">Alacsony</option>
+              <option value="medium">Közepes</option>
+              <option value="high">Magas</option>
+              <option value="critical">Kritikus</option>
+            </select>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setIsNewProjectModalOpen(false)}
+        title="Új Projekt Indítása"
+        width="600px"
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsNewProjectModalOpen(false)}>Mégse</button>
+            <button className="create-btn" onClick={handleSaveNewProject}>Projekt Létrehozása</button>
+          </>
+        }
+      >
+        <form onSubmit={handleSaveNewProject} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Projekt Megnevezése</label>
+            <input 
+              type="text" 
+              className="form-input"
+              placeholder="Pl: Új generációs fékrendszer tesztelése"
+              value={newProjectData.name}
+              onChange={(e) => setNewProjectData({...newProjectData, name: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Megrendelő / Ügyfél</label>
+            <input 
+              type="text" 
+              className="form-input"
+              placeholder="Pl: Siemens Mobility"
+              value={newProjectData.customer}
+              onChange={(e) => setNewProjectData({...newProjectData, customer: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Tervezett Költségkeret (HUF)</label>
+            <input 
+              type="number" 
+              className="form-input"
+              value={newProjectData.budget}
+              onChange={(e) => setNewProjectData({...newProjectData, budget: parseInt(e.target.value)})}
+              required
+            />
+          </div>
+          <div style={{ padding: '15px', background: 'rgba(52, 152, 219, 0.05)', borderRadius: '10px', border: '1px dashed rgba(52, 152, 219, 0.3)' }}>
+             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                Az új projekt 'In Progress' státusszal jön létre, alapértelmezett mérföldkövekkel és üres feladatlistával.
+             </p>
+          </div>
+        </form>
       </Modal>
     </div>
   );
