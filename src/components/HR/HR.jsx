@@ -133,6 +133,42 @@ const HR = ({ addToast }) => {
     }, 600);
   };
 
+  const handleAddCertification = () => {
+    if (!selectedEmployee) return;
+
+    const newCert = {
+      name: 'Munkavédelmi továbbképzés (2024)',
+      expiry: '2025-04-27',
+      status: 'valid'
+    };
+
+    setEmployees(prev => prev.map(emp => {
+      if (emp.id === selectedEmployee.id) {
+        return {
+          ...emp,
+          certifications: [...emp.certifications, newCert]
+        };
+      }
+      return emp;
+    }));
+
+    // Update the selected employee in local state too
+    setSelectedEmployee(prev => ({
+      ...prev,
+      certifications: [...prev.certifications, newCert]
+    }));
+
+    addToast(`Új vizsga rögzítve: ${selectedEmployee.name}`, 'success');
+    
+    auditLogService.log({
+      user: 'Simon Ernő',
+      action: 'Új képzés rögzítve',
+      module: 'HR',
+      details: `${selectedEmployee.name} - ${newCert.name}`,
+      severity: 'info'
+    });
+  };
+
   // Modern SVG Gauge rendering
   const renderGauge = (val) => {
     const radius = 45;
@@ -468,7 +504,11 @@ const HR = ({ addToast }) => {
                       </span>
                     </div>
                   ))}
-                  <button className="create-btn" style={{ width: '100%', marginTop: '20px', gap: '10px', background: '#9b59b6', boxShadow: 'none' }}>
+                  <button 
+                    className="create-btn" 
+                    style={{ width: '100%', marginTop: '20px', gap: '10px', background: '#9b59b6', boxShadow: 'none' }}
+                    onClick={handleAddCertification}
+                  >
                     <GraduationCap size={18} /> Új Képzés / Vizsga Rögzítése
                   </button>
                 </div>
