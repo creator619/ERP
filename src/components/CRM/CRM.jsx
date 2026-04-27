@@ -231,10 +231,10 @@ const CRM = ({ addToast }) => {
       >
         {selectedPartner && (
           <div className="partner-details-view">
-            <div className="settings-nav" style={{ width: '100%', flexDirection: 'row', marginBottom: '25px', borderBottom: '1px solid var(--border-color)', borderRadius: 0, padding: 0 }}>
-              <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Áttekintés</div>
-              <div className={`settings-nav-item ${activeTab === 'interactions' ? 'active' : ''}`} onClick={() => setActiveTab('interactions')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Interakciók</div>
-              <div className={`settings-nav-item ${activeTab === 'deals' ? 'active' : ''}`} onClick={() => setActiveTab('deals')} style={{ flex: 1, justifyContent: 'center', borderRadius: 0 }}>Lehetőségek</div>
+            <div className="settings-nav">
+              <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>Áttekintés</div>
+              <div className={`settings-nav-item ${activeTab === 'interactions' ? 'active' : ''}`} onClick={() => setActiveTab('interactions')}>Interakciók</div>
+              <div className={`settings-nav-item ${activeTab === 'deals' ? 'active' : ''}`} onClick={() => setActiveTab('deals')}>Lehetőségek</div>
             </div>
 
             {activeTab === 'overview' && (
