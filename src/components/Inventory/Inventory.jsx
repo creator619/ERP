@@ -304,7 +304,7 @@ const Inventory = ({ addToast }) => {
           <div className="inventory-details-view">
             <div className="settings-nav">
               <div className={`settings-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>Áttekintés</div>
-              <div className={`settings-nav-item ${activeTab === 'traceability' ? 'active' : ''}`} onClick={() => setActiveTab('traceability')}>Traceability</div>
+              <div className={`settings-nav-item ${activeTab === 'traceability' ? 'active' : ''}`} onClick={() => setActiveTab('traceability')}>Nyomonkövetés</div>
               <div className={`settings-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>Mozgásnapló</div>
             </div>
 
