@@ -374,84 +374,139 @@ const Logistics = ({ addToast }) => {
       <Modal
         isOpen={isGISMapOpen}
         onClose={() => setIsGISMapOpen(false)}
-        title={selectedShipment ? `Élő GIS Telemetria: ${selectedShipment.id}` : 'Globális Követési Rendszer'}
-        width="950px"
+        title={selectedShipment ? `STRATEGIC LOGISTICS COMMAND: ${selectedShipment.id}` : 'Globális Követési Rendszer'}
+        width="1200px"
       >
         {selectedShipment && (
-          <div className="gis-map-container" style={{ position: 'relative', height: '600px', background: '#0f172a', borderRadius: '20px', overflow: 'hidden', border: '1px solid #1e293b' }}>
-             {/* Simulated Map Background */}
-             <div style={{ position: 'absolute', inset: 0, opacity: 0.4, backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+          <div className="gis-map-container" style={{ 
+            position: 'relative', 
+            height: '750px', 
+            background: '#020617', 
+            borderRadius: '24px', 
+            overflow: 'hidden', 
+            border: '1px solid #1e293b',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          }}>
+             {/* Dynamic Scanline Overlay */}
+             <div style={{ 
+               position: 'absolute', 
+               inset: 0, 
+               background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02))', 
+               backgroundSize: '100% 4px, 3px 100%', 
+               zIndex: 2, 
+               pointerEvents: 'none' 
+             }}></div>
+
+             {/* Simulated High-Tech Map Background */}
+             <div style={{ 
+               position: 'absolute', 
+               inset: 0, 
+               opacity: 0.3, 
+               backgroundImage: `
+                 radial-gradient(circle at 50% 50%, #1e293b 0%, transparent 70%),
+                 linear-gradient(#1e293b 1px, transparent 1px), 
+                 linear-gradient(90deg, #1e293b 1px, transparent 1px)
+               `,
+               backgroundSize: '100% 100%, 50px 50px, 50px 50px',
+               zIndex: 1
+             }}></div>
              
-             {/* Map Grid / HUD */}
-             <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div className="glass" style={{ padding: '15px', borderRadius: '12px', border: '1px solid rgba(52, 152, 219, 0.3)', background: 'rgba(15, 23, 42, 0.8)' }}>
-                   <div style={{ fontSize: '0.7rem', color: '#3498db', fontWeight: 800, textTransform: 'uppercase', marginBottom: '5px' }}>Koordináták</div>
-                   <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff', fontFamily: 'monospace' }}>
-                      47.4979° N, 19.0402° E
-                   </div>
-                </div>
-                <div className="glass" style={{ padding: '15px', borderRadius: '12px', border: '1px solid rgba(46, 204, 113, 0.3)', background: 'rgba(15, 23, 42, 0.8)' }}>
-                   <div style={{ fontSize: '0.7rem', color: '#2ecc71', fontWeight: 800, textTransform: 'uppercase', marginBottom: '5px' }}>GPS Állapot</div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 800 }}>
-                      <Radar size={16} color="#2ecc71" className="scanner-circle" /> Stabil (8 Sat)
-                   </div>
-                </div>
-             </div>
-
-             {/* Center Marker Simulation */}
-             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 5 }}>
-                <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: '2px solid #3498db', animation: 'pulseScanner 2s infinite' }}></div>
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#3498db', padding: '8px', borderRadius: '50%', boxShadow: '0 0 20px #3498db' }}>
-                   {selectedShipment.type === 'Sea' ? <Ship size={24} color="#fff" /> : selectedShipment.type === 'Road' ? <Truck size={24} color="#fff" /> : <Plane size={24} color="#fff" />}
-                </div>
-             </div>
-
-             {/* Right Sidebar Telemetry */}
-             <div style={{ position: 'absolute', top: '20px', right: '20px', bottom: '20px', width: '250px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div className="glass" style={{ flex: 1, padding: '20px', borderRadius: '15px', background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                   <h5 style={{ color: '#fff', fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Activity size={16} color="#3498db" /> Telemetria
-                   </h5>
-                   
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                      <div className="telemetry-item">
-                         <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 800 }}>SEBESSÉG</div>
-                         <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#3498db' }}>{selectedShipment.type === 'Sea' ? '18.4' : '82.0'} <span style={{ fontSize: '0.8rem', color: '#fff' }}>km/h</span></div>
-                      </div>
-                      <div className="telemetry-item">
-                         <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 800 }}>TENGERSZINT FELETT</div>
-                         <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff' }}>{selectedShipment.type === 'Sea' ? '0' : '142'} <span style={{ fontSize: '0.8rem' }}>m</span></div>
-                      </div>
-                      <div className="telemetry-item">
-                         <div className="text-muted" style={{ fontSize: '0.7rem', fontWeight: 800 }}>ÜZEMANYAG / TÖLTÉS</div>
-                         <div style={{ width: '100%', height: '6px', background: '#334155', borderRadius: '3px', marginTop: '10px', overflow: 'hidden' }}>
-                            <div style={{ width: '74%', height: '100%', background: '#2ecc71' }}></div>
+             {/* Main Map HUD Layout */}
+             <div style={{ position: 'absolute', inset: '30px', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                
+                {/* Top HUD Row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                   <div style={{ display: 'flex', gap: '15px' }}>
+                      <div className="glass" style={{ padding: '20px', borderRadius: '16px', borderLeft: '4px solid #3498db', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)' }}>
+                         <div style={{ fontSize: '0.65rem', color: '#3498db', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Navigációs Koordináták</div>
+                         <div style={{ display: 'flex', gap: '20px' }}>
+                            <div>
+                               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', fontWeight: 700 }}>LAT:</span>
+                               <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', fontFamily: 'monospace', marginLeft: '8px' }}>47.4979° N</span>
+                            </div>
+                            <div>
+                               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', fontWeight: 700 }}>LONG:</span>
+                               <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', fontFamily: 'monospace', marginLeft: '8px' }}>19.0402° E</span>
+                            </div>
                          </div>
-                         <div style={{ textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, marginTop: '5px', color: '#2ecc71' }}>74%</div>
+                      </div>
+
+                      <div className="glass" style={{ padding: '20px', borderRadius: '16px', borderLeft: '4px solid #2ecc71', background: 'rgba(15, 23, 42, 0.85)' }}>
+                         <div style={{ fontSize: '0.65rem', color: '#2ecc71', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Rendszer Állapot</div>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 10px #2ecc71' }}></div>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>KAPCSOLAT AKTÍV</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="glass" style={{ padding: '10px 20px', borderRadius: '40px', background: 'rgba(231, 76, 60, 0.1)', border: '1px solid rgba(231, 76, 60, 0.3)', color: '#e74c3c', fontSize: '0.8rem', fontWeight: 800 }}>
+                      ÉLŐ ADATFOLYAM (256 kbps)
+                   </div>
+                </div>
+
+                {/* Center Targeting / Pulse */}
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}>
+                   <div style={{ width: '400px', height: '400px', borderRadius: '50%', border: '1px dashed rgba(52, 152, 219, 0.2)', animation: 'spin 20s linear infinite' }}></div>
+                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', height: '200px', borderRadius: '50%', border: '1px solid rgba(52, 152, 219, 0.4)', animation: 'pulseScanner 3s infinite' }}></div>
+                   
+                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 20 }}>
+                      <div style={{ position: 'relative', background: '#3498db', padding: '15px', borderRadius: '16px', boxShadow: '0 0 40px rgba(52, 152, 219, 0.6)', border: '2px solid #fff' }}>
+                         {selectedShipment.type === 'Sea' ? <Ship size={32} color="#fff" /> : selectedShipment.type === 'Road' ? <Truck size={32} color="#fff" /> : <Plane size={32} color="#fff" />}
+                         
+                         {/* Labels near marker */}
+                         <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', background: 'rgba(0,0,0,0.8)', padding: '4px 12px', borderRadius: '4px', border: '1px solid #3498db', color: '#3498db', fontWeight: 900, fontSize: '0.7rem' }}>
+                            {selectedShipment.id}
+                         </div>
                       </div>
                    </div>
                 </div>
 
-                <button 
-                  className="create-btn" 
-                  style={{ background: '#3498db', border: 'none' }}
-                  onClick={() => addToast('Kapcsolatfelvétel a járművel...', 'info')}
-                >
-                   Közvetlen Kapcsolat
-                </button>
-             </div>
-
-             {/* Bottom Overlay Info */}
-             <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '280px', height: '80px', zLimit: 10 }} className="glass">
-                <div style={{ display: 'flex', height: '100%', alignItems: 'center', padding: '0 25px', justifyContent: 'space-between' }}>
-                   <div>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>INDULÁSI PONT</div>
-                      <div style={{ color: '#fff', fontWeight: 800 }}>{selectedShipment.origin}</div>
+                {/* Bottom HUD Row */}
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
+                   <div className="glass" style={{ flex: 1, padding: '25px', borderRadius: '20px', background: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '40px' }}>
+                         <div className="telemetry-box">
+                            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 800, marginBottom: '10px' }}>SEBESSÉG (GROUND)</div>
+                            <div style={{ fontSize: '2.2rem', fontWeight: 950, color: '#3498db' }}>
+                               {selectedShipment.type === 'Sea' ? '18.4' : '82.0'} 
+                               <span style={{ fontSize: '0.9rem', color: '#fff', marginLeft: '5px' }}>km/h</span>
+                            </div>
+                         </div>
+                         <div className="telemetry-box">
+                            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 800, marginBottom: '10px' }}>TENGERSZINT FELETT</div>
+                            <div style={{ fontSize: '2.2rem', fontWeight: 950, color: '#fff' }}>
+                               {selectedShipment.type === 'Sea' ? '0' : '142'} 
+                               <span style={{ fontSize: '0.9rem', marginLeft: '5px' }}>m</span>
+                            </div>
+                         </div>
+                         <div className="telemetry-box">
+                            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 800, marginBottom: '10px' }}>KÜLSŐ HŐMÉRSÉKLET</div>
+                            <div style={{ fontSize: '2.2rem', fontWeight: 950, color: '#f39c12' }}>
+                               18.2
+                               <span style={{ fontSize: '0.9rem', color: '#fff', marginLeft: '5px' }}>°C</span>
+                            </div>
+                         </div>
+                         <div className="telemetry-box">
+                            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 800, marginBottom: '10px' }}>AKKUMULÁTOR / ÜZEMANYAG</div>
+                            <div style={{ fontSize: '2.2rem', fontWeight: 950, color: '#2ecc71' }}>
+                               74
+                               <span style={{ fontSize: '0.9rem', color: '#fff', marginLeft: '5px' }}>%</span>
+                            </div>
+                            <div style={{ height: '4px', width: '100%', background: '#1e293b', borderRadius: '2px', marginTop: '10px' }}>
+                               <div style={{ width: '74%', height: '100%', background: '#2ecc71', boxShadow: '0 0 10px #2ecc71' }}></div>
+                            </div>
+                         </div>
+                      </div>
                    </div>
-                   <div style={{ color: '#3498db', fontSize: '1.2rem', fontWeight: 900 }}>&rarr;</div>
-                   <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>CÉLÁLLOMÁS</div>
-                      <div style={{ color: '#fff', fontWeight: 800 }}>{selectedShipment.destination}</div>
+
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                      <button className="create-btn" style={{ background: '#3498db', border: 'none', padding: '15px 30px', borderRadius: '12px', fontWeight: 900 }}>
+                         MŰHOLDAS HÍVÁS
+                      </button>
+                      <button className="create-btn" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '15px 30px', borderRadius: '12px', color: '#fff' }} onClick={() => setIsGISMapOpen(false)}>
+                         FELEÜLET BEZÁRÁSA
+                      </button>
                    </div>
                 </div>
              </div>
