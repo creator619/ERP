@@ -66,7 +66,7 @@ const Maintenance = ({ addToast }) => {
   };
 
   const handleStartMaintenance = (id) => {
-    setMachines(prev => prev.map(m => m.id === id ? { ...m, status: 'Maintenance', health: 10 } : m));
+    setMachines(prev => prev.map(m => m.id === id ? { ...m, status: 'Maintenance', health: 10, maintenanceStart: new Date().toISOString() } : m));
     addToast('Karbantartási folyamat elindítva', 'info');
     setIsModalOpen(false);
   };
@@ -325,13 +325,18 @@ const Maintenance = ({ addToast }) => {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {selectedMachine.status === 'Maintenance' && (
-                       <div className="glass downtime-ticker" style={{ padding: '25px', borderRadius: '20px', border: '1px solid #e74c3c' }}>
-                          <h4 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e74c3c', marginBottom: '15px' }}>LEÁLLÁSI VESZTESÉG</h4>
-                          <div style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '5px' }}>{formatHUF((selectedMachine.downtimeCost || 0) * (downtimeTicker / 3600))}</div>
-                          <p className="text-muted" style={{ fontSize: '0.7rem' }}>Költség: {formatHUF(selectedMachine.downtimeCost || 0)} / óra</p>
-                       </div>
-                    )}
+                      {selectedMachine.status === 'Maintenance' && (
+                        <div className="glass downtime-ticker" style={{ padding: '25px', borderRadius: '20px', border: '1px solid #e74c3c' }}>
+                           <h4 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e74c3c', marginBottom: '15px' }}>LEÁLLÁSI VESZTESÉG</h4>
+                           <div style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '5px' }}>
+                             {formatHUF(
+                               (selectedMachine.downtimeCost || 0) * 
+                               ((selectedMachine.maintenanceStart ? (Date.now() - new Date(selectedMachine.maintenanceStart).getTime()) / 3600000 : 0) + (downtimeTicker / 3600))
+                             )}
+                           </div>
+                           <p className="text-muted" style={{ fontSize: '0.7rem' }}>Költség: {formatHUF(selectedMachine.downtimeCost || 0)} / óra</p>
+                        </div>
+                      )}
                     <div className="glass" style={{ padding: '20px', borderRadius: '15px' }}>
                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                           <Thermometer size={24} color="#f1c40f" />
