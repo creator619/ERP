@@ -27,10 +27,12 @@ import Modal from '../UI/Modal';
 import './Quality.css';
 
 const Quality = ({ addToast, initialView = 'dashboard' }) => {
-  const { inspections, setInspections, ncrs, setNcrs } = useData();
+  const { inspections, setInspections, ncrs, setNcrs, workOrders, advanceWorkOrderStage } = useData();
   const [viewMode, setViewMode] = useState(initialView); 
   const [selectedNCR, setSelectedNCR] = useState(null);
+  const [selectedInspection, setSelectedInspection] = useState(null);
   const [isChecklistModalOpen, setIsChecklistModalOpen] = useState(false);
+  const [activeInspectionItem, setActiveInspectionItem] = useState(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isAddNCRModalOpen, setIsAddNCRModalOpen] = useState(false);
 
@@ -57,10 +59,33 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
     { name: 'Anyaghiba', count: 12, color: '#9b59b6' }
   ];
 
-  const handleStartInspection = () => setIsChecklistModalOpen(true);
+  const pendingInspections = workOrders.filter(w => w.status === 'In Progress' && w.currentStage === 4);
+
+  const handleStartInspection = (item = null) => {
+    setActiveInspectionItem(item);
+    setIsChecklistModalOpen(true);
+  };
+
   const handleCompleteChecklist = () => {
+    const newInspection = {
+      id: `INS-24-${100 + inspections.length + 1}`,
+      product: activeInspectionItem?.product || 'Ismeretlen termék',
+      type: activeInspectionItem?.id ? 'Gyártásközi (QA)' : 'Általános ellenőrzés',
+      technician: activeInspectionItem?.technician || 'Admin',
+      status: 'Passed',
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    setInspections(prev => [newInspection, ...prev]);
+    
+    // Ha gyártásból jött, léptetjük a munkalapot a befejezéshez
+    if (activeInspectionItem?.id && activeInspectionItem.id.startsWith('RW/MO')) {
+       advanceWorkOrderStage(activeInspectionItem.id, 4); 
+    }
+
     addToast('Ellenőrzés sikeresen rögzítve a rendszerbe', 'success');
     setIsChecklistModalOpen(false);
+    setActiveInspectionItem(null);
   };
 
   const handleCloseNCR = (id) => {
@@ -103,7 +128,7 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <div className="view-controls glass" style={{ padding: '4px', borderRadius: '10px' }}>
-            <button className={`view-btn ${viewMode === 'dashboard' ? 'active' : ''}`} onClick={() => setViewMode('dashboard')}>Cockpit</button>
+            <button className={`view-btn ${viewMode === 'dashboard' ? 'active' : ''}`} onClick={() => setViewMode('dashboard')}>Műszerfal</button>
             <button className={`view-btn ${viewMode === 'inspections' ? 'active' : ''}`} onClick={() => setViewMode('inspections')}>Ellenőrzések</button>
             <button className={`view-btn ${viewMode === 'ncr' ? 'active' : ''}`} onClick={() => setViewMode('ncr')}>NCR</button>
             <button className={`view-btn ${viewMode === 'calibration' ? 'active' : ''}`} onClick={() => setViewMode('calibration')}>Kalibrálás</button>
@@ -162,6 +187,47 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
                </div>
             </div>
           </div>
+
+          {/* Pending Inspections from Manufacturing */}
+          <div className="glass pending-inspections-card" style={{ border: pendingInspections.length > 0 ? '1px solid rgba(231, 76, 60, 0.3)' : '1px solid rgba(255,255,255,0.05)' }}>
+             <h3 className="chart-title">
+               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                 <ClipboardCheck size={18} /> 
+                 Gyártásból érkező ellenőrzendő tételek
+                 {pendingInspections.length > 0 && <span className="pulse-indicator"></span>}
+               </div>
+             </h3>
+             
+             <div className="pending-list">
+                {pendingInspections.length > 0 ? (
+                  pendingInspections.map(wo => (
+                    <div key={wo.id} className="pending-item">
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                          <div style={{ textAlign: 'center' }}>
+                             <div style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--primary-color)' }}>ID</div>
+                             <div style={{ fontWeight: 800 }}>{wo.id}</div>
+                          </div>
+                          <div>
+                             <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{wo.product}</div>
+                             <div className="text-muted" style={{ fontSize: '0.7rem' }}>Technikus: {wo.technician}</div>
+                          </div>
+                       </div>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          <span className="status-badge warning" style={{ fontSize: '0.65rem' }}>QA FÁZISBAN</span>
+                          <button className="create-btn" style={{ padding: '8px 15px', fontSize: '0.75rem' }} onClick={() => handleStartInspection(wo)}>
+                             Ellenőrzés Indítása
+                          </button>
+                       </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '30px', opacity: 0.5 }}>
+                     <CheckCircle2 size={32} style={{ marginBottom: '10px', color: '#2ecc71' }} />
+                     <p style={{ fontSize: '0.85rem' }}>Nincs várakozó gyártási tétel.</p>
+                  </div>
+                )}
+             </div>
+          </div>
         </div>
       )}
 
@@ -197,7 +263,15 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
                           {ins.status === 'Passed' ? 'Megfelelt' : ins.status === 'Failed' ? 'Elutasítva' : 'Folyamatban'}
                        </span>
                     </td>
-                    <td><button className="icon-btn"><MoreVertical size={18} /></button></td>
+                    <td>
+                      <button 
+                        className="icon-btn" 
+                        onClick={() => setSelectedInspection(ins)}
+                        title="Részletek megtekintése"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -273,10 +347,20 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
         </div>
       )}
 
-      <Modal isOpen={isChecklistModalOpen} onClose={() => setIsChecklistModalOpen(false)} title="Gyártásközi Ellenőrzés" width="650px" footer={<><button className="view-btn" onClick={() => setIsChecklistModalOpen(false)}>Mégse</button><button className="create-btn" onClick={handleCompleteChecklist}>Befejezés</button></>}>
+      <Modal isOpen={isChecklistModalOpen} onClose={() => setIsChecklistModalOpen(false)} title="Minőségügyi Ellenőrző Lista" width="650px" footer={<><button className="view-btn" onClick={() => setIsChecklistModalOpen(false)}>Mégse</button><button className="create-btn" onClick={handleCompleteChecklist}>Ellenőrzés Befejezése</button></>}>
         <div className="checklist-modal-content">
-           <div className="checklist-info-bar"><div><p className="text-muted">Termék:</p><strong>Hőszigetelt kocsiablak</strong></div><div><p className="text-muted">Munkalap:</p><strong>RW/MO/042</strong></div></div>
-           <div className="checklist-items">{['Méretek megfelelnek', 'Felület karcmentes', 'Tömítések illeszkednek'].map((item, i) => (<div key={i} className="checklist-row"><input type="checkbox" id={`check-${i}`} /><label htmlFor={`check-${i}`}>{item}</label></div>))}</div>
+           <div className="checklist-info-bar">
+              <div><p className="text-muted">Termék:</p><strong>{activeInspectionItem?.product || 'Hőszigetelt kocsiablak'}</strong></div>
+              <div><p className="text-muted">Azonosító:</p><strong>{activeInspectionItem?.id || 'N/A'}</strong></div>
+           </div>
+           <div className="checklist-items">
+              {['Specifikáció szerinti méretek', 'Felületi épség ellenőrzése', 'Anyagminőségi tanúsítvány megléte', 'Funkcionális teszt elvégezve'].map((item, i) => (
+                <div key={i} className="checklist-row">
+                   <input type="checkbox" id={`check-${i}`} defaultChecked={true} />
+                   <label htmlFor={`check-${i}`}>{item}</label>
+                </div>
+              ))}
+           </div>
         </div>
       </Modal>
 
@@ -294,6 +378,66 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
       </Modal>
 
       <Modal isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} title="NCR Fotók" width="800px"><div className="ncr-gallery"><div className="gallery-main"><img src="/faulty_aluminum_scratch_1777313090746.png" alt="Fault" style={{ width: '100%', borderRadius: '15px' }} /></div></div></Modal>
+
+      <Modal 
+        isOpen={!!selectedInspection} 
+        onClose={() => setSelectedInspection(null)} 
+        title={`Ellenőrzés Részletei: ${selectedInspection?.id}`}
+        width="550px"
+      >
+        {selectedInspection && (
+          <div className="inspection-details">
+            <div className="glass" style={{ padding: '20px', borderRadius: '15px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                <span className="text-muted">Azonosító:</span>
+                <strong style={{ color: 'var(--primary-color)' }}>{selectedInspection.id}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                <span className="text-muted">Termék:</span>
+                <strong>{selectedInspection.product}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                <span className="text-muted">Típus:</span>
+                <span className="type-tag">{selectedInspection.type}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                <span className="text-muted">Ellenőr:</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="avatar-small">{selectedInspection.technician.charAt(0)}</div>
+                  <span>{selectedInspection.technician}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                <span className="text-muted">Dátum:</span>
+                <span>{selectedInspection.date}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span className="text-muted">Eredmény:</span>
+                <span className={`status-badge ${selectedInspection.status === 'Passed' ? 'active' : 'danger'}`}>
+                  {selectedInspection.status === 'Passed' ? 'Megfelelt' : 'Elutasítva'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="glass" style={{ padding: '20px', borderRadius: '15px' }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '15px' }}>Ellenőrzési Megjegyzések</h4>
+              <p className="text-muted" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
+                {selectedInspection.status === 'Passed' 
+                  ? "Az ellenőrzés során minden paraméter a specifikáción belül volt. A termék továbbengedve a következő gyártási fázisba."
+                  : "Kritikus eltérés észlelhető a felületi minőségben. NCR jegyzőkönyv felvétele szükséges."}
+              </p>
+            </div>
+            
+            <div style={{ marginTop: '25px', display: 'flex', gap: '10px' }}>
+              <button className="view-btn" style={{ flex: 1 }} onClick={() => setSelectedInspection(null)}>Bezárás</button>
+              <button className="create-btn" style={{ flex: 1 }} onClick={() => {
+                addToast('Jegyzőkönyv generálása...', 'info');
+                setSelectedInspection(null);
+              }}>PDF Export</button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

@@ -33,8 +33,23 @@ export const DataProvider = ({ children }) => {
 
   const partners = ['Stadler Rail AG', 'Siemens Mobility', 'Knorr-Bremse', 'Bombardier', 'MÁV-Start', 'GYSEV', 'Alu-Pro Kft.', 'Elektro-Vasút Kft.'];
 
-  const [products, setProducts] = useState(
-    railParts.slice(0, 8).map((name, i) => ({
+  // Helper for localStorage persistence
+  const getInitialValue = (key, defaultValue) => {
+    try {
+      const saved = localStorage.getItem(`railparts_erp_${key}`);
+      return saved ? JSON.parse(saved) : defaultValue;
+    } catch (e) {
+      console.error(`Error loading state ${key}`, e);
+      return defaultValue;
+    }
+  };
+
+  const persist = (key, value) => {
+    localStorage.setItem(`railparts_erp_${key}`, JSON.stringify(value));
+  };
+
+  const [products, setProducts] = useState(() => 
+    getInitialValue('products', railParts.slice(0, 8).map((name, i) => ({
       id: i + 1,
       name,
       category: i < 10 ? 'Mechanika' : i < 20 ? 'Elektronika' : i < 30 ? 'Beltér' : 'Egyéb',
@@ -47,11 +62,11 @@ export const DataProvider = ({ children }) => {
       trend: Array.from({ length: 7 }, () => Math.floor(Math.random() * 20) + 10),
       batches: [{ id: `B-${2000 + i}`, qty: 10, expiry: '2026-06-01', status: 'Passed' }],
       history: []
-    }))
+    })))
   );
 
-  const [workOrders, setWorkOrders] = useState(
-    Array.from({ length: 8 }, (_, i) => ({
+  const [workOrders, setWorkOrders] = useState(() => 
+    getInitialValue('workOrders', Array.from({ length: 8 }, (_, i) => ({
       id: `RW/MO/${2024}/${String(i + 1).padStart(3, '0')}`,
       product: railParts[i % railParts.length],
       quantity: Math.floor(Math.random() * 15) + 2,
@@ -64,11 +79,11 @@ export const DataProvider = ({ children }) => {
       machineId: `MC-10${(i % 3) + 1}`,
       technician: hungarianNames[i % hungarianNames.length],
       bom: [{ item: 'Alapanyag profil', sku: 'RAW-ALU-01', required: 20 }]
-    }))
+    })))
   );
 
-  const [employees, setEmployees] = useState(
-    Array.from({ length: 8 }, (_, i) => ({
+  const [employees, setEmployees] = useState(() => 
+    getInitialValue('employees', Array.from({ length: 8 }, (_, i) => ({
       id: `EMP-${200 + i}`,
       name: hungarianNames[i % hungarianNames.length] + (i > 24 ? ` (Jr.)` : ''),
       role: i % 5 === 0 ? 'Csoportvezető' : i % 3 === 0 ? 'Mérnök' : 'Technikus',
@@ -79,44 +94,46 @@ export const DataProvider = ({ children }) => {
       skills: { welding: 4, cnc: 3 },
       leaveBalance: { total: 25, used: Math.floor(Math.random() * 15) + 5, sick: 1 },
       certs: ['ISO 9001 Expert', 'Szakmai Hegesztő']
-    }))
+    })))
   );
 
-  const [leaveRequests, setLeaveRequests] = useState([
-    { id: 'LR-101', empId: 'EMP-200', empName: 'Kovács János', type: 'Fizetett', start: getDate(-2), end: getDate(-7), days: 5, status: 'Approved' },
-    { id: 'LR-102', empId: 'EMP-201', empName: 'Nagy Péter', type: 'Betegszabadság', start: getDate(0), end: getDate(-3), days: 3, status: 'Approved' },
-    { id: 'LR-103', empId: 'EMP-202', empName: 'Szabó Anna', type: 'Fizetett', start: getDate(-1), end: getDate(-5), days: 4, status: 'Approved' },
-    { id: 'LR-104', empId: 'EMP-203', empName: 'Tóth Béla', type: 'Fizetett', start: getDate(-10), end: getDate(-15), days: 5, status: 'Pending' },
-    { id: 'LR-105', empId: 'EMP-204', empName: 'Molnár Ákos', type: 'Apasági', start: getDate(-12), end: getDate(-20), days: 8, status: 'Pending' },
-    { id: 'LR-106', empId: 'EMP-205', empName: 'Varga Edit', type: 'Fizetett', start: getDate(2), end: getDate(-3), days: 5, status: 'Approved' }
-  ]);
+  const [leaveRequests, setLeaveRequests] = useState(() => 
+    getInitialValue('leaveRequests', [
+      { id: 'LR-101', empId: 'EMP-200', empName: 'Kovács János', type: 'Fizetett', start: getDate(-2), end: getDate(-7), days: 5, status: 'Approved' },
+      { id: 'LR-102', empId: 'EMP-201', empName: 'Nagy Péter', type: 'Betegszabadság', start: getDate(0), end: getDate(-3), days: 3, status: 'Approved' },
+      { id: 'LR-103', empId: 'EMP-202', empName: 'Szabó Anna', type: 'Fizetett', start: getDate(-1), end: getDate(-5), days: 4, status: 'Approved' },
+      { id: 'LR-104', empId: 'EMP-203', empName: 'Tóth Béla', type: 'Fizetett', start: getDate(-10), end: getDate(-15), days: 5, status: 'Pending' },
+      { id: 'LR-105', empId: 'EMP-204', empName: 'Molnár Ákos', type: 'Apasági', start: getDate(-12), end: getDate(-20), days: 8, status: 'Pending' },
+      { id: 'LR-106', empId: 'EMP-205', empName: 'Varga Edit', type: 'Fizetett', start: getDate(2), end: getDate(-3), days: 5, status: 'Approved' }
+    ])
+  );
 
-  const [transactions, setTransactions] = useState(
-    Array.from({ length: 8 }, (_, i) => ({
+  const [transactions, setTransactions] = useState(() => 
+    getInitialValue('transactions', Array.from({ length: 8 }, (_, i) => ({
       id: `TRX-${7000 + i}`,
       date: getDate(i % 25),
       account: i % 3 === 0 ? '381 (Pénztár)' : i % 3 === 1 ? '311 (Vevők)' : '454 (Szállítók)',
       details: i % 2 === 0 ? `${partners[i % partners.length]} - Anyagköltség` : `${partners[i % partners.length]} - Elszámolt projektköltség`,
       type: i % 2 === 0 ? 'Credit' : 'Debit',
       amount: Math.floor(Math.random() * 2500000) + 50000
-    }))
+    })))
   );
 
-  const [balances, setBalances] = useState({ cash: 42000000, ar: 15600000, ap: 9200000 });
+  const [balances, setBalances] = useState(() => getInitialValue('balances', { cash: 42000000, ar: 15600000, ap: 9200000 }));
 
-  const [inspections, setInspections] = useState(
-    Array.from({ length: 8 }, (_, i) => ({
+  const [inspections, setInspections] = useState(() => 
+    getInitialValue('inspections', Array.from({ length: 8 }, (_, i) => ({
       id: `INS-24-${100 + i}`,
       product: railParts[i % railParts.length],
       type: i % 2 === 0 ? 'Végátvétel (FQC)' : 'Soron közbeni (IPQC)',
       technician: hungarianNames[(i + 5) % hungarianNames.length],
       status: i % 12 === 0 ? 'Failed' : 'Passed',
       date: getDate(i % 15)
-    }))
+    })))
   );
 
-  const [ncrs, setNcrs] = useState(
-    Array.from({ length: 8 }, (_, i) => ({
+  const [ncrs, setNcrs] = useState(() => 
+    getInitialValue('ncrs', Array.from({ length: 8 }, (_, i) => ({
       id: `NCR-2024-${80 + i}`,
       title: `${railParts[i % railParts.length]} - ${i % 2 === 0 ? 'Méretbeli eltérés' : 'Felületi hiba'}`,
       source: i % 3 === 0 ? 'Gyártás' : 'Beszállítói',
@@ -124,11 +141,11 @@ export const DataProvider = ({ children }) => {
       status: i % 5 === 0 ? 'Closed' : 'Open',
       date: getDate(i % 20),
       description: `Az ellenőrzés során megállapított nem-megfelelőség a(z) ${railParts[i % railParts.length]} alkatrésznél.`
-    }))
+    })))
   );
 
-  const [procurementOrders, setProcurementOrders] = useState(
-    Array.from({ length: 8 }, (_, i) => ({
+  const [procurementOrders, setProcurementOrders] = useState(() => 
+    getInitialValue('procurementOrders', Array.from({ length: 8 }, (_, i) => ({
       id: `PO/2024/${500 + i}`,
       supplier: partners[i % partners.length],
       date: getDate(i % 30),
@@ -139,21 +156,40 @@ export const DataProvider = ({ children }) => {
       rating: 4.5,
       scores: { quality: 95, delivery: 90, price: 85, responsiveness: 92, innovation: 80 },
       items: [{ name: railParts[i % railParts.length], qty: 10, price: 150000 }]
-    }))
+    })))
   );
 
-  const [procurementRequests, setProcurementRequests] = useState([]);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Készlethiány', message: 'RW-PRT-1002 készlete kritikus szinten.', time: '10 perce', severity: 'warning' },
-    { id: 2, title: 'Sürgős NCR', message: 'NCR-2024-082 kivizsgálásra vár.', time: '1 órája', severity: 'danger' }
-  ]);
-  const [comments, setComments] = useState({});
+  const [procurementRequests, setProcurementRequests] = useState(() => getInitialValue('procurementRequests', []));
+  const [notifications, setNotifications] = useState(() => 
+    getInitialValue('notifications', [
+      { id: 1, title: 'Készlethiány', message: 'RW-PRT-1002 készlete kritikus szinten.', time: '10 perce', severity: 'warning' },
+      { id: 2, title: 'Sürgős NCR', message: 'NCR-2024-082 kivizsgálásra vár.', time: '1 órája', severity: 'danger' }
+    ])
+  );
+  const [comments, setComments] = useState(() => getInitialValue('comments', {}));
 
-  const [machines, setMachines] = useState([
-    { id: 'MC-101', name: 'CNC Megmunkáló Központ', status: 'Healthy', health: 95, capacity: 160, purchaseValue: 45000000, purchaseDate: '2023-01-10', depYear: 14.5 },
-    { id: 'MC-102', name: 'Hidraulikus Prés', status: 'Warning', health: 62, capacity: 160, purchaseValue: 12000000, purchaseDate: '2022-05-20', depYear: 14.5 },
-    { id: 'MC-103', name: 'Lézerhegesztő Robot', status: 'Healthy', health: 92, capacity: 160, purchaseValue: 32000000, purchaseDate: '2023-08-15', depYear: 14.5 }
-  ]);
+  const [machines, setMachines] = useState(() => 
+    getInitialValue('machines', [
+      { id: 'MC-101', name: 'CNC Megmunkáló Központ', status: 'Healthy', health: 95, capacity: 160, purchaseValue: 45000000, purchaseDate: '2023-01-10', depYear: 14.5 },
+      { id: 'MC-102', name: 'Hidraulikus Prés', status: 'Warning', health: 62, capacity: 160, purchaseValue: 12000000, purchaseDate: '2022-05-20', depYear: 14.5 },
+      { id: 'MC-103', name: 'Lézerhegesztő Robot', status: 'Healthy', health: 92, capacity: 160, purchaseValue: 32000000, purchaseDate: '2023-08-15', depYear: 14.5 }
+    ])
+  );
+
+  // Sync state to localStorage
+  useEffect(() => { persist('products', products); }, [products]);
+  useEffect(() => { persist('workOrders', workOrders); }, [workOrders]);
+  useEffect(() => { persist('employees', employees); }, [employees]);
+  useEffect(() => { persist('leaveRequests', leaveRequests); }, [leaveRequests]);
+  useEffect(() => { persist('transactions', transactions); }, [transactions]);
+  useEffect(() => { persist('balances', balances); }, [balances]);
+  useEffect(() => { persist('inspections', inspections); }, [inspections]);
+  useEffect(() => { persist('ncrs', ncrs); }, [ncrs]);
+  useEffect(() => { persist('procurementOrders', procurementOrders); }, [procurementOrders]);
+  useEffect(() => { persist('procurementRequests', procurementRequests); }, [procurementRequests]);
+  useEffect(() => { persist('notifications', notifications); }, [notifications]);
+  useEffect(() => { persist('comments', comments); }, [comments]);
+  useEffect(() => { persist('machines', machines); }, [machines]);
 
   const approveLeave = (id) => {
     setLeaveRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'Approved' } : req));
@@ -209,8 +245,42 @@ export const DataProvider = ({ children }) => {
       skillDefinitions: [{ id: 'welding', label: 'Hegesztés' }, { id: 'cnc', label: 'CNC Megmunkálás' }],
       leaveRequests,
       executeAIAction,
-      advanceWorkOrderStage: () => {},
-      getBomStatus: () => [{ item: 'Acél profil', status: 'ok', available: 100 }],
+      advanceWorkOrderStage: (woId, totalStages) => {
+        let isCompleted = false;
+        setWorkOrders(prev => prev.map(wo => {
+          if (wo.id === woId) {
+            const nextStage = wo.currentStage + 1;
+            const nextProgress = Math.min(100, (nextStage / totalStages) * 100);
+            
+            if (nextStage > totalStages) {
+              isCompleted = true;
+              
+              // Ha kész, növeljük a termék készletét
+              setProducts(prevProducts => prevProducts.map(p => 
+                p.name === wo.product ? { ...p, stock: p.stock + wo.quantity } : p
+              ));
+              
+              return { ...wo, currentStage: nextStage, progress: 100, status: 'Completed' };
+            }
+            return { ...wo, currentStage: nextStage, progress: nextProgress };
+          }
+          return wo;
+        }));
+        return isCompleted;
+      },
+      getBomStatus: (wo) => {
+        if (!wo) return [];
+        // Alapértelmezett BOM ha nincs megadva a munkalapon
+        const defaultBom = [
+          { item: 'Acél profil (S235)', sku: 'RAW-STL-01', required: wo.quantity * 2, available: 150, status: 'ok' },
+          { item: 'Rögzítő készlet (M8)', sku: 'FIX-M8-100', required: wo.quantity * 10, available: 500, status: 'ok' }
+        ];
+        return wo.bom && wo.bom.length > 0 ? wo.bom.map(item => ({
+          ...item,
+          available: 100, // Mock adat
+          status: 'ok'
+        })) : defaultBom;
+      },
       forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false }))
     }}>
       {children}

@@ -14,9 +14,11 @@ import {
   Calendar,
   Building
 } from 'lucide-react';
+import { useData } from '../../contexts/DataContext';
 import './DocumentEngine.css';
 
 const DocumentEngine = ({ addToast }) => {
+  const { workOrders, products } = useData();
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -226,78 +228,168 @@ const DocumentEngine = ({ addToast }) => {
                   </div>
                </div>
 
-               <div className="doc-body">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
-                     <div className="doc-party">
-                        <p className="party-label">KIBOCSÁTÓ</p>
-                        <p><strong>RailParts Ltd.</strong></p>
-                        <p>Ügyvezető Igazgató</p>
-                        <p>1055 Budapest, Falk Miksa u. 12.</p>
-                        <p>Adószám: 12345678-2-41</p>
+                <div className="doc-body">
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+                      <div className="doc-party">
+                         <p className="party-label">KIBOCSÁTÓ</p>
+                         <p><strong>RailParts Ltd.</strong></p>
+                         <p>Ügyvezető Igazgató</p>
+                         <p>1055 Budapest, Falk Miksa u. 12.</p>
+                      </div>
+                      <div className="doc-party" style={{ textAlign: 'right' }}>
+                         <p className="party-label">MODUL / RÉSZLEG</p>
+                         <p><strong>{selectedDoc?.type || 'Központi'}</strong></p>
+                         <p>Generálva: {new Date().toLocaleDateString('hu-HU')}</p>
+                      </div>
+                   </div>
+
+                   <h1 className="doc-title">{selectedDoc?.title || 'HIVATALOS DOKUMENTUM'}</h1>
+
+                   {/* Conditional Body Content based on ID or Type */}
+                   {selectedDoc?.id === 'PRD-SHEET' ? (
+                     <div className="production-order-report">
+                        <div className="report-summary-box glass" style={{ padding: '20px', borderRadius: '12px', marginBottom: '30px', background: 'rgba(0,0,0,0.02)' }}>
+                           <p>Ez a riport a napi gyártási tervet és a folyamatban lévő munkalapok állapotát tartalmazza.</p>
+                        </div>
+                        <table className="doc-table">
+                           <thead>
+                              <tr>
+                                 <th>Munkalap ID</th>
+                                 <th>Termék</th>
+                                 <th>Technikus</th>
+                                 <th style={{ textAlign: 'center' }}>Állapot</th>
+                                 <th style={{ textAlign: 'right' }}>Készültség</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {workOrders.slice(0, 8).map(wo => (
+                                <tr key={wo.id}>
+                                   <td><strong>{wo.id}</strong></td>
+                                   <td>{wo.product}</td>
+                                   <td>{wo.technician}</td>
+                                   <td style={{ textAlign: 'center' }}>{wo.status === 'Completed' ? 'Befejezve' : 'Folyamatban'}</td>
+                                   <td style={{ textAlign: 'right' }}>{Math.round(wo.progress)}%</td>
+                                </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                        <div style={{ marginTop: '40px' }}>
+                           <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '10px' }}>GYÁRTÁSI MEGJEGYZÉSEK</h4>
+                           <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>A munkalapok prioritása a határidőknek megfelelően lett ütemezve. Kérjük a technikusokat a fázisok pontos dokumentálására.</p>
+                        </div>
                      </div>
-                     <div className="doc-party" style={{ textAlign: 'right' }}>
-                        <p className="party-label">CÍMZETT / ÜGYFÉL</p>
-                        <p><strong>MÁV-START Zrt.</strong></p>
-                        <p>Beszerzési Osztály</p>
-                        <p>1087 Budapest, Könyves Kálmán krt. 54-60.</p>
+                   ) : selectedDoc?.id === 'AI-STRAT' ? (
+                      <div className="ai-strategic-report">
+                         <div style={{ background: 'linear-gradient(135deg, #9b59b6 0%, #3498db 100%)', color: 'white', padding: '25px', borderRadius: '15px', marginBottom: '30px' }}>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '10px' }}>Oracle AI Stratégiai Összegzés</h3>
+                            <p style={{ fontSize: '0.85rem', opacity: 0.9 }}>Prediktív elemzés és üzleti intelligencia riport a felsővezetés részére.</p>
+                         </div>
+                         
+                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                            <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
+                               <h4 style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '15px', color: '#9b59b6' }}>KULCS MUTATÓK (KPI)</h4>
+                               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>OEE Hatékonyság:</span><strong>84.2%</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Minőségi Mutató:</span><strong>98.5%</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Készletforgás:</span><strong>12.4 nap</strong></div>
+                               </div>
+                            </div>
+                            <div className="glass" style={{ padding: '20px', borderRadius: '12px' }}>
+                               <h4 style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '15px', color: '#3498db' }}>AI PREDIKCIÓK</h4>
+                               <p style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>A következő 30 napban 15%-os keresletnövekedés várható az alumínium profilokra. Javasolt a beszerzés előrehozása.</p>
+                            </div>
+                         </div>
+
+                         <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '15px' }}>STRATÉGIAI JAVASLATOK</h4>
+                         <ul style={{ fontSize: '0.85rem', paddingLeft: '20px', lineHeight: '1.8' }}>
+                            <li>A 3-as gyártósor megelőző karbantartása javasolt a jövő héten (85% meghibásodási valószínűség).</li>
+                            <li>Energiafelhasználás optimalizálása: az éjszakai műszak terhelésének növelése 5%-os költségmegtakarítást eredményezhet.</li>
+                            <li>Beszállítói diverzifikáció szükséges a kritikus nyersanyagok esetében.</li>
+                         </ul>
+                      </div>
+                   ) : selectedDoc?.id === 'INV-AUDIT' ? (
+                      <div className="inventory-audit-report">
+                         <table className="doc-table">
+                            <thead>
+                               <tr>
+                                  <th>Cikkszám</th>
+                                  <th>Megnevezés</th>
+                                  <th style={{ textAlign: 'center' }}>Készlet</th>
+                                  <th style={{ textAlign: 'center' }}>Min. Készlet</th>
+                                  <th style={{ textAlign: 'right' }}>Státusz</th>
+                               </tr>
+                            </thead>
+                            <tbody>
+                               {products.slice(0, 10).map(p => (
+                                 <tr key={p.id}>
+                                    <td>{p.sku}</td>
+                                    <td><strong>{p.name}</strong></td>
+                                    <td style={{ textAlign: 'center' }}>{p.stock}</td>
+                                    <td style={{ textAlign: 'center' }}>{p.minStock}</td>
+                                    <td style={{ textAlign: 'right', color: p.stock < p.minStock ? '#e74c3c' : '#2ecc71' }}>
+                                       {p.stock < p.minStock ? 'Kritikus' : 'Optimális'}
+                                    </td>
+                                 </tr>
+                               ))}
+                            </tbody>
+                         </table>
+                      </div>
+                   ) : (
+                     <div className="invoice-report">
+                        <table className="doc-table">
+                           <thead>
+                              <tr>
+                                 <th>Leírás</th>
+                                 <th style={{ textAlign: 'center' }}>Mennyiség</th>
+                                 <th style={{ textAlign: 'right' }}>Egységár</th>
+                                 <th style={{ textAlign: 'right' }}>Összesen</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              <tr>
+                                 <td>MÁV-START Kocsi Felújítás - Fázis 1 (Sliver-Line)</td>
+                                 <td style={{ textAlign: 'center' }}>1 db</td>
+                                 <td style={{ textAlign: 'right' }}>15.000.000 Ft</td>
+                                 <td style={{ textAlign: 'right' }}>15.000.000 Ft</td>
+                              </tr>
+                              <tr>
+                                 <td>Technikai Tanácsadás és Mérnöki Óradíj</td>
+                                 <td style={{ textAlign: 'center' }}>120 óra</td>
+                                 <td style={{ textAlign: 'right' }}>25.000 Ft</td>
+                                 <td style={{ textAlign: 'right' }}>3.000.000 Ft</td>
+                              </tr>
+                           </tbody>
+                           <tfoot>
+                              <tr>
+                                 <td colSpan="3" style={{ textAlign: 'right', fontWeight: 700 }}>NETTÓ ÖSSZESEN:</td>
+                                 <td style={{ textAlign: 'right', fontWeight: 800 }}>18.000.000 Ft</td>
+                              </tr>
+                              <tr>
+                                 <td colSpan="3" style={{ textAlign: 'right', fontWeight: 700 }}>ÁFA (27%):</td>
+                                 <td style={{ textAlign: 'right', fontWeight: 800 }}>4.860.000 Ft</td>
+                              </tr>
+                              <tr className="total-row">
+                                 <td colSpan="3" style={{ textAlign: 'right', fontWeight: 900 }}>BRUTTÓ FIZETENDŐ:</td>
+                                 <td style={{ textAlign: 'right', fontWeight: 900, color: 'var(--primary-color)' }}>22.860.000 Ft</td>
+                              </tr>
+                           </tfoot>
+                        </table>
+                        <div className="doc-footer-notes">
+                           <p><strong>Megjegyzés:</strong> A kifizetés határideje a teljesítést követő 15 naptári nap.</p>
+                        </div>
                      </div>
-                  </div>
-
-                  <h1 className="doc-title">{selectedDoc?.title || 'HIVATALOS DOKUMENTUM'}</h1>
-
-                  <table className="doc-table">
-                     <thead>
-                        <tr>
-                           <th>Leírás</th>
-                           <th style={{ textAlign: 'center' }}>Mennyiség</th>
-                           <th style={{ textAlign: 'right' }}>Egységár</th>
-                           <th style={{ textAlign: 'right' }}>Összesen</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        <tr>
-                           <td>MÁV-START Kocsi Felújítás - Fázis 1 (Sliver-Line)</td>
-                           <td style={{ textAlign: 'center' }}>1 db</td>
-                           <td style={{ textAlign: 'right' }}>15.000.000 Ft</td>
-                           <td style={{ textAlign: 'right' }}>15.000.000 Ft</td>
-                        </tr>
-                        <tr>
-                           <td>Technikai Tanácsadás és Mérnöki Óradíj</td>
-                           <td style={{ textAlign: 'center' }}>120 óra</td>
-                           <td style={{ textAlign: 'right' }}>25.000 Ft</td>
-                           <td style={{ textAlign: 'right' }}>3.000.000 Ft</td>
-                        </tr>
-                     </tbody>
-                     <tfoot>
-                        <tr>
-                           <td colSpan="3" style={{ textAlign: 'right', fontWeight: 700 }}>NETTÓ ÖSSZESEN:</td>
-                           <td style={{ textAlign: 'right', fontWeight: 800 }}>18.000.000 Ft</td>
-                        </tr>
-                        <tr>
-                           <td colSpan="3" style={{ textAlign: 'right', fontWeight: 700 }}>ÁFA (27%):</td>
-                           <td style={{ textAlign: 'right', fontWeight: 800 }}>4.860.000 Ft</td>
-                        </tr>
-                        <tr className="total-row">
-                           <td colSpan="3" style={{ textAlign: 'right', fontWeight: 900 }}>BRUTTÓ FIZETENDŐ:</td>
-                           <td style={{ textAlign: 'right', fontWeight: 900, color: 'var(--primary-color)' }}>22.860.000 Ft</td>
-                        </tr>
-                     </tfoot>
-                  </table>
-
-                  <div className="doc-footer-notes">
-                     <p><strong>Megjegyzés:</strong> A kifizetés határideje a teljesítést követő 15 naptári nap. Kérjük, az utalás közleményében tüntessék fel a bizonylatszámot.</p>
-                  </div>
-               </div>
-
-               <div className="doc-signature">
-                <div className="sig-line">
-                   <p className="sig-name">..................................</p>
-                   <p className="sig-title">Ügyvezető Igazgató</p>
+                   )}
                 </div>
-                  <div className="sig-stamp">
-                     <div className="stamp-inner">RP</div>
-                  </div>
-               </div>
+
+                <div className="doc-signature">
+                 <div className="sig-line">
+                    <p className="sig-name">..................................</p>
+                    <p className="sig-title">Hitelesítve</p>
+                 </div>
+                   <div className="sig-stamp">
+                      <div className="stamp-inner">RP</div>
+                   </div>
+                </div>
             </div>
           </div>
         </div>
