@@ -61,7 +61,11 @@ export const DataProvider = ({ children }) => {
       location: `A-szektor, 0${(i % 9) + 1}-C polc`,
       trend: Array.from({ length: 7 }, () => Math.floor(Math.random() * 20) + 10),
       batches: [{ id: `B-${2000 + i}`, qty: 10, expiry: '2026-06-01', status: 'Passed' }],
-      history: []
+      history: [
+        { date: getDate(30), type: 'IN', qty: 50, reason: 'Kezdeti raktárkészlet' },
+        { date: getDate(15), type: 'OUT', qty: 10, reason: 'Selejtezés' },
+        { date: getDate(5), type: 'IN', qty: 25, reason: 'Beszállítói beérkezés' }
+      ]
     })))
   );
 
@@ -255,9 +259,16 @@ export const DataProvider = ({ children }) => {
             if (nextStage > totalStages) {
               isCompleted = true;
               
-              // Ha kész, növeljük a termék készletét
+              // Ha kész, növeljük a termék készletét és naplózzuk
               setProducts(prevProducts => prevProducts.map(p => 
-                p.name === wo.product ? { ...p, stock: p.stock + wo.quantity } : p
+                p.name === wo.product ? { 
+                  ...p, 
+                  stock: p.stock + wo.quantity,
+                  history: [
+                    { date: new Date().toISOString().split('T')[0], type: 'IN', qty: wo.quantity, reason: `Gyártási beérkezés (${wo.id})` },
+                    ...p.history
+                  ]
+                } : p
               ));
               
               return { ...wo, currentStage: nextStage, progress: 100, status: 'Completed' };

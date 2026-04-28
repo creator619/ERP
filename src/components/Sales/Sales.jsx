@@ -142,8 +142,8 @@ const Sales = ({ addToast }) => {
             <Briefcase size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Értékesítés és Pipeline</h2>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Lehetőségek és árajánlatok kezelése</p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Értékesítés és Folyamat</h2>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Értékesítési lehetőségek és árajánlatok kezelése</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -255,7 +255,7 @@ const Sales = ({ addToast }) => {
                   <div key={opp.id} className="opportunity-card glass" style={{ padding: '15px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                       <span style={{ fontSize: '0.7rem', color: 'var(--primary-color)', fontWeight: 600 }}>{opp.id}</span>
-                      <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{opp.probability}% esély</span>
+                      <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{opp.probability}% valószínűség</span>
                     </div>
                     <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '5px' }}>{opp.title}</h4>
                     <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '12px' }}>{opp.customer}</p>
@@ -296,7 +296,7 @@ const Sales = ({ addToast }) => {
                 <th>Ügyfél</th>
                 <th>Érték</th>
                 <th>Fázis</th>
-                <th>Esély</th>
+                <th>Valószínűség</th>
                 <th>Prioritás</th>
                 <th></th>
               </tr>

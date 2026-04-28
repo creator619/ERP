@@ -70,7 +70,17 @@ const Inventory = ({ addToast }) => {
     setProducts(prev => prev.map(p => {
       if (p.id === id) {
         const newStock = Math.max(0, p.stock + amount);
-        const updatedProduct = { ...p, stock: newStock };
+        const newHistoryRecord = {
+          date: new Date().toISOString().split('T')[0],
+          type: amount >= 0 ? 'IN' : 'OUT',
+          qty: Math.abs(amount),
+          reason: reason
+        };
+        const updatedProduct = { 
+          ...p, 
+          stock: newStock,
+          history: [newHistoryRecord, ...p.history]
+        };
         
         // Frissítjük a kijelölt terméket is, hogy a Modal-ban azonnal látszódjon a változás
         if (selectedProduct && selectedProduct.id === id) {

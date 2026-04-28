@@ -435,7 +435,7 @@ const CRM = ({ addToast }) => {
                         <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-color)' }}>
                            {new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF' }).format(opp.value)}
                         </div>
-                        <button className="view-btn-small">Pipeline Megnyitása <ExternalLink size={14} /></button>
+                        <button className="view-btn-small">Folyamat Megnyitása <ExternalLink size={14} /></button>
                       </div>
                     </div>
                   ))}
