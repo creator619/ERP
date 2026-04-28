@@ -198,6 +198,19 @@ export const DataProvider = ({ children }) => {
     })))
   );
 
+  const [ledgers, setLedgers] = useState(() => getInitialValue('ledgers', {
+    'AXLE-2024-001': {
+      name: 'Nagysebességű Tengelykerék',
+      status: 'Verified',
+      finalHash: '0000x8f2a9942c11d3d11b22e88a1f44c66d9',
+      steps: [
+        { title: 'Anyagbeérkezés', date: '2024-04-01', actor: 'Kovács Péter', hash: '0000x1a...f2', details: 'Acélötvözet tanúsítvány ellenőrizve.' },
+        { title: 'Forgácsolás', date: '2024-04-05', actor: 'MC-101 (CNC)', hash: '0000x3b...e4', details: 'Mérethelyesség: +/- 0.01mm.' },
+        { title: 'Minőségi ellenőrzés', date: '2024-04-10', actor: 'Varga Edit', hash: '0000x9d...c1', details: 'Roncsolásmentes vizsgálat sikeres.' }
+      ]
+    }
+  }));
+
   useEffect(() => { persist('products', products); }, [products]);
   useEffect(() => { persist('workOrders', workOrders); }, [workOrders]);
   useEffect(() => { persist('employees', employees); }, [employees]);
@@ -210,6 +223,7 @@ export const DataProvider = ({ children }) => {
   useEffect(() => { persist('procurementRequests', procurementRequests); }, [procurementRequests]);
   useEffect(() => { persist('invoices', invoices); }, [invoices]);
   useEffect(() => { persist('maintenanceTasks', maintenanceTasks); }, [maintenanceTasks]);
+  useEffect(() => { persist('ledgers', ledgers); }, [ledgers]);
   useEffect(() => { persist('machines', machines); }, [machines]);
   useEffect(() => { persist('notifications', notifications); }, [notifications]);
   useEffect(() => { persist('comments', comments); }, [comments]);
@@ -253,9 +267,16 @@ export const DataProvider = ({ children }) => {
               ]
             } : p
           ));
-          return { ...wo, currentStage: nextStage, progress: 100, status: 'Completed' };
         }
-        return { ...wo, currentStage: nextStage, progress: nextProgress };
+      
+        // HA KÉSZ A MUNKALAP, CSÖKKENTJÜK A GÉP PdM ÉRTÉKÉT (ÜZEMÓRA SZIMULÁCIÓ)
+        if (nextStatus === 'Completed' && wo.machineId) {
+          setMachines(mPrev => mPrev.map(m => 
+            m.id === wo.machineId ? { ...m, pdm: Math.max(1, m.pdm - 1) } : m
+          ));
+        }
+
+        return { ...wo, currentStage: nextStage, progress: nextProgress, status: nextStatus };
       }
       return wo;
     }));
@@ -398,6 +419,35 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const createPurchaseRequestFromMRP = (productName, quantity) => {
+    const selectedProd = products.find(p => p.name === productName);
+    const newReq = {
+      id: `REQ-MRP-${Math.floor(Math.random() * 9000) + 1000}`,
+      supplier: 'Beszerzési Osztály',
+      date: new Date().toISOString().split('T')[0],
+      total: quantity * (selectedProd?.price || 1500),
+      status: 'Request',
+      category: 'Alapanyag',
+      approvalStep: 0,
+      rating: 4.5,
+      scores: { quality: 90, delivery: 90, price: 90, responsiveness: 90, innovation: 90 },
+      items: [{ name: productName, qty: quantity, price: selectedProd?.price || 1500 }]
+    };
+    setProcurementRequests(prev => [newReq, ...prev]);
+    return newReq.id;
+  };
+
+  const isEmployeeAvailable = (empName, dateStr) => {
+    const targetDate = new Date(dateStr);
+    const leave = leaveRequests.find(req => 
+      req.empName === empName && 
+      req.status === 'Approved' &&
+      targetDate >= new Date(req.start) && 
+      targetDate <= new Date(req.end)
+    );
+    return !leave;
+  };
+
   const addComment = (entityId, text) => {
     const newComment = {
       id: Date.now(),
@@ -420,6 +470,7 @@ export const DataProvider = ({ children }) => {
       procurementOrders, setProcurementOrders, procurementRequests, setProcurementRequests,
       invoices, setInvoices,
       maintenanceTasks, setMaintenanceTasks,
+      ledgers, setLedgers,
       notifications, setNotifications, comments, setComments, addComment, leaveRequests, setLeaveRequests, approveLeave,
       mrpData: products.map(p => ({ ...p, required: p.stock < p.minStock ? 50 : 0, shortage: 0, status: 'Available', orders: [] })),
       resourceLoading: machines.map(m => ({ ...m, percentage: 75, loadedHours: 40, orderCount: 5, alert: false })),
@@ -434,6 +485,8 @@ export const DataProvider = ({ children }) => {
       createInvoiceFromSales,
       postInvoicePaymentToFinance,
       failInspectionWithInventoryBlock,
+      createPurchaseRequestFromMRP,
+      isEmployeeAvailable,
       markNotificationAsRead,
       forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false }))
     }}>
