@@ -5,7 +5,7 @@ import AIAssistant from '../AI/AIAssistant';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './Layout.css';
 
-const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, setCurrency }) => {
+const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, setCurrency, addToast }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const { t } = useLanguage();
 
@@ -54,7 +54,7 @@ const Layout = ({ children, activeModule, setActiveModule, onLogout, currency, s
       </main>
       
       {/* Global AI Assistant Bot */}
-      <AIAssistant />
+      <AIAssistant addToast={addToast} />
     </div>
   );
 };

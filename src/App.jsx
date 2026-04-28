@@ -91,7 +91,14 @@ function App() {
 
   return (
     <>
-      <Layout activeModule={activeModule} setActiveModule={setActiveModule} onLogout={handleLogout} currency={currency} setCurrency={setCurrency}>
+      <Layout 
+        activeModule={activeModule} 
+        setActiveModule={setActiveModule} 
+        onLogout={handleLogout} 
+        currency={currency} 
+        setCurrency={setCurrency}
+        addToast={addToast}
+      >
         {renderModule()}
       </Layout>
       <ToastContainer toasts={toasts} removeToast={removeToast} />

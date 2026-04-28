@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import aiService from '../../services/AIService';
 import auditLogService from '../../services/AuditLogService';
+import { useData } from '../../contexts/DataContext';
 import './AIAssistant.css';
 
 const COMMANDS = [
@@ -14,6 +15,7 @@ const COMMANDS = [
 ];
 
 const AIAssistant = ({ addToast }) => {
+  const { setProcurementRequests } = useData();
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [inputVal, setInputVal] = useState('');
@@ -75,6 +77,7 @@ const AIAssistant = ({ addToast }) => {
     // Különleges parancsok kezelése
     setTimeout(() => {
       let responseText = 'Vettem! Mivel még béta fázisban vagyok, ajánlom az előkészített insight-ok használatát.';
+      let triggerOrder = false;
       
       if (currentInput.startsWith('/készlet')) {
         responseText = 'Elemzem a nyersanyagokat... A jelenlegi gyártási ütemterv mellett a "Szénszálas lapok" 4 napon belül kritikus szintre csökkennek. Szeretnéd, ha generálnék egy beszerzési rendelést (PO)?';
@@ -82,6 +85,30 @@ const AIAssistant = ({ addToast }) => {
         responseText = 'A múlt havi teljesítési adatok alapján az alapanyag-költségek az átlaghoz képest 4.2%-ot nőttek a 3-as gyáregységben.';
       } else if (currentInput.startsWith('/selejt')) {
         responseText = 'A hegesztőrobot (Sor-A) hibaaránya tegnap óta +1.5%. Karbantartási jegy generálása ajánlott.';
+      } else if (currentInput.toLowerCase().includes('igen') || currentInput.toLowerCase().includes('mehet')) {
+        // Ha az előző üzenet készlethiányról szólt
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg && lastMsg.text.includes('beszerzési rendelést')) {
+           responseText = 'Rendben, generálom a beszerzési igényt a "Szénszálas lapok" tételre (200 db). Kész is! Megtalálod a Beszerzés -> Igények fül alatt.';
+           triggerOrder = true;
+        }
+      }
+
+      if (triggerOrder) {
+        const newReq = {
+          id: `REQ-AI-${Math.floor(Math.random() * 9000) + 1000}`,
+          supplier: 'Carbon-Tech Kft.',
+          date: new Date().toISOString().split('T')[0],
+          total: 1250000,
+          status: 'Request',
+          category: 'Alapanyag',
+          approvalStep: 0,
+          rating: 4.9,
+          scores: { quality: 99, delivery: 94, price: 85, responsiveness: 98, innovation: 95 },
+          items: [{ name: 'Szénszálas lapok (3mm)', qty: 200, price: 6250 }]
+        };
+        setProcurementRequests(prev => [newReq, ...prev]);
+        if (addToast) addToast('Beszerzési igény létrehozva', 'success');
       }
 
       const gptResponse = { id: Date.now() + 1, sender: 'system', text: responseText };
@@ -107,6 +134,24 @@ const AIAssistant = ({ addToast }) => {
       });
       
       setInsights(prev => prev.filter(i => i.id !== insight.id));
+      
+      // Auto-generate Procurement Request for Inventory Insights
+      if (insight.type === 'inventory') {
+        const newReq = {
+          id: `REQ-AI-${Math.floor(Math.random() * 9000) + 1000}`,
+          supplier: 'Knorr-Bremse',
+          date: new Date().toISOString().split('T')[0],
+          total: 750000,
+          status: 'Request',
+          category: 'Alkatrész',
+          approvalStep: 0,
+          rating: 4.8,
+          scores: { quality: 98, delivery: 95, price: 88, responsiveness: 92, innovation: 90 },
+          items: [{ name: 'Alumínium S-Profil', qty: 500, price: 1500 }]
+        };
+        setProcurementRequests(prev => [newReq, ...prev]);
+      }
+
       setExecutingInsight(null);
       
       const successMessage = {
