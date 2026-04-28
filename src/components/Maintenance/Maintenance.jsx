@@ -66,9 +66,11 @@ const Maintenance = ({ addToast }) => {
   };
 
   const handleStartMaintenance = (id) => {
-    setMachines(prev => prev.map(m => m.id === id ? { ...m, status: 'Maintenance', health: 10, maintenanceStart: new Date().toISOString() } : m));
+    const startTime = new Date().toISOString();
+    setMachines(prev => prev.map(m => m.id === id ? { ...m, status: 'Maintenance', health: 10, maintenanceStart: startTime } : m));
+    setSelectedMachine(prev => ({ ...prev, status: 'Maintenance', health: 10, maintenanceStart: startTime }));
     addToast('Karbantartási folyamat elindítva', 'info');
-    setIsModalOpen(false);
+    // Ne zárjuk be a modalt, hogy lássa a számolást!
   };
 
   const handleOrderPart = (customName) => {
