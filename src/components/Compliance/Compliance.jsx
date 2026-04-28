@@ -591,25 +591,21 @@ const Compliance = ({ addToast }) => {
                    <tr key={i}>
                       <td><span style={{ fontWeight: 800 }}>{s.name}</span></td>
                       <td style={{ textAlign: 'center' }}>
-                         <span style={{ 
-                           background: s.rating === 'A' ? '#2ecc71' : s.rating === 'B' ? '#3498db' : '#e74c3c',
-                           color: 'white',
-                           padding: '5px 12px',
-                           borderRadius: '8px',
-                           fontWeight: 900
+                         <span className="rating-badge" style={{ 
+                           background: s.rating === 'A' ? '#2ecc71' : s.rating === 'B' ? '#3498db' : '#e74c3c'
                          }}>{s.rating}</span>
                       </td>
                       <td>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px' }}>
-                               <div style={{ width: `${s.quality}%`, height: '100%', background: s.quality > 90 ? '#2ecc71' : '#f1c40f' }}></div>
+                         <div className="ppm-container">
+                            <div className="ppm-bar-bg">
+                               <div className="ppm-bar-fill" style={{ width: `${s.quality}%`, background: s.quality > 90 ? '#2ecc71' : '#f1c40f' }}></div>
                             </div>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{s.quality}%</span>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>{s.quality}%</span>
                          </div>
                       </td>
-                      <td style={{ fontWeight: 700 }}>{s.delivery}%</td>
+                      <td style={{ fontWeight: 800, fontSize: '1rem' }}>{s.delivery}%</td>
                       <td>
-                         <span className={`status-badge ${s.status === 'Premium' ? 'active' : s.status === 'Certified' ? 'info' : 'danger'}`}>
+                         <span className={`status-badge ${s.status === 'Premium' ? 'active' : s.status === 'Certified' ? 'info' : 'danger'}`} style={{ padding: '8px 15px', fontSize: '0.75rem' }}>
                             {s.status}
                          </span>
                       </td>
