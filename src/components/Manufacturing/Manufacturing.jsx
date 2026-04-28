@@ -22,7 +22,7 @@ import auditLogService from '../../services/AuditLogService';
 import './Manufacturing.css';
 
 const Manufacturing = ({ addToast }) => {
-  const { workOrders, setWorkOrders, products, advanceWorkOrderStage, getBomStatus, machines: machineData, setMachines: setMachineData } = useData();
+  const { workOrders, setWorkOrders, products, advanceWorkOrderStage, getBomStatus, machines: machineData, setMachines: setMachineData, isEmployeeAvailable } = useData();
   
   const [selectedWO, setSelectedWO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -141,6 +141,11 @@ const Manufacturing = ({ addToast }) => {
     if (!newWOData.product || !newWOData.deadline) {
       addToast('Kérjük töltsön ki minden mezőt!', 'warning');
       return;
+    }
+
+    if (!isEmployeeAvailable(newWOData.technician, newWOData.deadline)) {
+      addToast(`${newWOData.technician} szabadságon van a megadott határidőn!`, 'danger');
+      // Csak figyelmeztetés, de rögzíthetjük
     }
 
     const lastIdNum = parseInt(workOrders[workOrders.length - 1]?.id.split('/').pop() || '0');

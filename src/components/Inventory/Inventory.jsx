@@ -32,7 +32,7 @@ import auditLogService from '../../services/AuditLogService';
 import './Inventory.css';
 
 const Inventory = ({ addToast }) => {
-  const { products, setProducts } = useData();
+  const { products, setProducts, mrpData, createPurchaseRequestFromMRP } = useData();
   const [viewType, setViewType] = useState('kanban');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -172,7 +172,7 @@ const Inventory = ({ addToast }) => {
         <div style={{ display: 'flex', gap: '12px' }}>
           <div className="view-controls glass" style={{ padding: '4px', borderRadius: '10px' }}>
             <button className={`view-btn ${viewType === 'kanban' || viewType === 'list' ? 'active' : ''}`} onClick={() => setViewType('kanban')}>Dashboard</button>
-            <button className={`view-btn ${viewType === 'scan' ? 'active' : ''}`} onClick={() => setViewType('scan')}>QR Szkenner</button>
+            <button className={`view-btn ${viewType === 'mrp' ? 'active' : ''}`} onClick={() => setViewType('mrp')}>MRP Tervezés</button>
             <button className={`view-btn ${viewType === 'map' ? 'active' : ''}`} onClick={() => setViewType('map')}>Raktártérkép</button>
           </div>
           <button className="create-btn" onClick={() => setIsCreateModalOpen(true)}>
@@ -351,6 +351,63 @@ const Inventory = ({ addToast }) => {
             </table>
           </div>
         )
+      )}
+
+      {viewType === 'mrp' && (
+        <div className="mrp-view glass animate-fadeIn" style={{ padding: '25px', borderRadius: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+             <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Anyagszükséglet Tervezés (MRP)</h3>
+             <span className="status-badge warning">{(mrpData || []).filter(d => d.required > 0).length} tétel utánrendelése szükséges</span>
+          </div>
+          <div className="table-container-responsive">
+             <table className="data-table">
+                <thead>
+                   <tr>
+                      <th>Termék</th>
+                      <th>Aktuális Készlet</th>
+                      <th>Biztonsági Szint</th>
+                      <th>Szükséges Mennyiség</th>
+                      <th>Státusz</th>
+                      <th>Művelet</th>
+                   </tr>
+                </thead>
+                <tbody>
+                   {(mrpData || []).map((item, idx) => (
+                      <tr key={idx}>
+                         <td>
+                            <div style={{ fontWeight: 700 }}>{item.name}</div>
+                            <div className="text-muted" style={{ fontSize: '0.7rem' }}>{item.sku}</div>
+                         </td>
+                         <td>{item.stock} db</td>
+                         <td>{item.minStock} db</td>
+                         <td style={{ color: item.required > 0 ? '#e74c3c' : 'inherit', fontWeight: 800 }}>
+                            {item.required > 0 ? `${item.required} db` : '-'}
+                         </td>
+                         <td>
+                            <span className={`status-badge-small ${item.required > 0 ? 'warning' : 'active'}`}>
+                               {item.required > 0 ? 'Hiány várható' : 'Rendben'}
+                            </span>
+                         </td>
+                         <td>
+                            {item.required > 0 && (
+                               <button 
+                                  className="create-btn-small" 
+                                  style={{ padding: '6px 12px', fontSize: '0.7rem' }}
+                                  onClick={() => {
+                                     const reqId = createPurchaseRequestFromMRP(item.name, item.required);
+                                     addToast(`Beszerzési igény létrehozva: ${reqId}`, 'success');
+                                  }}
+                               >
+                                  <Truck size={14} style={{ marginRight: '5px' }} /> Beszerzés
+                               </button>
+                            )}
+                         </td>
+                      </tr>
+                   ))}
+                </tbody>
+             </table>
+          </div>
+        </div>
       )}
 
       <Modal 
