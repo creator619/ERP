@@ -164,6 +164,15 @@ export const DataProvider = ({ children }) => {
   );
 
   const [procurementRequests, setProcurementRequests] = useState(() => getInitialValue('procurementRequests', []));
+  const [invoices, setInvoices] = useState(() => 
+    getInitialValue('invoices', [
+      { id: 'INV/2024/001', customer: 'Kovács és Társa Kft.', date: '2024-04-10', due: '2024-04-24', amount: 154200, status: 'Paid', aging: 0 },
+      { id: 'INV/2024/002', customer: 'MÁV-START Zrt.', date: '2024-04-12', due: '2024-04-26', amount: 1245000, status: 'Paid', aging: 0 },
+      { id: 'INV/2024/003', customer: 'GYSEV Zrt.', date: '2024-04-15', due: '2024-04-29', amount: 450000, status: 'Draft', aging: 0 },
+      { id: 'INV/2024/004', customer: 'Stadler Trains', date: '2024-03-20', due: '2024-04-03', amount: 2450000, status: 'Overdue', aging: 21 },
+      { id: 'INV/2024/005', customer: 'Rail-Cargo Hungaria', date: '2024-04-18', due: '2024-05-02', amount: 320000, status: 'Partial', aging: 0 },
+    ])
+  );
   const [notifications, setNotifications] = useState(() => 
     getInitialValue('notifications', [
       { id: 1, title: 'Készlethiány', message: 'RW-PRT-1002 készlete kritikus szinten.', time: '10 perce', severity: 'warning' },
@@ -191,6 +200,7 @@ export const DataProvider = ({ children }) => {
   useEffect(() => { persist('ncrs', ncrs); }, [ncrs]);
   useEffect(() => { persist('procurementOrders', procurementOrders); }, [procurementOrders]);
   useEffect(() => { persist('procurementRequests', procurementRequests); }, [procurementRequests]);
+  useEffect(() => { persist('invoices', invoices); }, [invoices]);
   useEffect(() => { persist('notifications', notifications); }, [notifications]);
   useEffect(() => { persist('comments', comments); }, [comments]);
   useEffect(() => { persist('machines', machines); }, [machines]);
@@ -242,6 +252,7 @@ export const DataProvider = ({ children }) => {
       employees, setEmployees, transactions, setTransactions, balances, setBalances,
       inspections, setInspections, ncrs, setNcrs,
       procurementOrders, setProcurementOrders, procurementRequests, setProcurementRequests,
+      invoices, setInvoices,
       notifications, setNotifications, comments, setComments, leaveRequests, setLeaveRequests, approveLeave,
       mrpData: products.map(p => ({ ...p, required: p.stock < p.minStock ? 50 : 0, shortage: 0, status: 'Available', orders: [] })),
       resourceLoading: machines.map(m => ({ ...m, percentage: 75, loadedHours: 40, orderCount: 5, alert: false })),
@@ -331,6 +342,43 @@ export const DataProvider = ({ children }) => {
         };
         setWorkOrders(prev => [newWO, ...prev]);
         return newWO.id;
+      },
+      receiveProcurementOrder: (poId) => {
+        setProcurementOrders(prev => prev.map(po => {
+          if (po.id === poId && po.status !== 'Delivered') {
+            // Növeljük a raktárkészletet minden tételre
+            po.items.forEach(item => {
+              setProducts(prevProducts => prevProducts.map(p => {
+                if (p.name === item.name || p.sku === item.sku) {
+                  return {
+                    ...p,
+                    stock: p.stock + item.qty,
+                    history: [
+                      { date: new Date().toISOString().split('T')[0], type: 'IN', qty: item.qty, reason: `Beszerzési beérkezés (${poId})` },
+                      ...p.history
+                    ]
+                  };
+                }
+                return p;
+              }));
+            });
+            return { ...po, status: 'Delivered' };
+          }
+          return po;
+        }));
+      },
+      createInvoiceFromSales: (opportunity) => {
+        const newInv = {
+          id: `INV/2024/${String(invoices.length + 1).padStart(3, '0')}`,
+          customer: opportunity.customer,
+          date: new Date().toISOString().split('T')[0],
+          due: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          amount: opportunity.value,
+          status: 'Draft',
+          aging: 0
+        };
+        setInvoices(prev => [newInv, ...prev]);
+        return newInv.id;
       }
     }}>
       {children}

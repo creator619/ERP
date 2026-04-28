@@ -37,10 +37,10 @@ import './Purchase.css';
 
 const Purchase = ({ addToast, currency }) => {
   const { 
-    procurementOrders: orders, 
-    setProcurementOrders: setOrders,
     procurementRequests: requisitions,
-    setProcurementRequests: setRequisitions 
+    setProcurementRequests: setRequisitions,
+    receiveProcurementOrder 
+  } = useData();
   } = useData();
   const [purchaseView, setPurchaseView] = useState('orders'); // 'orders' or 'requests'
   const [selectedPO, setSelectedPO] = useState(null);
@@ -528,9 +528,18 @@ const Purchase = ({ addToast, currency }) => {
               </button>
             )}
             {selectedPO?.status === 'Ordered' && (
-              <button className="create-btn" onClick={() => addToast('Szállító értesítve a sürgetésről', 'warning')}>
-                <AlertTriangle size={18} /> Sürgetés
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="create-btn" style={{ background: '#e67e22' }} onClick={() => addToast('Szállító értesítve a sürgetésről', 'warning')}>
+                  <AlertTriangle size={18} /> Sürgetés
+                </button>
+                <button className="create-btn" style={{ background: '#2ecc71' }} onClick={() => {
+                  receiveProcurementOrder(selectedPO.id);
+                  addToast('Áru beérkezése rögzítve, készlet frissítve', 'success');
+                  setSelectedPO(prev => ({ ...prev, status: 'Delivered' }));
+                }}>
+                  <CheckCircle size={18} /> Beérkezés rögzítése
+                </button>
+              </div>
             )}
             {selectedPO?.approvalStep < 3 && (
               <button className="create-btn" onClick={() => {

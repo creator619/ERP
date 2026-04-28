@@ -23,7 +23,7 @@ import Modal from '../UI/Modal';
 import './Sales.css';
 
 const Sales = ({ addToast }) => {
-  const { createWorkOrderFromSales } = useData();
+  const { createWorkOrderFromSales, createInvoiceFromSales } = useData();
   const [viewType, setViewType] = useState('pipeline');
   const [isAddingOpp, setIsAddingOpp] = useState(false);
   const [newOppData, setNewOppData] = useState({
@@ -274,6 +274,16 @@ const Sales = ({ addToast }) => {
                              }}
                            >
                              Munkalap
+                           </button>
+                           <button 
+                             className="create-btn-small" 
+                             style={{ padding: '4px 8px', fontSize: '0.65rem', background: '#2ecc71', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                             onClick={() => {
+                               const invId = createInvoiceFromSales(opp);
+                               addToast(`Számla generálva: ${invId}`, 'success');
+                             }}
+                           >
+                             Számla
                            </button>
                          )}
                          <button 

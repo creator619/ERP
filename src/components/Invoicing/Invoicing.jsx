@@ -25,9 +25,11 @@ import {
 import Modal from '../UI/Modal';
 import auditLogService from '../../services/AuditLogService';
 import currencyService from '../../services/CurrencyService';
+import { useData } from '../../contexts/DataContext';
 import './Invoicing.css';
 
 const Invoicing = ({ addToast, currency }) => {
+  const { invoices, setInvoices } = useData();
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -35,14 +37,6 @@ const Invoicing = ({ addToast, currency }) => {
   const [newInvoice, setNewInvoice] = useState({
     customer: '', due: '', amount: 0, status: 'Draft'
   });
-  
-  const [invoices, setInvoices] = useState([
-    { id: 'INV/2024/001', customer: 'Kovács és Társa Kft.', date: '2024-04-10', due: '2024-04-24', amount: 154200, status: 'Paid', aging: 0 },
-    { id: 'INV/2024/002', customer: 'MÁV-START Zrt.', date: '2024-04-12', due: '2024-04-26', amount: 1245000, status: 'Paid', aging: 0 },
-    { id: 'INV/2024/003', customer: 'GYSEV Zrt.', date: '2024-04-15', due: '2024-04-29', amount: 450000, status: 'Draft', aging: 0 },
-    { id: 'INV/2024/004', customer: 'Stadler Trains', date: '2024-03-20', due: '2024-04-03', amount: 2450000, status: 'Overdue', aging: 21 },
-    { id: 'INV/2024/005', customer: 'Rail-Cargo Hungaria', date: '2024-04-18', due: '2024-05-02', amount: 320000, status: 'Partial', aging: 0 },
-  ]);
 
   const openPreview = (inv) => {
     setSelectedInvoice(inv);
