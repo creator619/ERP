@@ -22,7 +22,7 @@ import auditLogService from '../../services/AuditLogService';
 import './Manufacturing.css';
 
 const Manufacturing = ({ addToast }) => {
-  const { workOrders, setWorkOrders, advanceWorkOrderStage, getBomStatus, machines: machineData, setMachines: setMachineData } = useData();
+  const { workOrders, setWorkOrders, products, advanceWorkOrderStage, getBomStatus, machines: machineData, setMachines: setMachineData } = useData();
   
   const [selectedWO, setSelectedWO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
