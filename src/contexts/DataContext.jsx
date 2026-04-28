@@ -164,20 +164,30 @@ export const DataProvider = ({ children }) => {
 
     // Handle Inventory / Procurement requests
     if (insight.type === 'inventory') {
+      // Dinamikus adatkivonás a szövegből
+      const qtyMatch = insight.recommendation.match(/(\d+)/);
+      const qty = qtyMatch ? parseInt(qtyMatch[1]) : 200;
+      
+      let itemName = 'Alapanyag';
+      if (insight.description.includes('Alumínium S-Profil')) itemName = 'Alumínium S-Profil';
+      else if (insight.description.includes('Szénszálas lapok')) itemName = 'Szénszálas lapok (3mm)';
+      
+      const unitPrice = itemName.includes('Szén') ? 6250 : 1500;
+
       const newReq = {
         id: `REQ-AI-${Math.floor(Math.random() * 9000) + 1000}`,
         supplier: insight.description.includes('Knorr-Bremse') ? 'Knorr-Bremse' : 'Carbon-Tech Kft.',
         date: new Date().toISOString().split('T')[0],
-        total: 1250000,
+        total: qty * unitPrice,
         status: 'Request',
         category: 'Alapanyag',
         approvalStep: 0,
         rating: 4.9,
         scores: { quality: 99, delivery: 94, price: 85, responsiveness: 98, innovation: 95 },
         items: [{ 
-          name: insight.recommendation.includes('Szénszálas lapok') ? 'Szénszálas lapok (3mm)' : 'Alumínium S-Profil', 
-          qty: 200, 
-          price: 6250 
+          name: itemName, 
+          qty: qty, 
+          price: unitPrice 
         }]
       };
       setProcurementRequests(prev => [newReq, ...prev]);
