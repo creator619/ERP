@@ -18,14 +18,11 @@ import {
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import { useData } from '../../contexts/DataContext';
-import { 
-  useData 
-} from '../../contexts/DataContext';
 import auditLogService from '../../services/AuditLogService';
 import './Manufacturing.css';
 
 const Manufacturing = ({ addToast }) => {
-  const { workOrders, setWorkOrders, products, advanceWorkOrderStage, getBomStatus } = useData();
+  const { workOrders, setWorkOrders, advanceWorkOrderStage, getBomStatus, machines: machineData, setMachines: setMachineData } = useData();
   
   const [selectedWO, setSelectedWO] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,8 +38,6 @@ const Manufacturing = ({ addToast }) => {
     priority: 'Medium',
     technician: 'Kovács János'
   });
-
-  const { workOrders, setWorkOrders, advanceWorkOrderStage, getBomStatus, machines: machineData, setMachines: setMachineData } = useData();
 
   const getShortages = () => {
     let missingItems = [];

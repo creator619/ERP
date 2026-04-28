@@ -33,7 +33,6 @@ export const DataProvider = ({ children }) => {
 
   const partners = ['Stadler Rail AG', 'Siemens Mobility', 'Knorr-Bremse', 'Bombardier', 'MÁV-Start', 'GYSEV', 'Alu-Pro Kft.', 'Elektro-Vasút Kft.'];
 
-  // Helper for localStorage persistence
   const getInitialValue = (key, defaultValue) => {
     try {
       const saved = localStorage.getItem(`railparts_erp_${key}`);
@@ -101,17 +100,6 @@ export const DataProvider = ({ children }) => {
     })))
   );
 
-  const [leaveRequests, setLeaveRequests] = useState(() => 
-    getInitialValue('leaveRequests', [
-      { id: 'LR-101', empId: 'EMP-200', empName: 'Kovács János', type: 'Fizetett', start: getDate(-2), end: getDate(-7), days: 5, status: 'Approved' },
-      { id: 'LR-102', empId: 'EMP-201', empName: 'Nagy Péter', type: 'Betegszabadság', start: getDate(0), end: getDate(-3), days: 3, status: 'Approved' },
-      { id: 'LR-103', empId: 'EMP-202', empName: 'Szabó Anna', type: 'Fizetett', start: getDate(-1), end: getDate(-5), days: 4, status: 'Approved' },
-      { id: 'LR-104', empId: 'EMP-203', empName: 'Tóth Béla', type: 'Fizetett', start: getDate(-10), end: getDate(-15), days: 5, status: 'Pending' },
-      { id: 'LR-105', empId: 'EMP-204', empName: 'Molnár Ákos', type: 'Apasági', start: getDate(-12), end: getDate(-20), days: 8, status: 'Pending' },
-      { id: 'LR-106', empId: 'EMP-205', empName: 'Varga Edit', type: 'Fizetett', start: getDate(2), end: getDate(-3), days: 5, status: 'Approved' }
-    ])
-  );
-
   const [transactions, setTransactions] = useState(() => 
     getInitialValue('transactions', Array.from({ length: 8 }, (_, i) => ({
       id: `TRX-${7000 + i}`,
@@ -164,6 +152,7 @@ export const DataProvider = ({ children }) => {
   );
 
   const [procurementRequests, setProcurementRequests] = useState(() => getInitialValue('procurementRequests', []));
+  
   const [invoices, setInvoices] = useState(() => 
     getInitialValue('invoices', [
       { id: 'INV/2024/001', customer: 'Kovács és Társa Kft.', date: '2024-04-10', due: '2024-04-24', amount: 154200, status: 'Paid', aging: 0 },
@@ -173,12 +162,14 @@ export const DataProvider = ({ children }) => {
       { id: 'INV/2024/005', customer: 'Rail-Cargo Hungaria', date: '2024-04-18', due: '2024-05-02', amount: 320000, status: 'Partial', aging: 0 },
     ])
   );
+
   const [notifications, setNotifications] = useState(() => 
     getInitialValue('notifications', [
       { id: 1, title: 'Készlethiány', message: 'RW-PRT-1002 készlete kritikus szinten.', time: '10 perce', severity: 'warning' },
       { id: 2, title: 'Sürgős NCR', message: 'NCR-2024-082 kivizsgálásra vár.', time: '1 órája', severity: 'danger' }
     ])
   );
+  
   const [comments, setComments] = useState(() => getInitialValue('comments', {}));
 
   const [machines, setMachines] = useState(() => 
@@ -189,7 +180,13 @@ export const DataProvider = ({ children }) => {
     ])
   );
 
-  // Sync state to localStorage
+  const [leaveRequests, setLeaveRequests] = useState(() => 
+    getInitialValue('leaveRequests', [
+      { id: 'LR-105', empId: 'EMP-204', empName: 'Molnár Ákos', type: 'Apasági', start: getDate(-12), end: getDate(-20), days: 8, status: 'Pending' },
+      { id: 'LR-106', empId: 'EMP-205', empName: 'Varga Edit', type: 'Fizetett', start: getDate(2), end: getDate(-3), days: 5, status: 'Approved' }
+    ])
+  );
+
   useEffect(() => { persist('products', products); }, [products]);
   useEffect(() => { persist('workOrders', workOrders); }, [workOrders]);
   useEffect(() => { persist('employees', employees); }, [employees]);
@@ -209,21 +206,133 @@ export const DataProvider = ({ children }) => {
     setLeaveRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'Approved' } : req));
   };
 
+  const advanceWorkOrderStage = (woId, totalStages) => {
+    let isCompleted = false;
+    setWorkOrders(prev => prev.map(wo => {
+      if (wo.id === woId) {
+        const nextStage = wo.currentStage + 1;
+        const nextProgress = Math.min(100, (nextStage / totalStages) * 100);
+        
+        if (nextStage === 1) {
+          setProducts(prevProducts => prevProducts.map(p => {
+            const bomItem = wo.bom?.find(b => b.sku === p.sku);
+            if (bomItem) {
+              return {
+                ...p,
+                stock: Math.max(0, p.stock - bomItem.required),
+                history: [
+                  { date: new Date().toISOString().split('T')[0], type: 'OUT', qty: bomItem.required, reason: `Gyártási felhasználás (${wo.id})` },
+                  ...p.history
+                ]
+              };
+            }
+            return p;
+          }));
+        }
+        if (nextStage > totalStages) {
+          isCompleted = true;
+          setProducts(prevProducts => prevProducts.map(p => 
+            p.name === wo.product ? { 
+              ...p, 
+              stock: p.stock + wo.quantity,
+              history: [
+                { date: new Date().toISOString().split('T')[0], type: 'IN', qty: wo.quantity, reason: `Gyártási beérkezés (${wo.id})` },
+                ...p.history
+              ]
+            } : p
+          ));
+          return { ...wo, currentStage: nextStage, progress: 100, status: 'Completed' };
+        }
+        return { ...wo, currentStage: nextStage, progress: nextProgress };
+      }
+      return wo;
+    }));
+    return isCompleted;
+  };
+
+  const getBomStatus = (wo) => {
+    if (!wo) return [];
+    const defaultBom = [
+      { item: 'Acél profil (S235)', sku: 'RAW-STL-01', required: wo.quantity * 2, available: 150, status: 'ok' },
+      { item: 'Rögzítő készlet (M8)', sku: 'FIX-M8-100', required: wo.quantity * 10, available: 500, status: 'ok' }
+    ];
+    return wo.bom && wo.bom.length > 0 ? wo.bom.map(item => ({
+      ...item,
+      available: 100,
+      status: 'ok'
+    })) : defaultBom;
+  };
+
+  const createWorkOrderFromSales = (opportunity) => {
+    const newWO = {
+      id: `RW/MO/${2024}/${String(workOrders.length + 1).padStart(3, '0')}`,
+      product: opportunity.title.includes('Ablak') ? 'Hőszigetelt ablakpanel' : 'Ülésváz szerkezet',
+      quantity: Math.floor(opportunity.value / 150000) || 10,
+      progress: 0,
+      currentStage: 0,
+      status: 'In Progress',
+      startDate: new Date().toISOString().split('T')[0],
+      deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      priority: opportunity.priority,
+      machineId: 'MC-101',
+      technician: 'Kovács János',
+      customer: opportunity.customer,
+      bom: [
+        { item: 'Alumínium S-Profil', sku: 'RW-PRT-1000', required: 20 },
+        { item: 'Rögzítő készlet', sku: 'RW-PRT-1001', required: 50 }
+      ]
+    };
+    setWorkOrders(prev => [newWO, ...prev]);
+    return newWO.id;
+  };
+
+  const receiveProcurementOrder = (poId) => {
+    setProcurementOrders(prev => prev.map(po => {
+      if (po.id === poId && po.status !== 'Delivered') {
+        po.items.forEach(item => {
+          setProducts(prevProducts => prevProducts.map(p => {
+            if (p.name === item.name || p.sku === item.sku) {
+              return {
+                ...p,
+                stock: p.stock + item.qty,
+                history: [
+                  { date: new Date().toISOString().split('T')[0], type: 'IN', qty: item.qty, reason: `Beszerzési beérkezés (${poId})` },
+                  ...p.history
+                ]
+              };
+            }
+            return p;
+          }));
+        });
+        return { ...po, status: 'Delivered' };
+      }
+      return po;
+    }));
+  };
+
+  const createInvoiceFromSales = (opportunity) => {
+    const newInv = {
+      id: `INV/2024/${String(invoices.length + 1).padStart(3, '0')}`,
+      customer: opportunity.customer,
+      date: new Date().toISOString().split('T')[0],
+      due: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      amount: opportunity.value,
+      status: 'Draft',
+      aging: 0
+    };
+    setInvoices(prev => [newInv, ...prev]);
+    return newInv.id;
+  };
+
   const executeAIAction = (insight) => {
     if (!insight) return;
-
-    // Handle Inventory / Procurement requests
     if (insight.type === 'inventory') {
-      // Dinamikus adatkivonás a szövegből
       const qtyMatch = insight.recommendation.match(/(\d+)/);
       const qty = qtyMatch ? parseInt(qtyMatch[1]) : 200;
-      
       let itemName = 'Alapanyag';
       if (insight.description.includes('Alumínium S-Profil')) itemName = 'Alumínium S-Profil';
       else if (insight.description.includes('Szénszálas lapok')) itemName = 'Szénszálas lapok (3mm)';
-      
       const unitPrice = itemName.includes('Szén') ? 6250 : 1500;
-
       const newReq = {
         id: `REQ-AI-${Math.floor(Math.random() * 9000) + 1000}`,
         supplier: insight.description.includes('Knorr-Bremse') ? 'Knorr-Bremse' : 'Carbon-Tech Kft.',
@@ -234,16 +343,14 @@ export const DataProvider = ({ children }) => {
         approvalStep: 0,
         rating: 4.9,
         scores: { quality: 99, delivery: 94, price: 85, responsiveness: 98, innovation: 95 },
-        items: [{ 
-          name: itemName, 
-          qty: qty, 
-          price: unitPrice 
-        }]
+        items: [{ name: itemName, qty: qty, price: unitPrice }]
       };
       setProcurementRequests(prev => [newReq, ...prev]);
     }
-    
-    // Add other AI action types here if needed (maintenance tickets, etc.)
+  };
+
+  const markNotificationAsRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
   return (
@@ -260,126 +367,13 @@ export const DataProvider = ({ children }) => {
       skillDefinitions: [{ id: 'welding', label: 'Hegesztés' }, { id: 'cnc', label: 'CNC Megmunkálás' }],
       leaveRequests,
       executeAIAction,
-      advanceWorkOrderStage: (woId, totalStages) => {
-        let isCompleted = false;
-        setWorkOrders(prev => prev.map(wo => {
-          if (wo.id === woId) {
-            const nextStage = wo.currentStage + 1;
-            const nextProgress = Math.min(100, (nextStage / totalStages) * 100);
-            
-            // INTEGRÁCIÓ 2: Anyagfelhasználás levonása a gyártás megkezdésekor (Stage 1)
-            if (nextStage === 1) {
-              setProducts(prevProducts => prevProducts.map(p => {
-                const bomItem = wo.bom?.find(b => b.sku === p.sku);
-                if (bomItem) {
-                  return {
-                    ...p,
-                    stock: Math.max(0, p.stock - bomItem.required),
-                    history: [
-                      { date: new Date().toISOString().split('T')[0], type: 'OUT', qty: bomItem.required, reason: `Gyártási felhasználás (${wo.id})` },
-                      ...p.history
-                    ]
-                  };
-                }
-                return p;
-              }));
-            }
-            if (nextStage > totalStages) {
-              isCompleted = true;
-              
-              // Ha kész, növeljük a termék készletét és naplózzuk
-              setProducts(prevProducts => prevProducts.map(p => 
-                p.name === wo.product ? { 
-                  ...p, 
-                  stock: p.stock + wo.quantity,
-                  history: [
-                    { date: new Date().toISOString().split('T')[0], type: 'IN', qty: wo.quantity, reason: `Gyártási beérkezés (${wo.id})` },
-                    ...p.history
-                  ]
-                } : p
-              ));
-              
-              return { ...wo, currentStage: nextStage, progress: 100, status: 'Completed' };
-            }
-            return { ...wo, currentStage: nextStage, progress: nextProgress };
-          }
-          return wo;
-        }));
-        return isCompleted;
-      },
-      getBomStatus: (wo) => {
-        if (!wo) return [];
-        // Alapértelmezett BOM ha nincs megadva a munkalapon
-        const defaultBom = [
-          { item: 'Acél profil (S235)', sku: 'RAW-STL-01', required: wo.quantity * 2, available: 150, status: 'ok' },
-          { item: 'Rögzítő készlet (M8)', sku: 'FIX-M8-100', required: wo.quantity * 10, available: 500, status: 'ok' }
-        ];
-        return wo.bom && wo.bom.length > 0 ? wo.bom.map(item => ({
-          ...item,
-          available: 100, // Mock adat
-          status: 'ok'
-        })) : defaultBom;
-      },
-      forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false })),
-      createWorkOrderFromSales: (opportunity) => {
-        const newWO = {
-          id: `RW/MO/${2024}/${String(workOrders.length + 1).padStart(3, '0')}`,
-          product: opportunity.title.includes('Ablak') ? 'Hőszigetelt ablakpanel' : 'Ülésváz szerkezet',
-          quantity: Math.floor(opportunity.value / 150000) || 10,
-          progress: 0,
-          currentStage: 0,
-          status: 'In Progress',
-          startDate: new Date().toISOString().split('T')[0],
-          deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          priority: opportunity.priority,
-          machineId: 'MC-101',
-          technician: 'Kovács János',
-          customer: opportunity.customer,
-          bom: [
-            { item: 'Alumínium S-Profil', sku: 'RW-PRT-1000', required: 20 },
-            { item: 'Rögzítő készlet', sku: 'RW-PRT-1001', required: 50 }
-          ]
-        };
-        setWorkOrders(prev => [newWO, ...prev]);
-        return newWO.id;
-      },
-      receiveProcurementOrder: (poId) => {
-        setProcurementOrders(prev => prev.map(po => {
-          if (po.id === poId && po.status !== 'Delivered') {
-            // Növeljük a raktárkészletet minden tételre
-            po.items.forEach(item => {
-              setProducts(prevProducts => prevProducts.map(p => {
-                if (p.name === item.name || p.sku === item.sku) {
-                  return {
-                    ...p,
-                    stock: p.stock + item.qty,
-                    history: [
-                      { date: new Date().toISOString().split('T')[0], type: 'IN', qty: item.qty, reason: `Beszerzési beérkezés (${poId})` },
-                      ...p.history
-                    ]
-                  };
-                }
-                return p;
-              }));
-            });
-            return { ...po, status: 'Delivered' };
-          }
-          return po;
-        }));
-      },
-      createInvoiceFromSales: (opportunity) => {
-        const newInv = {
-          id: `INV/2024/${String(invoices.length + 1).padStart(3, '0')}`,
-          customer: opportunity.customer,
-          date: new Date().toISOString().split('T')[0],
-          due: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          amount: opportunity.value,
-          status: 'Draft',
-          aging: 0
-        };
-        setInvoices(prev => [newInv, ...prev]);
-        return newInv.id;
-      }
+      advanceWorkOrderStage,
+      getBomStatus,
+      createWorkOrderFromSales,
+      receiveProcurementOrder,
+      createInvoiceFromSales,
+      markNotificationAsRead,
+      forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false }))
     }}>
       {children}
     </DataContext.Provider>

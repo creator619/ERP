@@ -265,26 +265,28 @@ const Sales = ({ addToast }) => {
                       <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{formatCurrency(opp.value)}</span>
                       <div style={{ display: 'flex', gap: '5px' }}>
                          {opp.stage === 'Lezárás' && (
-                           <button 
-                             className="create-btn-small" 
-                             style={{ padding: '4px 8px', fontSize: '0.65rem', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-                             onClick={() => {
-                               const woId = createWorkOrderFromSales(opp);
-                               addToast(`Munkalap létrehozva: ${woId}`, 'success');
-                             }}
-                           >
-                             Munkalap
-                           </button>
-                           <button 
-                             className="create-btn-small" 
-                             style={{ padding: '4px 8px', fontSize: '0.65rem', background: '#2ecc71', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-                             onClick={() => {
-                               const invId = createInvoiceFromSales(opp);
-                               addToast(`Számla generálva: ${invId}`, 'success');
-                             }}
-                           >
-                             Számla
-                           </button>
+                           <>
+                             <button 
+                               className="create-btn-small" 
+                               style={{ padding: '4px 8px', fontSize: '0.65rem', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                               onClick={() => {
+                                 const woId = createWorkOrderFromSales(opp);
+                                 addToast(`Munkalap létrehozva: ${woId}`, 'success');
+                               }}
+                             >
+                               Munkalap
+                             </button>
+                             <button 
+                               className="create-btn-small" 
+                               style={{ padding: '4px 8px', fontSize: '0.65rem', background: '#2ecc71', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                               onClick={() => {
+                                 const invId = createInvoiceFromSales(opp);
+                                 addToast(`Számla generálva: ${invId}`, 'success');
+                               }}
+                             >
+                               Számla
+                             </button>
+                           </>
                          )}
                          <button 
                            className="view-btn-small" 

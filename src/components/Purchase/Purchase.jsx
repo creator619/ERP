@@ -39,8 +39,9 @@ const Purchase = ({ addToast, currency }) => {
   const { 
     procurementRequests: requisitions,
     setProcurementRequests: setRequisitions,
-    receiveProcurementOrder 
-  } = useData();
+    receiveProcurementOrder,
+    procurementOrders: orders,
+    setProcurementOrders: setOrders 
   } = useData();
   const [purchaseView, setPurchaseView] = useState('orders'); // 'orders' or 'requests'
   const [selectedPO, setSelectedPO] = useState(null);
