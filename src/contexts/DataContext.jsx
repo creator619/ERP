@@ -34,7 +34,7 @@ export const DataProvider = ({ children }) => {
   const partners = ['Stadler Rail AG', 'Siemens Mobility', 'Knorr-Bremse', 'Bombardier', 'MÁV-Start', 'GYSEV', 'Alu-Pro Kft.', 'Elektro-Vasút Kft.'];
 
   const [products, setProducts] = useState(
-    railParts.map((name, i) => ({
+    railParts.slice(0, 8).map((name, i) => ({
       id: i + 1,
       name,
       category: i < 10 ? 'Mechanika' : i < 20 ? 'Elektronika' : i < 30 ? 'Beltér' : 'Egyéb',
@@ -51,7 +51,7 @@ export const DataProvider = ({ children }) => {
   );
 
   const [workOrders, setWorkOrders] = useState(
-    Array.from({ length: 35 }, (_, i) => ({
+    Array.from({ length: 8 }, (_, i) => ({
       id: `RW/MO/${2024}/${String(i + 1).padStart(3, '0')}`,
       product: railParts[i % railParts.length],
       quantity: Math.floor(Math.random() * 15) + 2,
@@ -68,7 +68,7 @@ export const DataProvider = ({ children }) => {
   );
 
   const [employees, setEmployees] = useState(
-    Array.from({ length: 40 }, (_, i) => ({
+    Array.from({ length: 8 }, (_, i) => ({
       id: `EMP-${200 + i}`,
       name: hungarianNames[i % hungarianNames.length] + (i > 24 ? ` (Jr.)` : ''),
       role: i % 5 === 0 ? 'Csoportvezető' : i % 3 === 0 ? 'Mérnök' : 'Technikus',
@@ -92,7 +92,7 @@ export const DataProvider = ({ children }) => {
   ]);
 
   const [transactions, setTransactions] = useState(
-    Array.from({ length: 50 }, (_, i) => ({
+    Array.from({ length: 8 }, (_, i) => ({
       id: `TRX-${7000 + i}`,
       date: getDate(i % 25),
       account: i % 3 === 0 ? '381 (Pénztár)' : i % 3 === 1 ? '311 (Vevők)' : '454 (Szállítók)',
@@ -105,7 +105,7 @@ export const DataProvider = ({ children }) => {
   const [balances, setBalances] = useState({ cash: 42000000, ar: 15600000, ap: 9200000 });
 
   const [inspections, setInspections] = useState(
-    Array.from({ length: 40 }, (_, i) => ({
+    Array.from({ length: 8 }, (_, i) => ({
       id: `INS-24-${100 + i}`,
       product: railParts[i % railParts.length],
       type: i % 2 === 0 ? 'Végátvétel (FQC)' : 'Soron közbeni (IPQC)',
@@ -116,7 +116,7 @@ export const DataProvider = ({ children }) => {
   );
 
   const [ncrs, setNcrs] = useState(
-    Array.from({ length: 30 }, (_, i) => ({
+    Array.from({ length: 8 }, (_, i) => ({
       id: `NCR-2024-${80 + i}`,
       title: `${railParts[i % railParts.length]} - ${i % 2 === 0 ? 'Méretbeli eltérés' : 'Felületi hiba'}`,
       source: i % 3 === 0 ? 'Gyártás' : 'Beszállítói',
@@ -128,7 +128,7 @@ export const DataProvider = ({ children }) => {
   );
 
   const [procurementOrders, setProcurementOrders] = useState(
-    Array.from({ length: 35 }, (_, i) => ({
+    Array.from({ length: 8 }, (_, i) => ({
       id: `PO/2024/${500 + i}`,
       supplier: partners[i % partners.length],
       date: getDate(i % 30),
