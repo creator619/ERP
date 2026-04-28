@@ -398,6 +398,20 @@ export const DataProvider = ({ children }) => {
     }));
   };
 
+  const addComment = (entityId, text) => {
+    const newComment = {
+      id: Date.now(),
+      user: 'Simon Ernő',
+      role: 'Vállalatvezető',
+      text,
+      time: 'Épp most'
+    };
+    setComments(prev => ({
+      ...prev,
+      [entityId]: [newComment, ...(prev[entityId] || [])]
+    }));
+  };
+
   return (
     <DataContext.Provider value={{
       products, setProducts, workOrders, setWorkOrders, machines, setMachines,
@@ -406,7 +420,7 @@ export const DataProvider = ({ children }) => {
       procurementOrders, setProcurementOrders, procurementRequests, setProcurementRequests,
       invoices, setInvoices,
       maintenanceTasks, setMaintenanceTasks,
-      notifications, setNotifications, comments, setComments, leaveRequests, setLeaveRequests, approveLeave,
+      notifications, setNotifications, comments, setComments, addComment, leaveRequests, setLeaveRequests, approveLeave,
       mrpData: products.map(p => ({ ...p, required: p.stock < p.minStock ? 50 : 0, shortage: 0, status: 'Available', orders: [] })),
       resourceLoading: machines.map(m => ({ ...m, percentage: 75, loadedHours: 40, orderCount: 5, alert: false })),
       fixedAssets: machines.map(m => ({ ...m, netValue: m.purchaseValue * 0.8, totalDepreciation: m.purchaseValue * 0.2, monthlyDepreciation: m.purchaseValue / 120 })),

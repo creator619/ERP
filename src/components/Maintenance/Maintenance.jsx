@@ -129,6 +129,7 @@ const Maintenance = ({ addToast }) => {
   };
 
   const TelemetryChart = ({ data, color = 'var(--primary-color)' }) => {
+    if (!data || !Array.isArray(data)) return <div className="text-muted">Nincs adat</div>;
     const width = 400;
     const height = 100;
     const padding = 10;
@@ -327,8 +328,8 @@ const Maintenance = ({ addToast }) => {
                     {selectedMachine.status === 'Maintenance' && (
                        <div className="glass downtime-ticker" style={{ padding: '25px', borderRadius: '20px', border: '1px solid #e74c3c' }}>
                           <h4 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e74c3c', marginBottom: '15px' }}>LEÁLLÁSI VESZTESÉG</h4>
-                          <div style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '5px' }}>{formatHUF(selectedMachine.downtimeCost * (downtimeTicker / 3600))}</div>
-                          <p className="text-muted" style={{ fontSize: '0.7rem' }}>Költség: {formatHUF(selectedMachine.downtimeCost)} / óra</p>
+                          <div style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '5px' }}>{formatHUF((selectedMachine.downtimeCost || 0) * (downtimeTicker / 3600))}</div>
+                          <p className="text-muted" style={{ fontSize: '0.7rem' }}>Költség: {formatHUF(selectedMachine.downtimeCost || 0)} / óra</p>
                        </div>
                     )}
                     <div className="glass" style={{ padding: '20px', borderRadius: '15px' }}>
@@ -356,7 +357,8 @@ const Maintenance = ({ addToast }) => {
               <div className="parts-tab">
                  <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '20px' }}>Szükséges Alkatrészek (Raktárkészlet)</h4>
                  <div className="parts-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {selectedMachine.parts.map((p, i) => (
+                                        {(selectedMachine.parts || []).map((p, i) => (
+
                        <div key={i} className="glass" style={{ padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                              <Package size={20} className="text-muted" />
