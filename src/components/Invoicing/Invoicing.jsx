@@ -34,9 +34,24 @@ const Invoicing = ({ addToast, currency }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
+  const [activeFilter, setActiveFilter] = useState(null);
   const [newInvoice, setNewInvoice] = useState({
     customer: '', due: '', amount: 0, status: 'Draft'
   });
+
+  const handleCardClick = (filterType) => {
+    if (filterType === 'analytics') {
+      setActiveTab('analytics');
+      setActiveFilter(null);
+      return;
+    }
+    setActiveTab('list');
+    setActiveFilter(prev => prev === filterType ? null : filterType);
+  };
+
+  const filteredInvoices = activeFilter
+    ? invoices.filter(i => i.status === activeFilter)
+    : invoices;
 
   const openPreview = (inv) => {
     setSelectedInvoice(inv);
@@ -142,23 +157,86 @@ const Invoicing = ({ addToast, currency }) => {
       {activeTab === 'list' && (
         <>
           <div className="finance-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '25px' }}>
-            <div className="stat-card glass">
+            <div
+              className="stat-card glass"
+              onClick={() => handleCardClick('Paid')}
+              style={{
+                cursor: 'pointer',
+                transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
+                border: activeFilter === 'Paid' ? '1.5px solid #2ecc71' : '1.5px solid transparent',
+                boxShadow: activeFilter === 'Paid' ? '0 0 18px rgba(46,204,113,0.25)' : undefined,
+                transform: activeFilter === 'Paid' ? 'translateY(-3px)' : undefined,
+              }}
+              title="Kattints a kifizetett számlák szűréséhez"
+            >
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Fizetett (Havi)</p>
               <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#2ecc71' }}>{formatCurrency(stats.totalPaid)}</div>
+              <p style={{ fontSize: '0.65rem', color: '#2ecc71', marginTop: '6px', opacity: 0.8 }}>🔍 Kattints a szűréshez</p>
             </div>
-            <div className="stat-card glass">
+            <div
+              className="stat-card glass"
+              onClick={() => handleCardClick('Overdue')}
+              style={{
+                cursor: 'pointer',
+                transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
+                border: activeFilter === 'Overdue' ? '1.5px solid #e74c3c' : '1.5px solid transparent',
+                boxShadow: activeFilter === 'Overdue' ? '0 0 18px rgba(231,76,60,0.25)' : undefined,
+                transform: activeFilter === 'Overdue' ? 'translateY(-3px)' : undefined,
+              }}
+              title="Kattints a késedelmes számlák szűréséhez"
+            >
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Kintlévőség</p>
               <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#e74c3c' }}>{formatCurrency(stats.totalOverdue)}</div>
+              <p style={{ fontSize: '0.65rem', color: '#e74c3c', marginTop: '6px', opacity: 0.8 }}>🔍 Kattints a szűréshez</p>
             </div>
-            <div className="stat-card glass">
+            <div
+              className="stat-card glass"
+              onClick={() => handleCardClick('analytics')}
+              style={{
+                cursor: 'pointer',
+                transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
+                border: activeTab === 'analytics' ? '1.5px solid var(--primary-color)' : '1.5px solid transparent',
+                boxShadow: activeTab === 'analytics' ? '0 0 18px rgba(52,152,219,0.25)' : undefined,
+                transform: activeTab === 'analytics' ? 'translateY(-3px)' : undefined,
+              }}
+              title="Kattints az Aging analitika megtekintéséhez"
+            >
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Átlagos fizetési nap</p>
               <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.avgAging} nap</div>
+              <p style={{ fontSize: '0.65rem', color: 'var(--primary-color)', marginTop: '6px', opacity: 0.8 }}>📊 Aging nézet</p>
             </div>
-            <div className="stat-card glass">
+            <div
+              className="stat-card glass"
+              onClick={() => handleCardClick('analytics')}
+              style={{
+                cursor: 'pointer',
+                transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
+                border: activeTab === 'analytics' ? '1.5px solid #f1c40f' : '1.5px solid transparent',
+                boxShadow: activeTab === 'analytics' ? '0 0 18px rgba(241,196,15,0.2)' : undefined,
+                transform: activeTab === 'analytics' ? 'translateY(-3px)' : undefined,
+              }}
+              title="Kattints az ÁFA részletek megtekintéséhez"
+            >
               <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '5px' }}>Adóegyenleg (ÁFA)</p>
               <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{formatCurrency(stats.taxLiability)}</div>
+              <p style={{ fontSize: '0.65rem', color: '#f1c40f', marginTop: '6px', opacity: 0.8 }}>💰 ÁFA analitika</p>
             </div>
           </div>
+          {activeFilter && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', padding: '8px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', width: 'fit-content' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Szűrő aktív: <strong style={{ color: activeFilter === 'Paid' ? '#2ecc71' : '#e74c3c' }}>
+                  {activeFilter === 'Paid' ? 'Fizetve' : 'Késedelmes'}
+                </strong> ({filteredInvoices.length} számla)
+              </span>
+              <button
+                onClick={() => setActiveFilter(null)}
+                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'var(--text-muted)', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer', fontSize: '0.75rem' }}
+              >
+                ✕ Törlés
+              </button>
+            </div>
+          )}
 
           <div className="invoicing-table-container glass">
             <table className="data-table">
@@ -174,7 +252,7 @@ const Invoicing = ({ addToast, currency }) => {
                 </tr>
               </thead>
               <tbody>
-                {invoices.map(inv => (
+                {filteredInvoices.map(inv => (
                   <tr key={inv.id} onClick={() => openPreview(inv)} style={{ cursor: 'pointer' }}>
                     <td><strong>{inv.id}</strong></td>
                     <td>{inv.customer}</td>
