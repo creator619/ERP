@@ -15,7 +15,7 @@ const COMMANDS = [
 ];
 
 const AIAssistant = ({ addToast }) => {
-  const { setProcurementRequests } = useData();
+  const { setProcurementRequests, executeAIAction } = useData();
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [inputVal, setInputVal] = useState('');
@@ -95,19 +95,12 @@ const AIAssistant = ({ addToast }) => {
       }
 
       if (triggerOrder) {
-        const newReq = {
-          id: `REQ-AI-${Math.floor(Math.random() * 9000) + 1000}`,
-          supplier: 'Carbon-Tech Kft.',
-          date: new Date().toISOString().split('T')[0],
-          total: 1250000,
-          status: 'Request',
-          category: 'Alapanyag',
-          approvalStep: 0,
-          rating: 4.9,
-          scores: { quality: 99, delivery: 94, price: 85, responsiveness: 98, innovation: 95 },
-          items: [{ name: 'Szénszálas lapok (3mm)', qty: 200, price: 6250 }]
-        };
-        setProcurementRequests(prev => [newReq, ...prev]);
+        // Use central execution logic
+        executeAIAction({
+           type: 'inventory',
+           description: 'Szénszálas lapok készlethiány',
+           recommendation: 'Szénszálas lapok rendelése'
+        });
         if (addToast) addToast('Beszerzési igény létrehozva', 'success');
       }
 
@@ -135,22 +128,8 @@ const AIAssistant = ({ addToast }) => {
       
       setInsights(prev => prev.filter(i => i.id !== insight.id));
       
-      // Auto-generate Procurement Request for Inventory Insights
-      if (insight.type === 'inventory') {
-        const newReq = {
-          id: `REQ-AI-${Math.floor(Math.random() * 9000) + 1000}`,
-          supplier: 'Knorr-Bremse',
-          date: new Date().toISOString().split('T')[0],
-          total: 750000,
-          status: 'Request',
-          category: 'Alkatrész',
-          approvalStep: 0,
-          rating: 4.8,
-          scores: { quality: 98, delivery: 95, price: 88, responsiveness: 92, innovation: 90 },
-          items: [{ name: 'Alumínium S-Profil', qty: 500, price: 1500 }]
-        };
-        setProcurementRequests(prev => [newReq, ...prev]);
-      }
+      // Use central execution logic
+      executeAIAction(insight);
 
       setExecutingInsight(null);
       

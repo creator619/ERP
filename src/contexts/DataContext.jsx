@@ -159,6 +159,33 @@ export const DataProvider = ({ children }) => {
     setLeaveRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'Approved' } : req));
   };
 
+  const executeAIAction = (insight) => {
+    if (!insight) return;
+
+    // Handle Inventory / Procurement requests
+    if (insight.type === 'inventory') {
+      const newReq = {
+        id: `REQ-AI-${Math.floor(Math.random() * 9000) + 1000}`,
+        supplier: insight.description.includes('Knorr-Bremse') ? 'Knorr-Bremse' : 'Carbon-Tech Kft.',
+        date: new Date().toISOString().split('T')[0],
+        total: 1250000,
+        status: 'Request',
+        category: 'Alapanyag',
+        approvalStep: 0,
+        rating: 4.9,
+        scores: { quality: 99, delivery: 94, price: 85, responsiveness: 98, innovation: 95 },
+        items: [{ 
+          name: insight.recommendation.includes('Szénszálas lapok') ? 'Szénszálas lapok (3mm)' : 'Alumínium S-Profil', 
+          qty: 200, 
+          price: 6250 
+        }]
+      };
+      setProcurementRequests(prev => [newReq, ...prev]);
+    }
+    
+    // Add other AI action types here if needed (maintenance tickets, etc.)
+  };
+
   return (
     <DataContext.Provider value={{
       products, setProducts, workOrders, setWorkOrders, machines, setMachines,
@@ -171,6 +198,7 @@ export const DataProvider = ({ children }) => {
       fixedAssets: machines.map(m => ({ ...m, netValue: m.purchaseValue * 0.8, totalDepreciation: m.purchaseValue * 0.2, monthlyDepreciation: m.purchaseValue / 120 })),
       skillDefinitions: [{ id: 'welding', label: 'Hegesztés' }, { id: 'cnc', label: 'CNC Megmunkálás' }],
       leaveRequests,
+      executeAIAction,
       advanceWorkOrderStage: () => {},
       getBomStatus: () => [{ item: 'Acél profil', status: 'ok', available: 100 }],
       forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false }))
