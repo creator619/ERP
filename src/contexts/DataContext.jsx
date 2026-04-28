@@ -174,9 +174,9 @@ export const DataProvider = ({ children }) => {
 
   const [machines, setMachines] = useState(() => 
     getInitialValue('machines', [
-      { id: 'MC-101', name: 'CNC Megmunkáló Központ', status: 'Healthy', health: 95, capacity: 160, purchaseValue: 45000000, purchaseDate: '2023-01-10', depYear: 14.5 },
-      { id: 'MC-102', name: 'Hidraulikus Prés', status: 'Warning', health: 62, capacity: 160, purchaseValue: 12000000, purchaseDate: '2022-05-20', depYear: 14.5 },
-      { id: 'MC-103', name: 'Lézerhegesztő Robot', status: 'Healthy', health: 92, capacity: 160, purchaseValue: 32000000, purchaseDate: '2023-08-15', depYear: 14.5 }
+      { id: 'MC-101', name: 'CNC Megmunkáló Központ', status: 'Healthy', health: 95, oee: 92, availability: 98, performance: 95, quality: 99, load: 85, temp: '42°C', capacity: 160, purchaseValue: 45000000, purchaseDate: '2023-01-10', depYear: 14.5, pdm: 12, nextService: '2024-05-15', telemetry: [40, 42, 45, 43, 41, 44, 46, 45], parts: [{ name: 'Főcsapágy', required: 1, stock: 2, status: 'ok' }], lastService: '2024-01-10', downtimeCost: 15000 },
+      { id: 'MC-102', name: 'Hidraulikus Prés', status: 'Warning', health: 62, oee: 88, availability: 94, performance: 94, quality: 99, load: 70, temp: '38°C', capacity: 160, purchaseValue: 12000000, purchaseDate: '2022-05-20', depYear: 14.5, pdm: 5, nextService: '2024-04-20', telemetry: [30, 35, 40, 55, 60, 58, 62, 65], parts: [{ name: 'Nyomásszabályzó', required: 1, stock: 0, status: 'missing' }], lastService: '2023-11-20', downtimeCost: 8000 },
+      { id: 'MC-103', name: 'Lézer Vágó & Hegesztő', status: 'Healthy', health: 92, oee: 78, availability: 85, performance: 92, quality: 100, load: 45, temp: '24°C', capacity: 160, purchaseValue: 32000000, purchaseDate: '2023-08-15', depYear: 14.5, pdm: 28, nextService: '2024-06-10', telemetry: [20, 22, 21, 23, 22, 24, 23, 25], parts: [{ name: 'Lencse készlet', required: 2, stock: 5, status: 'ok' }], lastService: '2024-02-15', downtimeCost: 25000 }
     ])
   );
 
@@ -256,6 +256,23 @@ export const DataProvider = ({ children }) => {
             const nextStage = wo.currentStage + 1;
             const nextProgress = Math.min(100, (nextStage / totalStages) * 100);
             
+            // INTEGRÁCIÓ 2: Anyagfelhasználás levonása a gyártás megkezdésekor (Stage 1)
+            if (nextStage === 1) {
+              setProducts(prevProducts => prevProducts.map(p => {
+                const bomItem = wo.bom?.find(b => b.sku === p.sku);
+                if (bomItem) {
+                  return {
+                    ...p,
+                    stock: Math.max(0, p.stock - bomItem.required),
+                    history: [
+                      { date: new Date().toISOString().split('T')[0], type: 'OUT', qty: bomItem.required, reason: `Gyártási felhasználás (${wo.id})` },
+                      ...p.history
+                    ]
+                  };
+                }
+                return p;
+              }));
+            }
             if (nextStage > totalStages) {
               isCompleted = true;
               
@@ -292,7 +309,29 @@ export const DataProvider = ({ children }) => {
           status: 'ok'
         })) : defaultBom;
       },
-      forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false }))
+      forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false })),
+      createWorkOrderFromSales: (opportunity) => {
+        const newWO = {
+          id: `RW/MO/${2024}/${String(workOrders.length + 1).padStart(3, '0')}`,
+          product: opportunity.title.includes('Ablak') ? 'Hőszigetelt ablakpanel' : 'Ülésváz szerkezet',
+          quantity: Math.floor(opportunity.value / 150000) || 10,
+          progress: 0,
+          currentStage: 0,
+          status: 'In Progress',
+          startDate: new Date().toISOString().split('T')[0],
+          deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          priority: opportunity.priority,
+          machineId: 'MC-101',
+          technician: 'Kovács János',
+          customer: opportunity.customer,
+          bom: [
+            { item: 'Alumínium S-Profil', sku: 'RW-PRT-1000', required: 20 },
+            { item: 'Rögzítő készlet', sku: 'RW-PRT-1001', required: 50 }
+          ]
+        };
+        setWorkOrders(prev => [newWO, ...prev]);
+        return newWO.id;
+      }
     }}>
       {children}
     </DataContext.Provider>

@@ -18,11 +18,12 @@ import {
   ArrowUpRight,
   Briefcase
 } from 'lucide-react';
-import auditLogService from '../../services/AuditLogService';
+import { useData } from '../../contexts/DataContext';
 import Modal from '../UI/Modal';
 import './Sales.css';
 
 const Sales = ({ addToast }) => {
+  const { createWorkOrderFromSales } = useData();
   const [viewType, setViewType] = useState('pipeline');
   const [isAddingOpp, setIsAddingOpp] = useState(false);
   const [newOppData, setNewOppData] = useState({
@@ -262,13 +263,27 @@ const Sales = ({ addToast }) => {
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
                       <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{formatCurrency(opp.value)}</span>
-                      <button 
-                        className="view-btn-small" 
-                        onClick={() => handleNextStage(opp.id)}
-                        disabled={opp.stage === 'Lezárás'}
-                      >
-                        <ArrowRight size={14} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                         {opp.stage === 'Lezárás' && (
+                           <button 
+                             className="create-btn-small" 
+                             style={{ padding: '4px 8px', fontSize: '0.65rem', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                             onClick={() => {
+                               const woId = createWorkOrderFromSales(opp);
+                               addToast(`Munkalap létrehozva: ${woId}`, 'success');
+                             }}
+                           >
+                             Munkalap
+                           </button>
+                         )}
+                         <button 
+                           className="view-btn-small" 
+                           onClick={() => handleNextStage(opp.id)}
+                           disabled={opp.stage === 'Lezárás'}
+                         >
+                           <ArrowRight size={14} />
+                         </button>
+                      </div>
                     </div>
                   </div>
                 ))}

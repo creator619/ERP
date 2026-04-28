@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import Modal from '../UI/Modal';
 import { useData } from '../../contexts/DataContext';
+import { 
+  useData 
+} from '../../contexts/DataContext';
 import auditLogService from '../../services/AuditLogService';
 import './Manufacturing.css';
 
@@ -39,12 +42,7 @@ const Manufacturing = ({ addToast }) => {
     technician: 'Kovács János'
   });
 
-  const [machineData, setMachineData] = useState([
-    { id: 'CNC-04', name: 'CNC Megmunkáló', status: 'running', oee: 92, availability: 98, performance: 95, quality: 99, load: 85, temp: '42°C' },
-    { id: 'LSR-01', name: 'Lézer Vágó', status: 'idle', oee: 78, availability: 85, performance: 92, quality: 100, load: 0, temp: '24°C' },
-    { id: 'PR-12', name: 'Hidraulikus Prés', status: 'running', oee: 88, availability: 94, performance: 94, quality: 99, load: 70, temp: '38°C' },
-    { id: 'WLD-08', name: 'Hegesztő Robot', status: 'down', oee: 45, availability: 50, performance: 90, quality: 100, load: 0, temp: 'N/A' },
-  ]);
+  const { workOrders, setWorkOrders, advanceWorkOrderStage, getBomStatus, machines: machineData, setMachines: setMachineData } = useData();
 
   const getShortages = () => {
     let missingItems = [];
@@ -126,7 +124,7 @@ const Manufacturing = ({ addToast }) => {
   };
 
   const handleEmergencyStop = (machineId) => {
-    setMachineData(prev => prev.map(m => m.id === machineId ? { ...m, status: 'down' } : m));
+    setMachineData(prev => prev.map(m => m.id === machineId ? { ...m, status: 'Maintenance', health: 0 } : m));
     addToast(`${machineId} vészleállítása sikeres!`, 'danger');
     
     auditLogService.log({
@@ -290,9 +288,9 @@ const Manufacturing = ({ addToast }) => {
                     <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>{m.name}</h4>
                     <span className="text-muted" style={{ fontSize: '0.7rem' }}>S/N: {m.id}</span>
                   </div>
-                  <span className={`status-badge ${m.status === 'running' ? 'active' : m.status === 'down' ? 'danger' : 'warning'}`} style={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>
+                  <span className={`status-badge ${m.status === 'Healthy' ? 'active' : m.status === 'Maintenance' ? 'danger' : 'warning'}`} style={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>
                     <span className="pulse-indicator"></span>
-                    {m.status === 'running' ? 'Üzemel' : m.status === 'down' ? 'Hiba' : 'Készenlét'}
+                    {m.status === 'Healthy' ? 'Üzemel' : m.status === 'Maintenance' ? 'Szerviz' : 'Készenlét'}
                   </span>
                 </div>
 
@@ -323,7 +321,7 @@ const Manufacturing = ({ addToast }) => {
                     className="view-btn-small" 
                     style={{ width: '100%', borderColor: '#e74c3c', color: '#e74c3c' }}
                     onClick={() => handleEmergencyStop(m.id)}
-                    disabled={m.status === 'down'}
+                    disabled={m.status === 'Maintenance'}
                   >
                     Vészleállás
                   </button>
