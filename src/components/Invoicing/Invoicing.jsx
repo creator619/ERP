@@ -29,7 +29,7 @@ import { useData } from '../../contexts/DataContext';
 import './Invoicing.css';
 
 const Invoicing = ({ addToast, currency }) => {
-  const { invoices, setInvoices } = useData();
+  const { invoices, setInvoices, postInvoicePaymentToFinance } = useData();
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -53,12 +53,12 @@ const Invoicing = ({ addToast, currency }) => {
           details: `${inv.id} - Összeg: ${formatCurrency(inv.amount)}`,
           severity: 'success'
         });
+        postInvoicePaymentToFinance(inv);
         return { ...inv, status: 'Paid', aging: 0 };
       }
       return inv;
     }));
-    addToast('Befizetés sikeresen rögzítve', 'success');
-    addToast('Befizetés sikeresen rögzítve', 'success');
+    addToast('Befizetés sikeresen rögzítve a főkönyvbe', 'success');
   };
 
   const handleCreateInvoice = () => {

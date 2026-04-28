@@ -353,6 +353,39 @@ export const DataProvider = ({ children }) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
+  const postInvoicePaymentToFinance = (invoice) => {
+    const tx = {
+      id: `TRX-INV-${Math.floor(Math.random() * 9000) + 1000}`,
+      date: new Date().toISOString().split('T')[0],
+      account: '381 (Pénztár)',
+      details: `Számla befizetés: ${invoice.id} (${invoice.customer})`,
+      type: 'Debit',
+      amount: invoice.amount
+    };
+    setTransactions(prev => [tx, ...prev]);
+    setBalances(prev => ({
+      ...prev,
+      cash: prev.cash + invoice.amount,
+      ar: Math.max(0, prev.ar - invoice.amount)
+    }));
+  };
+
+  const failInspectionWithInventoryBlock = (inspection, productSku) => {
+    setProducts(prev => prev.map(p => {
+      if (p.sku === productSku) {
+        return {
+          ...p,
+          batches: p.batches.map(b => ({ ...b, status: 'Blocked' })),
+          history: [
+            { date: new Date().toISOString().split('T')[0], type: 'OUT', qty: 0, reason: `Minőségi zárolás (${inspection.id})` },
+            ...p.history
+          ]
+        };
+      }
+      return p;
+    }));
+  };
+
   return (
     <DataContext.Provider value={{
       products, setProducts, workOrders, setWorkOrders, machines, setMachines,
@@ -372,6 +405,8 @@ export const DataProvider = ({ children }) => {
       createWorkOrderFromSales,
       receiveProcurementOrder,
       createInvoiceFromSales,
+      postInvoicePaymentToFinance,
+      failInspectionWithInventoryBlock,
       markNotificationAsRead,
       forecast: Array.from({ length: 6 }, (_, i) => ({ month: `${i+1}. hónap`, demand: 120, stock: 150, alert: false }))
     }}>

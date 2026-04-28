@@ -27,7 +27,7 @@ import Modal from '../UI/Modal';
 import './Quality.css';
 
 const Quality = ({ addToast, initialView = 'dashboard' }) => {
-  const { inspections, setInspections, ncrs, setNcrs, workOrders, advanceWorkOrderStage } = useData();
+  const { inspections, setInspections, ncrs, setNcrs, workOrders, advanceWorkOrderStage, failInspectionWithInventoryBlock } = useData();
   const [viewMode, setViewMode] = useState(initialView); 
   const [selectedNCR, setSelectedNCR] = useState(null);
   const [selectedInspection, setSelectedInspection] = useState(null);
@@ -66,24 +66,30 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
     setIsChecklistModalOpen(true);
   };
 
-  const handleCompleteChecklist = () => {
+  const handleCompleteChecklist = (isSuccess = true) => {
     const newInspection = {
       id: `INS-24-${100 + inspections.length + 1}`,
-      product: activeInspectionItem?.product || 'Ismeretlen termék',
+      product: activeInspectionItem?.product || 'Hőszigetelt ablakpanel',
       type: activeInspectionItem?.id ? 'Gyártásközi (QA)' : 'Általános ellenőrzés',
-      technician: activeInspectionItem?.technician || 'Admin',
-      status: 'Passed',
+      technician: activeInspectionItem?.technician || 'Simon Ernő',
+      status: isSuccess ? 'Passed' : 'Failed',
       date: new Date().toISOString().split('T')[0]
     };
 
     setInspections(prev => [newInspection, ...prev]);
     
-    // Ha gyártásból jött, léptetjük a munkalapot a befejezéshez
-    if (activeInspectionItem?.id && activeInspectionItem.id.startsWith('RW/MO')) {
-       advanceWorkOrderStage(activeInspectionItem.id, 4); 
+    if (isSuccess) {
+      if (activeInspectionItem?.id && activeInspectionItem.id.startsWith('RW/MO')) {
+         advanceWorkOrderStage(activeInspectionItem.id, 4); 
+      }
+      addToast('Ellenőrzés sikeresen rögzítve (MEGFELELT)', 'success');
+    } else {
+      // Szinkronizáció az Inventory-val: Zárolás
+      const productSku = activeInspectionItem?.sku || 'RW-PRT-1000';
+      failInspectionWithInventoryBlock(newInspection, productSku);
+      addToast('Ellenőrzés rögzítve (ELUTASÍTVA) - Készlet zárolva!', 'danger');
     }
 
-    addToast('Ellenőrzés sikeresen rögzítve a rendszerbe', 'success');
     setIsChecklistModalOpen(false);
     setActiveInspectionItem(null);
   };
@@ -347,7 +353,19 @@ const Quality = ({ addToast, initialView = 'dashboard' }) => {
         </div>
       )}
 
-      <Modal isOpen={isChecklistModalOpen} onClose={() => setIsChecklistModalOpen(false)} title="Minőségügyi Ellenőrző Lista" width="650px" footer={<><button className="view-btn" onClick={() => setIsChecklistModalOpen(false)}>Mégse</button><button className="create-btn" onClick={handleCompleteChecklist}>Ellenőrzés Befejezése</button></>}>
+      <Modal 
+        isOpen={isChecklistModalOpen} 
+        onClose={() => setIsChecklistModalOpen(false)} 
+        title="Minőségügyi Ellenőrző Lista" 
+        width="650px" 
+        footer={
+          <>
+            <button className="view-btn" onClick={() => setIsChecklistModalOpen(false)}>Mégse</button>
+            <button className="create-btn" style={{ background: '#e74c3c' }} onClick={() => handleCompleteChecklist(false)}>Elutasítás / Selejt</button>
+            <button className="create-btn" onClick={() => handleCompleteChecklist(true)}>Megfelelt</button>
+          </>
+        }
+      >
         <div className="checklist-modal-content">
            <div className="checklist-info-bar">
               <div><p className="text-muted">Termék:</p><strong>{activeInspectionItem?.product || 'Hőszigetelt kocsiablak'}</strong></div>
