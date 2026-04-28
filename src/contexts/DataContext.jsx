@@ -187,6 +187,17 @@ export const DataProvider = ({ children }) => {
     ])
   );
 
+  const [maintenanceTasks, setMaintenanceTasks] = useState(() => 
+    getInitialValue('maintenanceTasks', Array.from({ length: 5 }, (_, i) => ({
+      id: `WO-MNT-${100 + i}`,
+      machineId: `MC-10${(i % 3) + 1}`,
+      task: i % 2 === 0 ? 'Időszakos olajcsere' : 'Tömítés vizsgálat',
+      status: i % 3 === 0 ? 'In Progress' : 'Pending',
+      priority: i % 4 === 0 ? 'Sürgős' : 'Közepes',
+      date: getDate(i + 2)
+    })))
+  );
+
   useEffect(() => { persist('products', products); }, [products]);
   useEffect(() => { persist('workOrders', workOrders); }, [workOrders]);
   useEffect(() => { persist('employees', employees); }, [employees]);
@@ -198,9 +209,10 @@ export const DataProvider = ({ children }) => {
   useEffect(() => { persist('procurementOrders', procurementOrders); }, [procurementOrders]);
   useEffect(() => { persist('procurementRequests', procurementRequests); }, [procurementRequests]);
   useEffect(() => { persist('invoices', invoices); }, [invoices]);
+  useEffect(() => { persist('maintenanceTasks', maintenanceTasks); }, [maintenanceTasks]);
+  useEffect(() => { persist('machines', machines); }, [machines]);
   useEffect(() => { persist('notifications', notifications); }, [notifications]);
   useEffect(() => { persist('comments', comments); }, [comments]);
-  useEffect(() => { persist('machines', machines); }, [machines]);
 
   const approveLeave = (id) => {
     setLeaveRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'Approved' } : req));
@@ -393,6 +405,7 @@ export const DataProvider = ({ children }) => {
       inspections, setInspections, ncrs, setNcrs,
       procurementOrders, setProcurementOrders, procurementRequests, setProcurementRequests,
       invoices, setInvoices,
+      maintenanceTasks, setMaintenanceTasks,
       notifications, setNotifications, comments, setComments, leaveRequests, setLeaveRequests, approveLeave,
       mrpData: products.map(p => ({ ...p, required: p.stock < p.minStock ? 50 : 0, shortage: 0, status: 'Available', orders: [] })),
       resourceLoading: machines.map(m => ({ ...m, percentage: 75, loadedHours: 40, orderCount: 5, alert: false })),
